@@ -46,10 +46,10 @@ write_pao <- function(counts, clim, alpha){
 
   sitecovs	<- dplyr::select(spp_clim3, -routeID)
 
-  spp_pao <- create.pao(data = det_hist, nsurveyseason = tot_stops,
+  spp_pao <- create.pao(data = det_hist, nsurveyseason = rep(tot_stops, n_seasons),
                         unitcov = sitecovs, survcov = NULL,
                         title = paste(common, "PRESENCE Analysis", sep = " "),
                         paoname = paste("inst/output/pao", paste(alpha, ".pao", sep = ""), sep = "/"))
   RPresence::write.pao(pao = spp_pao)
-  spp_pao
+  # spp_pao
 }

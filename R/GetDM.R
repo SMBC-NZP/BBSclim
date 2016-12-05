@@ -106,7 +106,7 @@ GetDM	<- function(pao,  start_yr = 1997, cov_list,
                 dimnames = list(paste0('eps',1:(n_seas - 1)),paste0('c', 1:num.betas[5])))
 
   # p
-  stop.ind   <- grep('Stop', p1.cov)
+  stop.ind   <- grep('Stop', cov_list$p1.cov)
   scale.stop <- paste0(cov_list$p1.cov[stop.ind], 1)
   for (ii in 2:n_count) {
     scale.stop <- c(scale.stop, paste0(cov_list$p1.cov[stop.ind], ii))
@@ -128,10 +128,10 @@ GetDM	<- function(pao,  start_yr = 1997, cov_list,
   non.stop.p <- grep('Stop|Lat|Lon', cov_list$p1.cov, invert=T)
   for (ii in 1:length(years)) {
     for (jj in 1:(n_surv/n_seas)) {
-      cov.mat.p <- rbind(cov.mat.p, paste0(cov_list$p1.cov[non.stop], as.character(years[ii])))
+      cov.mat.p <- rbind(cov.mat.p, paste0(cov_list$p1.cov[non.stop.p], as.character(years[ii])))
     }
   }
-  if(length(non.stop.p)==0)	cov.mat.p <- NULL
+  if(length(non.stop.p) == 0)	cov.mat.p <- NULL
 
   p1.intercept <- rep(1, n_surv)
   p1.dm <- cbind(p1.intercept, time2, scale.stop, coord.mat.p, cov.mat.p)
@@ -140,8 +140,8 @@ GetDM	<- function(pao,  start_yr = 1997, cov_list,
   dm4 <- rbind(cbind(p1.dm, zeros), cbind(zeros, p1.dm))
   rownames(dm4) <- c(paste0('p1(', 1:n_surv,')'),paste0('p2(', 1:n_surv,')'))     # for het
 
-  if(het==FALSE) dm4 <- p1.dm
-  if(het==FALSE) rownames(dm4) <- c(paste0('p1(',1:n_surv,')'))     	# could get rid of parentheses
+  if(het == FALSE) dm4 <- p1.dm
+  if(het == FALSE) rownames(dm4) <- c(paste0('p1(',1:n_surv,')'))     	# could get rid of parentheses
   colnames(dm4) <- paste0('d', 1:dim(dm4)[2])
 
   # theta.pi

@@ -1,6 +1,8 @@
 #' write_one_matrix
 #'
 #' Function to write .dm file
+#' @export
+
 write_one_matrix <- function(dmnum,dm) {
   mat1=NULL
   if (is.null(dm)) {
@@ -18,6 +20,8 @@ write_one_matrix <- function(dmnum,dm) {
 #' parse_output
 #'
 #' Function to parse Presence .out file
+#' @export
+
 parse_output <- function(outname) {
   output=readLines(outname)
   if (length(output)<4) {
@@ -118,12 +122,12 @@ write_dm_and_run2 <- function(pao, cov_list, out, het = TRUE,
     }
     if (!is.null(dm1)) {
       if (file.exists(dmname)) file.remove(dmname)
-      dmmat=write_one_matrix(0,dm_list$dm1)
-      dmmat=paste(dmmat,write_one_matrix(1,dm_list$dm2),sep='\n')
-      dmmat=paste(dmmat,write_one_matrix(2,dm_list$dm3),sep='\n')
-      dmmat=paste(dmmat,write_one_matrix(3,dm_list$dm4),sep='\n')
-      dmmat=paste(dmmat,write_one_matrix(4,dm_list$dm5),sep='\n')
-      dmmat=paste(dmmat,write_one_matrix(5,dm_list$dm6),sep='\n')
+      dmmat = write_one_matrix(0, dm_list$dm1)
+      dmmat = paste(dmmat, write_one_matrix(1,dm_list$dm2), sep='\n')
+      dmmat = paste(dmmat, write_one_matrix(2,dm_list$dm3), sep='\n')
+      dmmat = paste(dmmat, write_one_matrix(3,dm_list$dm4), sep='\n')
+      dmmat = paste(dmmat, write_one_matrix(4,dm_list$dm5), sep='\n')
+      dmmat = paste(dmmat, write_one_matrix(5,dm_list$dm6), sep='\n')
       if (!is.null(fixedpars)) {
         sfx=paste('fixed(',names(fixedpars),')=',fixedpars,sep='')
         dmmat=paste(c(dmmat,sfx),collapse='\n')

@@ -7,7 +7,7 @@
 GetPsiMods <- function(){
   p_covs	<- c("Stop", "sq_Stop", "Lat", "sq_Lat", "Lon", "sq_Lon")
   th_covs <- c("Lat", "sq_Lat", "Lon", "sq_Lon")
-  psi_covs <- c("tmp", "dtr", "Twet", "Prec", "Pwarm", "sq_tmp", "sq_dtr",  "sq_Twet", "sq_Prec", "sq_Pwarm")
+  psi_covs <- c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet", "Prec", "sq_Prec", "Pwarm", "sq_Pwarm")
 
   n <- length(psi_covs)/2
 
@@ -19,8 +19,10 @@ GetPsiMods <- function(){
 
   psi_mods <- sapply(id, function(i) c(psi_covs[i], psi_covs[i + n]))
 
-  psi_mods2 <- lapply(psi_mods, function(x) list(psi.cov = x, gam.cov = psi_covs, eps.cov = psi_covs,
-                                                 th0.cov = th_covs, th1.cov = th_covs, p1.cov = p_covs))
+  psi_mods2 <- lapply(psi_mods, function(x) list(psi.cov = x,
+                                                 th0.cov = th_covs, th1.cov = th_covs,
+                                                 gam.cov = psi_covs, eps.cov = psi_covs,
+                                                 p1.cov = p_covs))
   psi_mods2
 }
 
@@ -34,7 +36,7 @@ GetPsiMods <- function(){
 
 
 GetGamMods <- function(psi_covs){
-  gam_covs <- c("tmp", "dtr", "Twet", "Prec", "Pwarm", "sq_tmp", "sq_dtr",  "sq_Twet", "sq_Prec", "sq_Pwarm")
+  gam_covs <- c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet", "Prec", "sq_Prec", "Pwarm", "sq_Pwarm")
   p_covs	<- c("Stop", "sq_Stop", "Lat", "sq_Lat", "Lon", "sq_Lon")
   th_covs <- c("Lat", "sq_Lat", "Lon", "sq_Lon")
 
@@ -52,8 +54,10 @@ GetGamMods <- function(psi_covs){
   gam_mods2 <- list()
   for(i in 1:length(gam_mods)){
     for(j in 1:length(gam_mods)){
-      gam_mods2[[length(gam_mods) * (i - 1) + j]] <-  list(psi.cov = psi_covs, gam.cov = gam_mods[[i]], eps.cov = gam_mods[[j]],
-                                                           th0.cov = th_covs, th1.cov = th_covs, p1.cov = p_covs)
+      gam_mods2[[length(gam_mods) * (i - 1) + j]] <-  list(psi.cov = psi_covs,
+                                                           th0.cov = th_covs, th1.cov = th_covs,
+                                                           gam.cov = gam_mods[[i]], eps.cov = gam_mods[[j]],
+                                                           p1.cov = p_covs)
     }
   }
 
