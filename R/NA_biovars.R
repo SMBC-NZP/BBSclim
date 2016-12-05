@@ -1,0 +1,27 @@
+#' Annual bioclimatic variables for North America
+#'
+#' A list with elements containing annual (1997-2014) estimates of 18 bioclimatic variables for all of North America. See ?dismo::biovars for more details
+#'
+#' @format For element of the list (i.e., year), a RasterBrick object with 18 layers:
+#' \describe{
+#'   \item{bio1}{Mean annual temperature}
+#'   \item{bio2}{Mean diurnal range (mean of max temp - min temp)}
+#'   \item{bio3}{Isothermality (bio2/bio7) (* 100)}
+#'   \item{bio4}{Temperature seasonality (standard deviation *100)}
+#'   \item{bio5}{Max temperature of warmest month}
+#'   \item{bio6}{Min temperature of coldest month}
+#'   \item{bio7}{Temperature annual range (bio5-bio6)}
+#'   \item{bio8}{Mean temperature of the wettest quarter}
+#'   \item{bio9}{Mean temperature of driest quarter}
+#'   \item{bio10}{Mean temperature of warmest quarter}
+#'   \item{bio11}{Mean temperature of coldest quarter}
+#'   \item{bio12}{Total (annual) precipitation}
+#'   \item{bio13}{Precipitation of wettest month}
+#'   \item{bio14}{Precipitation of driest month}
+#'   \item{bio15}{Precipitation seasonality (coefficient of variation)}
+#'   \item{bio16}{Precipitation of wettest quarter}
+#'   \item{bio17}{Precipitation of driest quarter}
+#'   \item{bio18}{Precipitation of warmest quarter}
+#'   ...
+#' }
+"NA_biovars"

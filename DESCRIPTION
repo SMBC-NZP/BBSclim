@@ -1,0 +1,30 @@
+Package: BBSclim
+Type: Package
+Title: Analysis of BBS data using correlated occupancy models to examine
+    relationship between range dynamics and climate variables
+Version: 0.1.0
+Author: Clark Rushing, Andy Royle, Keith Pardieck
+Maintainer: Clark Rushing <crushing@usgs.gov>
+Description: This project aims to measure the reponse of North American
+    bird species to recent climate change using the correlated occupancy models
+    described by Hines et al. (2010, 2014). This project builds on the analysis of
+    Clement et al. (2015) by applying their approach to a larger number of species.
+License: CC0
+Imports:
+    tidyverse,
+    raster,
+    ncdf4,
+    dismo,
+    maps,
+    SDMTools,
+    rvest,
+    R.utils,
+    classInt
+Remotes: github::crushing05/rBBS
+Encoding: UTF-8
+LazyData: true
+Suggests:
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1

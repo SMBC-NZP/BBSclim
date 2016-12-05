@@ -1,0 +1,251 @@
+---
+title: "Measuring the response on North American birds to recent climate change when detection is imperfect"
+author: "Clark Rushing, Andy Royle, & Keith Pardieck"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BBSclim}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo = FALSE, include = FALSE}
+start_clim <- 1991
+end_clim <- 2014
+
+start_bbs <- 1997
+end_bbs <- 2015
+```
+
+## Presence and RPresence
+
+The following analysis requires the program [Presence](http://www.mbr-pwrc.usgs.gov/software/presence.html) and the package [RPresence](http://www.mbr-pwrc.usgs.gov/software/presence.html) to be installed on the users computer. Follow the links to download both the program. RPresence is not available on CRAN or github so use the link above to download the binary/source package for your OS. From RStudio, you can use `Tools->Install Packages` from the toolbar to install the package (just browse to the zipped `RPresence` file) or use the command line.  
+
+
+## Climate data
+### Download and unzip
+
+Climate data used in this analysis come from the [University of East Anglia Climate Research Unit Time Series Data]("http://badc.nerc.ac.uk/search/"). Compressed ("nc.gz") raster files containing the monthly precipitation and temperature (minimum and maximum) estimates were manually downloaded and added to the appropriate folders in the `data-raw/` folder. The current analysis includes raw climate data from `r start_clim` to `r end_clim` (only `r start_bbs - 1` to `r end_bbs` are used in the analysis but the data are downloaded in 10-year increments).
+
+We use the `gunzip` function from the `R.utils` package to unzip these files so that we can work with them in `R`. A custom function, `unzipCRU`, unzips the files and adds the decompressed files to the `data-raw/` folder:
+
+```{r, eval = FALSE}
+### Decompress precipitation data
+
+unzipCRU(varb = "prec")
+
+### Decompress minimum temperature data
+
+unzipCRU(varb = "tmn")
+
+### Decompress maximum temperature data
+
+unzipCRU(varb = "tmx")
+```
+
+### Create bioclim variables
+
+Next, we use the three climate variables to create rasters containing 18 *bioclim* variables (Hijmans et al, 2016) that will be used in the analysis. First, we use the `brick` function from the `raster` package to read in the uncompressed raster files and then `stack` to create a single file containing all of the monthly raster layers for each variable.
+
+```{r, eval = FALSE}
+library(raster)
+
+# Read in data and create annual summaries
+## Precipitation
+  prec_files <- list.files("data-raw/prec/")[!grepl("gz", list.files("data-raw/prec/"))]
+
+  for (ii in 1:length(prec_files)) {
+    if(ii==1) {
+      prec <- brick(paste("data-raw/prec/", prec_files[ii], sep = ""))
+    } else {
+      prec2 <- brick(paste("data-raw/prec/",  prec_files[ii], sep = ""))
+      prec <- stack(prec, prec2)
+    }
+  }
+
+
+## Minimum temperature
+  tmn_files <- list.files("data-raw/tmn/")[!grepl("gz", list.files("data-raw/tmn/"))]
+
+  for (ii in 1:length(tmn_files)) {
+    if(ii==1) {
+      tmn <- brick(paste("data-raw/tmn/", tmn_files[ii], sep = ""))
+    } else {
+      tmn2 <- brick(paste("data-raw/tmn/",  tmn_files[ii], sep = ""))
+      tmn <- stack(tmn, tmn2)
+    }
+  }
+
+
+## Maximum temperature
+  tmx_files <- list.files("data-raw/tmx/")[!grepl("gz", list.files("data-raw/tmx/"))]
+
+  for (ii in 1:length(tmx_files)) {
+    if(ii==1) {
+      tmx <- brick(paste("data-raw/tmx/", tmx_files[ii], sep = ""))
+    } else {
+      tmx2 <- brick(paste("data-raw/tmx/",  tmx_files[ii], sep = ""))
+      tmx <- stack(tmx, tmx2)
+    }
+  }
+
+
+```
+
+These are global data sets so next we crop them to contain only North America:
+```{r eval = FALSE}
+
+# Set lat/long boundaries
+  n.amer		<- extent(-180, -50, 20, 85) # only analyze this area
+
+
+# crop to North America only
+  prec <- crop(prec, n.amer)	
+  tmn <- crop(tmn, n.amer)
+  tmx <- crop(tmx, n.amer)	# cut down data to just N Amer
+
+
+```
+
+Our analysis will use annual means from the 12 months prior to each BBS survey. BBS routes are typically run in June so we need to subset June - May of each year to obtain the relevant months for our analysis.
+
+```{r eval = FALSE}
+  start.yr	<- 1991
+  start.mo	<- 6		  # 6 is June, etc. Start of 12 mo. year. If 6, then year is June-May.
+  end.yr		<- 2014
+  
+# find the layer for the start year and month
+  first.layer	<- grep(paste0(start.yr, ".", formatC(start.mo, width = 2, format = "d", flag = "0")),   names(tmn))
+
+
+# assemble monthly tmn data into years, e.g., June-May
+  for (ii in 1:(end.yr-start.yr)) {
+    assign(paste("prec", ii + start.yr, sep=""), 
+           subset(prec, (first.layer - 12 + ii * 12):(first.layer - 1 + ii * 12)))
+    assign(paste("tmin", ii + start.yr, sep = ""), 
+           subset(tmn, (first.layer - 12 + ii * 12):(first.layer - 1 + ii * 12)))
+    assign(paste("tmax", ii + start.yr, sep=""),
+           subset(tmx, (first.layer  -12 + ii * 12):(first.layer - 1 + ii * 12)))
+  }
+  
+```
+
+Finally, we use the `biovars` function from the `dismo` package to create *rasterBrick* objects containing the 18 *bioclim* variables for each year. To reduce the size of the data file, we use only the years relevant to our analysis. The *rasterBrick* objects containing the annual estimates are combined into a list (*NA_biovars*) and are saved to the `data/` folder for use in the subsequent analyses.
+
+```{r eval = FALSE}
+  start.bbs <- 1996 # Should be 1 year before first BBS year
+
+  for (ii in 1:(end.yr - start.bbs)) {
+    assign(paste("biovars", ii + start.bbs, sep=""),
+           biovars(get(paste("prec", ii + start.bbs, sep="")),
+                   get(paste("tmin", ii + start.bbs, sep="")),
+                   get(paste("tmax", ii + start.bbs, sep=""))))
+  }
+
+  biovar_files <- paste("biovars", seq(from = start.bbs + 1, to = end.yr), sep = "")
+
+  vars <- names(get(biovar_files[1]))
+
+  NA_biovars <- lapply(biovar_files, get)
+
+
+  devtools::use_data(NA_biovars, overwrite = TRUE)
+
+```
+
+## BBS data
+
+Next, we download the raw BBS data and meta data needed to filter and buffer the BBS routes used in the analysis. The `bbs` file contains the raw 10-stop or 50-stop count data for all species sampled by the BBS. Note that some routes are run using non-standard protocols or more than once each year. For our analysis, we only use the first standard run of each route in a given year (`RPID` == 101). The `weather` file contains run-level attributes, including date, time, temperature, and observer ID. This file also indicates whether the run met the BBS standards for quality and the run protocol. The `routes` file contain route-level attributes, including latitude, longitude, BBS stratum, and BCR. 
+
+```{r eval = FALSE}
+# devtools::install_github('crushing05/rBBS')
+library(rBBS)
+library(dplyr)
+library(BBSclim)
+
+### Import raw 10-stop BBS data
+bbs <- GetRouteData()
+
+### Import weather data
+weather <- GetWeather()
+
+
+### Import route information
+routes <- GetRoutes()
+```
+
+Next, we filter the raw BBS data to contain only counts of the species are interested in. Importantly, the raw data does not contain zero counts and from these data alone, we cannot determine whether a missing count is due to the species not being detected (true zero count) or the route not being run that year (missing data). Fortunately, the `weather` file contains run-level attributes for every run of every route. So we can use this file to determine which missing counts are true zeros versus missing data. At this stage, we also want to filter out runs that do not meet the BBS quality standards (`RunType` == 0). We also add the latitude and longitude of each route so that we can buffer our anlysis beyond the observed range of each species. These steps (filter by species, add zero counts, add lat/long) are done in a single step using the `GetSppCounts` function. For the remainder of this document, we illustrate the methods for a single species (Wood Thrush), though the actual analysis was conducted for all of the species listed in Table S1. 
+
+```{r eval = FALSE}
+alpha <- "woth"
+
+spp_AOU <- GetAOU(alpha)
+
+GetSppCounts(AOU = spp_AOU)
+
+
+```
+
+The `woth_counts` object contains only routes that detected Wood Thrush in at least one year during our study period (1997-2015). Following Clement et al. (2015), we buffer our focal area to include neighboring routes that never detected Wood Thrush. Although several methods can be used to select routes to include the buffer, we simply select all routes within 2 degrees of latitude or longitude of the routes in the count data (`method = "rec"`).
+
+```{r eval = FALSE}
+### Read raw BBS counts
+spp_count <- read.csv(paste("output/spp_counts", paste(alpha, "counts.csv", sep = "_"), sep = "/"))
+
+buffer_BBS(spp_count = spp_counts, routes = routes, method = "rec")
+ 
+```
+
+Next, we extract the climate variables for each BBS route. The `NA_biovars` object is a list containing `RasterStack` objects, one for each year. Within each list element, there are 19 raster layers corresponding to the 19 `bioclim` variables. We extract the 5 bioclim variables of interest (see Clement et al. 2015) using the latitude and longitude of the initial stop for each route. Any `NA` values in the extracted files are filled in as the mean of the 8 neighboring cells. All covariates are centered by subtracting the overall mean for the given variable and the scaled by dividing by the standard deviation. The resulting data frame is the saved as a `.csv` file in the `output/spp_clim` directory. 
+
+```{r eval = FALSE}
+library(raster)
+
+### Load rasters containing bioclim estimates
+data("NA_biovars")
+
+### Read buffered BBS counts
+spp_buff <- read.csv(paste("output/buffered_counts", 
+                           paste(alpha, "buff.csv", sep = "_"), sep = "/"))
+
+### Extract annual bioclim estimates for Wood Thrush BBS routes
+GetBioVars(count = spp_buff)
+
+```
+
+Finally, we format the data and save as a `.pao` file for input into program Presence. The BBS counts are first converted into a detection matrix with `nrow = n_routes` and `ncol = n_years * n_stops`, where `n_routes` is the number of routes, `n_years` is the number of years, and `n_stops` is the number of stops per route (either 10- or 50-). The climate data is is also saved in a matrix with one row for each route (note that the two matrices must be ordered by routeID so that the occupancy data matches the covariate data for each route) and one column for each annual estimate of each covariate. The occupancy and covariate data are then written as a `.pao` file and saved in the `output/pao` directory.
+
+```{r eval = FALSE}
+### Save occupancy and climate data as .pao file for input into Presence
+spp_clim <- read.csv(paste("output/spp_clim",
+                           paste(alpha, "clim.csv", sep = "_"), sep = "/"))
+
+
+write_pao(counts = spp_buff, clim = spp_clim, alpha = "woth")
+```
+
+
+To run the correlated detection model in Presence from R, we need to provide Presence with design matrices that specify our model. The model with heterogeneity in detection probabilities (see Clement et al. 2015) includes 6 design matrices: `dm1` is the matrix for $\psi$, $\theta$, and $\theta'$; `dm2` is the matrix for $\gamma_t$; `dm3` is the matrix for $\epsilon_t$; `dm4` is the matrix for $p_1$ and $p_2$; `dm5` is the matrix for $\pi$; and `dm6` is the matrix for $\omega$ (the mixing parameter indicating the relative weight of the two detection distributions $p_1$ and $p_2$). Each matrix will contain one row for each parameter and one column for each covariate in the model. The columns contain `1` for the intercept and the name of the climate variables included as predictors of each parameter. For the global model (all five climate predictors and polynomial terms as predictors for $\psi$, 
+$\gamma_t$, and $\epsilon_t$), we can create the design matrices using the `.pao` file we just created and the `GetDM()` function:
+
+```{r eval = FALSE}
+cov.name	<- c("Stop", "sqStop", "tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet", "Prec", "sq_Prec", "Pwarm", "sq_Pwarm")
+
+spp_pao <- read.pao(paste("inst/output/pao", paste(alpha, ".pao", sep = ""), sep = "/"))
+
+spp_dm <- GetDM(pao = spp_pao, cov_names = cov.name, het = TRUE)
+```
+
+Finally, we give Presence the data and the design matrices, fit the model, and save the output in a file called `modname.out` (where `modname` is supplied by the user):
+
+```{r eval = FALSE}
+### Run global model (all 5 climate variables and polynomials)
+modname <- paste0(alpha, '_model_', letters[1])
+
+write_dm_and_run2(pao = spp_pao, cov_names = cov.name, het = TRUE,
+                  dm1 = spp_dm$dm1, dm2 = spp_dm$dm2,
+                  dm3 = spp_dm$dm3, dm4 = spp_dm$dm4,
+                  dm5 = spp_dm$dm5, dm6 = spp_dm$dm6,
+                  modname = modname, fixed = TRUE,
+                  inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
+```
