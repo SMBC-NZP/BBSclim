@@ -50,6 +50,6 @@ write_pao <- function(counts, clim, alpha){
                         unitcov = sitecovs, survcov = NULL,
                         title = paste(common, "PRESENCE Analysis", sep = " "),
                         paoname = paste("inst/output/pao", paste(alpha, ".pao", sep = ""), sep = "/"))
-  write.pao(pao = spp_pao)
-  #spp_pao
+  RPresence::write.pao(pao = spp_pao)
+  spp_pao
 }

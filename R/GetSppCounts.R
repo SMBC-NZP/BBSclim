@@ -56,6 +56,8 @@ GetSppCounts <- function(count = bbs, AOU, run_atrb = weather, route_atrb = rout
   write.csv(spp_counts_full,
             paste("inst/output/spp_counts", paste(alpha, "counts.csv", sep = "_"), sep = "/"),
             row.names = FALSE)
+
+  spp_counts_full
 }
 
 

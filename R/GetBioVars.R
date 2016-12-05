@@ -83,5 +83,6 @@ GetBioVars <- function(counts, index = c(1, 2, 8, 12, 18),
 
   write.csv(rxy, paste("inst/output/spp_clim", paste(alpha, "clim.csv", sep = "_"), sep = "/"),
             row.names = FALSE)
+  rxy
 }
 

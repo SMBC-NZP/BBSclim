@@ -17,36 +17,27 @@ alpha <- "lowa"
 
 spp_AOU <- GetAOU(alpha)
 
-GetSppCounts(AOU = spp_AOU)
+spp_counts <- GetSppCounts(AOU = spp_AOU)
 
 
 ### Read raw BBS counts
-spp_counts <- read.csv(paste("inst/output/spp_counts", paste(alpha, "counts.csv", sep = "_"), sep = "/"))
 spp_counts2 <- dplyr::filter(spp_counts, Longitude > -110)
-buffer_BBS(spp_count = spp_counts2)
+spp_buff <- buffer_BBS(spp_count = spp_counts2)
 
 
 ### Load rasters containing bioclim estimates
 data("NA_biovars")
 
-### Read buffered BBS counts
-spp_buff <- read.csv(paste("inst/output/buffered_counts",
-                           paste(alpha, "buff.csv", sep = "_"), sep = "/"))
 
 ### Extract annual bioclim estimates for Wood Thrush BBS routes
-GetBioVars(counts = spp_buff)
+spp_clim <- GetBioVars(counts = spp_buff)
 
 
 ### Save occupancy and climate data as .pao file for input into Presence
-spp_clim <- read.csv(paste("inst/output/spp_clim",
-                           paste(alpha, "clim.csv", sep = "_"), sep = "/"))
 
-library(RPresence)
-write_pao(counts = spp_buff, clim = spp_clim, alpha = alpha)
+spp_pao <- write_pao(counts = spp_buff, clim = spp_clim, alpha = alpha)
 
 ### Create design matrices
-
-spp_pao <- read.pao(paste("inst/output/pao", paste(alpha, ".pao", sep = ""), sep = "/"))
 
 psi_mods <- GetPsiMods()
 

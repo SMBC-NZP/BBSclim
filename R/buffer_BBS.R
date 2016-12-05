@@ -115,4 +115,5 @@ buffer_BBS	<- function(spp_count, route_atrb = routes, buffer = 2, method = "rec
               paste("inst/output/buffered_counts", paste(alpha, "buff.csv", sep = "_"), sep = "/"),
               row.names = FALSE)
   }
+  spp_count_buff
 }
