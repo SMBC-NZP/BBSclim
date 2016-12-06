@@ -21,7 +21,7 @@
 #' @export
 
 GetDM	<- function(pao,  start_yr = 1997, cov_list,
-                  het = TRUE, time = TRUE, coord.p = TRUE, coord.th = TRUE) {
+                  het, time, coord.p = TRUE, coord.th = TRUE) {
 
 
   n_surv <- pao$nsurveys  # total num of surveys

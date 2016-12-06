@@ -12,6 +12,8 @@ Description: This project aims to measure the reponse of North American
 License: CC0
 Imports:
     tidyverse,
+    devtools,
+    plyr,
     raster,
     ncdf4,
     dismo,

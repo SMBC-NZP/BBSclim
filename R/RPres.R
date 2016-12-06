@@ -85,10 +85,10 @@ parse_output <- function(outname) {
 #' @return A .out file containing the fitted model and parameters estimates (see ?occ.mod for details)
 #' @export
 
-write_dm_and_run2 <- function(pao, cov_list, out, het = TRUE,
+write_dm_and_run2 <- function(pao, cov_list, out, het, time,
                               dm_list = NULL, modname,
                               fixed = FALSE, inits = FALSE,
-                              maxfn = 32000, alpha = NULL, parse = TRUE) {
+                              maxfn = 32000, alpha = NULL, parse = FALSE) {
 
   if(inits){
     total.betas	<- sum(1 + length(cov_list$psi.cov),
@@ -150,7 +150,7 @@ write_dm_and_run2 <- function(pao, cov_list, out, het = TRUE,
     t1 = Sys.time(); cat(c(s,'\n'));
     i = system(s, show.output=T);
     t2 = Sys.time(); cat(c('\nCPU time:',t2-t1,'\n'));
-    if (rand.dm) unlink(dmname)
+    #if (rand.dm) unlink(dmname)
   }
   v=1; if (parse) v=parse_output(outname)
   return(v)

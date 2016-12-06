@@ -1,6 +1,6 @@
 #' RunPsiMods
 #'
-#' Runs full model set for 31 psi models and writes output to ~/pres/psi
+#' Runs full model set for 31 psi models, evalute each, write and return AIC table, delete output file (optional)
 #' @param pao .pao file for species of interest
 #' @param alpha alpha code for species of interest
 #' @param psi_mods list containing the parameters for each model to evaluate
@@ -9,7 +9,7 @@
 #' @param het Heterogeneous detection?
 #' @export
 
-RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, time = annual, het = het_det,
+RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
                        test = FALSE){
 
     for(i in 1:length(mods)){
@@ -18,19 +18,19 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, time = annual, h
 
       if(!test){
         ## Create design matrices for model i
-        spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], time = time, het = het)
+        spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], ...)
 
         ## Run model
-        write_dm_and_run2(pao = pao, cov_list = mods[[i]], het = het_det, dm_list = spp_dm,
+        write_dm_and_run2(pao = pao, cov_list = mods[[i]], ..., dm_list = spp_dm,
                           modname = modname, fixed = TRUE, out = "temp",
                           inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
       }
 
       ## Read output file
-      a <- scan(paste0('inst/output/temp/psi/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
+      a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
       ## Evaluate model (if model converges, will equal TRUE)
-      check <- mod_eval(a)
+      check <- mod_eval(a, ...)
 
       if(check == FALSE){ # If model does not converge, save NA in AIC table
         aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -73,29 +73,33 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, time = annual, h
   aic_tab
 }
 
-#' top_psi
+#' top_mod
 #'
 #' Get covariates for top psi model
 #' @param aic_tab AIC table from RunPsiMods
 #' @export
 #'
 
-top_psi <- function(aic_tab, mods = psi_mods){
+top_mod <- function(aic_tab, mods, psi = TRUE){
   top <- aic_tab$Model_num[1]
-  covs <- mods[[top]]$psi.cov
+  if(psi){
+    covs <- mods[[top]]$psi.cov
+  }else{
+    covs <- mods[[top]]
+  }
   covs
 }
 
 
 #' RunGamMods
 #'
-#' Runs full model set for 961 gamma/epsilon models and writes output to ~/pres/gam_eps
+#' Runs full model set for 961 gamma/epsilon models, evaluate each, write and return AIC table, delete .out files (optional)
 #' @param gam_mods list containing the covariates for each model
 #' @export
 
 
-RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, time = annual, het = het_det,
-                       test = FALSE){
+RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
+                       test = FALSE, trim = TRUE){
 
   for(i in 1:length(mods)){
 
@@ -103,10 +107,10 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, time = annual, h
 
     if(!test){
       ## Create design matrices for model i
-      spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], time = time, het = het)
+      spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], ...)
 
       ## Run model
-      write_dm_and_run2(pao = pao, cov_list = psi_mods[[i]], het = TRUE, dm_list = spp_dm,
+      write_dm_and_run2(pao = pao, cov_list = mods[[i]], ..., dm_list = spp_dm,
                         modname = modname, fixed = TRUE, out = "temp",
                         inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
     }
@@ -115,7 +119,7 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, time = annual, h
     a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
     ## Evaluate model (if model converges, will equal TRUE)
-    check <- mod_eval(a)
+    check <- mod_eval(a, ...)
 
     if(check == FALSE){ # If model does not converge, save NA in AIC table
       aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -155,5 +159,6 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, time = annual, h
   write.csv(aic_tab, file = paste0("inst/output/aic/gam/", alpha, ".csv"), row.names = FALSE)
 
   ## Return AIC table
+  if(trim) aic_tab <- aic_tab[1:25, ]
   aic_tab
 }
