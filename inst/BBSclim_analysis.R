@@ -1,6 +1,5 @@
 
 library(rBBS)
-library(RPresence)
 library(BBSclim)
 
 ### Import raw 10-stop BBS data
@@ -46,17 +45,39 @@ write_pao(counts = spp_buff, clim = spp_clim, alpha = alpha)
 psi_mods <- GetPsiMods()
 psi_mods <- psi_mods[1:2]
 
-spp_pao <- read.pao(paste0("inst/output/pao/", alpha, ".pao"))
+spp_pao <- RPresence::read.pao(paste0("inst/output/pao/", alpha, ".pao"))
 
 spp_psi_aic <- RunPsiMods(pao = spp_pao, mods = psi_mods, alpha = alpha, test = FALSE,
-                      time = annual, het = het_det)
+                      time = annual, het = het_det, del = FALSE)
 
 
 ### Run gam/eps models with top covariates from psi models
-spp_psi_covs <- top_psi(aic_tab = spp_psi_aic, mods = psi_mods)
+spp_psi_covs <- top_covs(aic_tab = spp_psi_aic, mods = psi_mods)
 
 gam_mods <- GetGamMods(psi_covs = spp_psi_covs)
 gam_mods <- gam_mods[1:2]
 
 spp_gam_aic <- RunPsiMods(pao = spp_pao, mods = gam_mods, alpha = alpha, test = TRUE,
-                          time = annual, het = het_det)
+                          time = annual, het = het_det, del = FALSE)
+
+
+### Move top model output to 'top/' and delete others
+spp_top_mod <- top_covs(aic_tab = spp_gam_aic, mods = gam_mods, psi = FALSE)
+
+
+
+### Goodness-of-fit of top model
+aic_temp <- dplyr::data_frame(Model = "mod1", Model_num = 1, LogLik = 259231, nParam = 2,
+                              AIC = 2165464)
+
+aic_temp2 <- dplyr::data_frame(Model = "mod2", Model_num = 2, LogLik = 252346, nParam = 3,
+                              AIC = 2161654)
+aic_tab <- dplyr::bind_rows(aic_temp, aic_temp2)
+aic_tab <- dplyr::mutate(aic_tab, delta_AIC = AIC - min(AIC))
+aic_tab <- dplyr::arrange(aic_tab, delta_AIC)
+
+spp_top_mod <- top_mod(aic_tab = aic_tab, mods = gam_mods, psi = FALSE)
+
+
+
+

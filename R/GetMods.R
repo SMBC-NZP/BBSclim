@@ -13,11 +13,11 @@ GetPsiMods <- function(){
 
   id <- unlist(
     lapply(1:n,
-           function(i)combn(1:n,i,simplify=F)
+           function(i)combn((1:n)*2 - 1,i,simplify=F)
     )
     ,recursive=F)
 
-  psi_mods <- sapply(id, function(i) c(psi_covs[i], psi_covs[i + n]))
+  psi_mods <- sapply(id, function(i) c(psi_covs[sort(c(i, i + 1))]))
 
   psi_mods2 <- lapply(psi_mods, function(x) list(psi.cov = x,
                                                  th0.cov = th_covs, th1.cov = th_covs,
@@ -44,12 +44,11 @@ GetGamMods <- function(psi_covs){
 
   id <- unlist(
     lapply(1:n,
-           function(i)combn(1:n,i,simplify=F)
+           function(i)combn((1:n)*2 - 1,i,simplify=F)
     )
     ,recursive=F)
 
-
-  gam_mods <- sapply(id, function(i) c(gam_covs[i], gam_covs[i + n]))
+  gam_mods <- sapply(id, function(i) c(gam_covs[sort(c(i, i + 1))]))
 
   gam_mods2 <- list()
   for(i in 1:length(gam_mods)){

@@ -30,7 +30,7 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
       a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
       ## Evaluate model (if model converges, will equal TRUE)
-      check <- mod_eval(a, ...)
+      check <- mod_eval(pres_out = a, mod = mods[[i]], ...)
 
       if(check == FALSE){ # If model does not converge, save NA in AIC table
         aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -73,23 +73,26 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
   aic_tab
 }
 
-#' top_mod
+#' top_covs
 #'
-#' Get covariates for top psi model
-#' @param aic_tab AIC table from RunPsiMods
+#' Get covariates of top model
+#' @param aic_tab AIC table from RunPsiMods or RunGamMods
+#' @param mods List of models
+#' @param psi Return top psi model (TRUE) or gamma/epsilon model (FALSE)
 #' @export
 #'
 
-top_mod <- function(aic_tab, mods, psi = TRUE){
-  top <- aic_tab$Model_num[1]
-  if(psi){
-    covs <- mods[[top]]$psi.cov
-  }else{
-    covs <- mods[[top]]
-  }
-  covs
+top_covs <- function(aic_tab, mods, psi = TRUE){
+    if(psi){
+      top <- aic_tab$Model_num[1]
+      covs <- mods[[top]]$psi.cov
+      covs
+    }else{
+      top <- aic_tab$Model_num[1]
+      covs <- mods[[top]]
+      covs
+    }
 }
-
 
 #' RunGamMods
 #'
