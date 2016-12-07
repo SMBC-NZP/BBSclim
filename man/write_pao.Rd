@@ -4,14 +4,14 @@
 \alias{write_pao}
 \title{write_pao}
 \usage{
-write_pao(counts, clim, alpha, sim = FALSE)
+write_pao(counts, covs, alpha, sim = FALSE, TenStops)
 }
 \arguments{
 \item{counts}{Data frame containing the buffered BBS counts obtained from the function `buffer_BBS()`}
 
-\item{clim}{Data frame containing the annual bioclim values obtained from the function 'GetBioVars()`}
-
 \item{alpha}{Four letter alpha code for the species of interest}
+
+\item{clim}{Data frame containing the annual bioclim values obtained from the function 'GetBioVars()`}
 }
 \value{
 A .pao file containing the detection histories, covariates, and summary information to input into Presence
