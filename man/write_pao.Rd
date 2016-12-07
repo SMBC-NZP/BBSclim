@@ -4,7 +4,7 @@
 \alias{write_pao}
 \title{write_pao}
 \usage{
-write_pao(counts, clim, alpha)
+write_pao(counts, clim, alpha, sim = FALSE)
 }
 \arguments{
 \item{counts}{Data frame containing the buffered BBS counts obtained from the function `buffer_BBS()`}

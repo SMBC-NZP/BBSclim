@@ -7,7 +7,7 @@
 #' @return A .pao file containing the detection histories, covariates, and summary information to input into Presence
 #' @export
 
-write_pao <- function(counts, clim, alpha){
+write_pao <- function(counts, clim, alpha, sim = FALSE){
 
   tot_stops <- length(grep("count", names(counts))) # Stops/route
   n_seasons <- max(counts$Year) - min(counts$Year) + 1
@@ -46,10 +46,17 @@ write_pao <- function(counts, clim, alpha){
 
   sitecovs	<- dplyr::select(spp_clim3, -routeID)
 
-  spp_pao <- RPresence::create.pao(data = det_hist, nsurveyseason = rep(tot_stops, n_seasons),
+  if(!sim){
+    spp_pao <- RPresence::create.pao(data = det_hist, nsurveyseason = rep(tot_stops, n_seasons),
                         unitcov = sitecovs, survcov = NULL,
                         title = paste(common, "PRESENCE Analysis", sep = " "),
                         paoname = paste("inst/output/pao", paste(alpha, ".pao", sep = ""), sep = "/"))
+  }else{
+    spp_pao <- RPresence::create.pao(data = det_hist, nsurveyseason = rep(tot_stops, n_seasons),
+                                     unitcov = sitecovs, survcov = NULL,
+                                     title = paste(common, "PRESENCE Analysis", sep = " "),
+                                     paoname = paste("inst/output/pao/sim", paste(alpha, "_sim.pao", sep = ""), sep = "/"))
+  }
   RPresence::write.pao(pao = spp_pao)
   # spp_pao
 }
