@@ -4,7 +4,7 @@
 \alias{mod_eval}
 \title{mod_eval}
 \usage{
-mod_eval(mod, dig = 3, large = 8, time, het)
+mod_eval(pres_out, mod, dig = 3, large = 8, time, het)
 }
 \arguments{
 \item{mod}{Model output file}

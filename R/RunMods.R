@@ -122,7 +122,7 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
     a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
     ## Evaluate model (if model converges, will equal TRUE)
-    check <- mod_eval(a, ...)
+    check <- mod_eval(pres_out = a, mod = mods[[i]], ...)
 
     if(check == FALSE){ # If model does not converge, save NA in AIC table
       aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
