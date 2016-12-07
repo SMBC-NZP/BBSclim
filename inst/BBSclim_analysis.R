@@ -2,8 +2,10 @@
 library(rBBS)
 library(BBSclim)
 
+tenstops <- TRUE
+
 ### Import raw 10-stop BBS data
-bbs <- GetRouteData()
+bbs <- GetRouteData(TenStops = tenstops)
 
 ### Import weather data
 weather <- GetWeather()
@@ -37,7 +39,7 @@ spp_clim <- GetBioVars(counts = spp_buff)
 
 ### Save occupancy and climate data as .pao file for input into Presence
 
-write_pao(counts = spp_buff, clim = spp_clim, alpha = alpha)
+write_pao(counts = spp_buff, covs = spp_clim, alpha = alpha, TenStops = tenstops)
 
 
 ### Run psi models
@@ -48,7 +50,7 @@ psi_mods <- psi_mods[1:2]
 spp_pao <- RPresence::read.pao(paste0("inst/output/pao/", alpha, ".pao"))
 
 spp_psi_aic <- RunPsiMods(pao = spp_pao, mods = psi_mods, alpha = alpha, test = FALSE,
-                      time = annual, het = het_det, del = FALSE)
+                          time = annual, het = het_det, del = FALSE)
 
 
 ### Run gam/eps models with top covariates from psi models

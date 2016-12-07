@@ -120,7 +120,7 @@ write_dm_and_run2 <- function(pao, cov_list, out, het, time,
     if (!is.null(alpha)) {
       dmname = paste('inst/output/dms/', alpha, modname, '.dm', sep = "")
     }
-    if (!is.null(dm1)) {
+    if (!is.null(dm_list$dm1)) {
       if (file.exists(dmname)) file.remove(dmname)
       dmmat = write_one_matrix(0, dm_list$dm1)
       dmmat = paste(dmmat, write_one_matrix(1,dm_list$dm2), sep='\n')
