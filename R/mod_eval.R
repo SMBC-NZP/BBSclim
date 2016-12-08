@@ -23,7 +23,7 @@ drop.bad.coef 	<- function(keep, cov) {
 #' @return TRUE if model converged; FALSE if not
 #' @export
 
-mod_eval <- function(pres_out, mod, dig = 3, large = 8, time, het){
+mod_eval <- function(pres_out, mod, pao2 , dig = 3, large = 8, time, het){
   jj <- grep('std.error', pres_out)
   jj2 <- grep('Individual Site estimates of <psi>', pres_out)
 
@@ -33,7 +33,7 @@ mod_eval <- function(pres_out, mod, dig = 3, large = 8, time, het){
 
   num.betas <- plyr::ldply(mod, function(x) length(x))$V1
 
-  if(time) num.betas[6] <- num.betas[6] + pao$nseasons
+  if(time) num.betas[6] <- num.betas[6] + pao2$nseasons
 
   psi.keep <- th0.keep <- th1.keep <- gam.keep <- eps.keep <- p1.keep <- p2.keep <- stop.keep <- NULL
   ### drop covariates with negative standard errors
@@ -61,7 +61,7 @@ mod_eval <- function(pres_out, mod, dig = 3, large = 8, time, het){
     p1.keep <- p2.keep  <- !is.na(std.er[(7 + sum(num.betas[1:5])):(sum(num.betas[1:6]) + 5)])
     if(het)      p2.keep  <- !is.na(std.er[(7 + sum(num.betas[1:6])):(sum(num.betas[1:6]) + 5 + num.betas[6])])
     if(time){
-      p1.cov	<- drop.bad.coef(p1.keep & p2.keep, c(seq(1:pao$nseasons) * pao$nsurveyseason[1] - pao$nsurveyseason[1] + 1, mod$p1.cov))
+      p1.cov	<- drop.bad.coef(p1.keep & p2.keep, c(seq(1:pao2$nseasons) * pao2$nsurveyseason[1] - pao2$nsurveyseason[1] + 1, mod$p1.cov))
     }else{
       p1.cov	<- drop.bad.coef(p1.keep & p2.keep, mod$p1.cov)
     }
@@ -96,7 +96,7 @@ mod_eval <- function(pres_out, mod, dig = 3, large = 8, time, het){
       p1.keep <- p2.keep <- abs(std.er[(7 + sum(num.betas[1:5])):(sum(num.betas[1:6]) + 5)]) < large
       if(het)	p2.keep   	<- abs(std.er[(7 + sum(num.betas[1:6])):(sum(num.betas[1:6]) + 5 + num.betas[6])])<large
       if(time){
-        p1.cov	<- drop.bad.coef(p1.keep & p2.keep, c(seq(1:pao$nseasons) * pao$nsurveyseason[1] - pao$nsurveyseason[1] + 1, mod$p1.cov))
+        p1.cov	<- drop.bad.coef(p1.keep & p2.keep, c(seq(1:pao2$nseasons) * pao2$nsurveyseason[1] - pao2$nsurveyseason[1] + 1, mod$p1.cov))
       }else{
         p1.cov	<- drop.bad.coef(p1.keep & p2.keep, mod$p1.cov)
       }

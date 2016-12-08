@@ -16,7 +16,10 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
 
       modname <- paste0(alpha, '_psi_model_', i)
 
-      if(!test){
+      if(test){
+        mods <- mods[[1:2]]
+      }
+
         ## Create design matrices for model i
         spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], ...)
 
@@ -24,13 +27,12 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
         write_dm_and_run2(pao = pao, cov_list = mods[[i]], ..., dm_list = spp_dm,
                           modname = modname, fixed = TRUE, out = "temp",
                           inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
-      }
 
       ## Read output file
       a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
       ## Evaluate model (if model converges, will equal TRUE)
-      check <- mod_eval(pres_out = a, mod = mods[[i]], ...)
+      check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], ...)
 
       if(check == FALSE){ # If model does not converge, save NA in AIC table
         aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -108,7 +110,10 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
 
     modname <- paste0(alpha, '_gam_model_', i)
 
-    if(!test){
+    if(test){
+      mods <- mods[[1:2]]
+    }
+
       ## Create design matrices for model i
       spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], ...)
 
@@ -116,13 +121,12 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
       write_dm_and_run2(pao = pao, cov_list = mods[[i]], ..., dm_list = spp_dm,
                         modname = modname, fixed = TRUE, out = "temp",
                         inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
-    }
 
     ## Read output file
     a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
     ## Evaluate model (if model converges, will equal TRUE)
-    check <- mod_eval(pres_out = a, mod = mods[[i]], ...)
+    check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], ...)
 
     if(check == FALSE){ # If model does not converge, save NA in AIC table
       aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
