@@ -4,7 +4,8 @@
 \alias{RunPsiMods}
 \title{RunPsiMods}
 \usage{
-RunPsiMods(pao, alpha, mods = psi_mods, del = TRUE, ..., test = FALSE)
+RunPsiMods(pao, alpha, mods = psi_mods, del = TRUE, ..., test = FALSE,
+  Parallel = TRUE)
 }
 \arguments{
 \item{pao}{.pao file for species of interest}

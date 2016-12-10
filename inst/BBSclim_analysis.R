@@ -16,13 +16,17 @@ routes <- GetRoutes()
 het_det <- TRUE
 annual <- TRUE
 
-### Get count data for WOTH
+### Get count data for species
 alpha <- "lowa"
 
 spp_AOU <- GetAOU(alpha)
 
 spp_counts <- GetSppCounts(AOU = spp_AOU)
 
+### Remove outliers
+# 1) Compute knn matrix (for each point, mean distance to knn)
+# 2) Estimate mean and sd of knn matrix
+# 3) remove routes with knn > mu.knn + 3sd
 
 ### Read raw BBS counts
 spp_counts2 <- dplyr::filter(spp_counts, Longitude > -110)
@@ -43,13 +47,14 @@ write_pao(counts = spp_buff, covs = spp_clim, alpha = alpha, TenStops = tenstops
 
 
 ### Run psi models
+Test <- TRUE
 
 psi_mods <- GetPsiMods()
-psi_mods <- psi_mods[1:2]
 
 spp_pao <- RPresence::read.pao(paste0("inst/output/pao/", alpha, ".pao"))
 
-spp_psi_aic <- RunPsiMods(pao = spp_pao, mods = psi_mods, alpha = alpha, test = FALSE,
+library(foreach)
+spp_psi_aic <- RunPsiMods(pao = spp_pao, mods = psi_mods, alpha = alpha, test = Test,
                           time = annual, het = het_det, del = FALSE)
 
 
@@ -57,22 +62,23 @@ spp_psi_aic <- RunPsiMods(pao = spp_pao, mods = psi_mods, alpha = alpha, test = 
 spp_psi_covs <- top_covs(aic_tab = spp_psi_aic, mods = psi_mods)
 
 gam_mods <- GetGamMods(psi_covs = spp_psi_covs)
-gam_mods <- gam_mods[1:2]
 
-spp_gam_aic <- RunPsiMods(pao = spp_pao, mods = gam_mods, alpha = alpha, test = TRUE,
+spp_gam_aic <- RunGamMods(pao = spp_pao, mods = gam_mods, alpha = alpha, test = Test,
                           time = annual, het = het_det, del = FALSE)
 
 
+
+
 ### Move top model output to 'top/' and delete others
-spp_top_mod <- top_covs(aic_tab = spp_gam_aic, mods = gam_mods, psi = FALSE)
-
-
-
-### Goodness-of-fit of top model
-aic_temp <- dplyr::data_frame(Model = "mod1", Model_num = 1, LogLik = 259231, nParam = 2,
+# spp_top_mod <- top_covs(aic_tab = spp_gam_aic, mods = gam_mods, psi = FALSE)
+#
+#
+#
+# ### Goodness-of-fit of top model
+aic_temp <- dplyr::data_frame(Model = "lowa_psi_model_3", Model_num = 1, LogLik = 259231, nParam = 2,
                               AIC = 2165464)
 
-aic_temp2 <- dplyr::data_frame(Model = "mod2", Model_num = 2, LogLik = 252346, nParam = 3,
+aic_temp2 <- dplyr::data_frame(Model = "lowa_psi_model_4", Model_num = 2, LogLik = 252346, nParam = 3,
                               AIC = 2161654)
 aic_tab <- dplyr::bind_rows(aic_temp, aic_temp2)
 aic_tab <- dplyr::mutate(aic_tab, delta_AIC = AIC - min(AIC))
