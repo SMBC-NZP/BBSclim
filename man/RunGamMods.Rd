@@ -5,7 +5,7 @@
 \title{RunGamMods}
 \usage{
 RunGamMods(pao, alpha, mods = gam_mods, del = TRUE, ..., test = FALSE,
-  trim = TRUE)
+  trim = TRUE, Parallel = TRUE)
 }
 \arguments{
 \item{gam_mods}{list containing the covariates for each model}

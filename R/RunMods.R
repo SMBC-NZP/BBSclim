@@ -10,15 +10,66 @@
 #' @export
 
 RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
-                       test = FALSE){
+                       test = FALSE, Parallel = TRUE){
 
-    for(i in 1:length(mods)){
-
-      modname <- paste0(alpha, '_psi_model_', i)
+    if(Parallel){
+      cores <- parallel::detectCores()
+      cl <- parallel::makeCluster(cores)
+      doParallel::registerDoParallel(cl)
 
       if(test){
-        mods <- mods[[1:2]]
+        mods <- mods[1:cores]
       }
+
+      aic_table <- foreach::foreach(i=1:length(mods), .combine = rbind,
+                                    .packages = c("dplyr", "BBSclim")) %dopar%{
+                                      modname <- paste0(alpha, '_psi_model_', i)
+
+                                      ## Create design matrices for model i
+                                      spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], ...)
+
+                                      ## Run model
+                                      BBSclim::write_dm_and_run2(pao = pao, cov_list = mods[[i]], ..., dm_list = spp_dm,
+                                                                 modname = modname, fixed = TRUE, out = "temp",
+                                                                 inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
+
+                                      ## Read output file
+                                      a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
+
+                                      ## Evaluate model (if model converges, will equal TRUE)
+                                      check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], ...)
+
+                                      if(check == FALSE){ # If model does not converge, save NA in AIC table
+                                        aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
+                                                                      AIC = NA)
+
+                                      }else{ # If model does converge, save results to AIC table
+                                        ## Extract log likelihood
+                                        j <- grep('-2log', a)
+                                        loglike <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+
+                                        ## Extract AIC
+                                        j <- grep('AIC', a)
+                                        aic <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+
+                                        ## Number of parameters
+                                        j <- grep('of par', a)
+                                        n  <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+
+                                        aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = loglike, nParam = n,
+                                                                      AIC = aic)
+                                      }
+                                      aic_temp
+                                    }
+      aic_table
+    }else{
+      if(test){
+        mods <- mods[1:2]
+      }
+
+      for(i in 1:length(mods)){
+
+        modname <- paste0(alpha, '_psi_model_', i)
 
         ## Create design matrices for model i
         spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], ...)
@@ -28,51 +79,54 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
                           modname = modname, fixed = TRUE, out = "temp",
                           inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
 
-      ## Read output file
-      a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
+        ## Read output file
+        a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
       ## Evaluate model (if model converges, will equal TRUE)
       check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], ...)
 
-      if(check == FALSE){ # If model does not converge, save NA in AIC table
-        aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
-                                      AIC = NA)
+
+        if(check == FALSE){ # If model does not converge, save NA in AIC table
+          aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
+                                        AIC = NA)
 
         }else{ # If model does converge, save results to AIC table
-        ## Extract log likelihood
-        j <- grep('-2log', a)
-        loglike <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+          ## Extract log likelihood
+          j <- grep('-2log', a)
+          loglike <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
 
-        ## Extract AIC
-        j <- grep('AIC', a)
-        aic <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+          ## Extract AIC
+          j <- grep('AIC', a)
+          aic <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
 
-        ## Number of parameters
-        j <- grep('of par', a)
-        n  <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+          ## Number of parameters
+          j <- grep('of par', a)
+          n  <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
 
-        aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = loglike, nParam = n,
-                                      AIC = aic)
-      }
+          aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = loglike, nParam = n,
+                                        AIC = aic)
+        }
 
-      if(i == 1){
-        aic_tab <- aic_temp
-      }else{
-        aic_tab <- dplyr::bind_rows(aic_tab, aic_temp)
+        if(i == 1){
+          aic_tab <- aic_temp
+        }else{
+          aic_table <- dplyr::bind_rows(aic_tab, aic_temp)
+        }
+
+       }
       }
 
       if(del) file.remove(paste0("inst/output/pres/temp/", modname, ".out"))
-    }
+      ## Add delta AIC column and sort by delta AIC
+      aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC))
+      aic_table <- dplyr::arrange(aic_table, delta_AIC)
 
-  ## Add delta AIC column and sort by delta AIC
-  aic_tab <- dplyr::mutate(aic_tab, delta_AIC = AIC - min(AIC))
-  aic_tab <- dplyr::arrange(aic_tab, delta_AIC)
+      ## Write AIC table
+      write.csv(aic_table, file = paste0("inst/output/aic/psi/", alpha, ".csv"), row.names = FALSE)
 
-  ## Write AIC table
-  write.csv(aic_tab, file = paste0("inst/output/aic/psi/", alpha, ".csv"), row.names = FALSE)
+      ## Return AIC table
+      aic_table
 
-  ## Return AIC table
-  aic_tab
 }
 
 #' top_covs
@@ -104,15 +158,66 @@ top_covs <- function(aic_tab, mods, psi = TRUE){
 
 
 RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
-                       test = FALSE, trim = TRUE){
-
-  for(i in 1:length(mods)){
-
-    modname <- paste0(alpha, '_gam_model_', i)
+                       test = FALSE, trim = TRUE, Parallel = TRUE){
+  if(Parallel){
+    cores <- parallel::detectCores()
+    cl <- parallel::makeCluster(cores)
+    doParallel::registerDoParallel(cl)
 
     if(test){
-      mods <- mods[[1:2]]
+      mods <- mods[1:cores]
     }
+
+    aic_table <- foreach::foreach(i=1:length(mods), .combine = rbind,
+                                  .packages = c("dplyr", "BBSclim")) %dopar%{
+
+                                    modname <- paste0(alpha, '_gam_model_', i)
+
+                                    ## Create design matrices for model i
+                                    spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], ...)
+
+                                    ## Run model
+                                    BBSclim::write_dm_and_run2(pao = pao, cov_list = mods[[i]], ..., dm_list = spp_dm,
+                                                               modname = modname, fixed = TRUE, out = "temp",
+                                                               inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
+
+                                    ## Read output file
+                                    a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
+
+                                    ## Evaluate model (if model converges, will equal TRUE)
+                                    check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], ...)
+
+                                    if(check == FALSE){ # If model does not converge, save NA in AIC table
+                                      aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
+                                                                    AIC = NA)
+
+                                    }else{ # If model does converge, save results to AIC table
+                                      ## Extract log likelihood
+                                      j <- grep('-2log', a)
+                                      loglike <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+
+                                      ## Extract AIC
+                                      j <- grep('AIC', a)
+                                      aic <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+
+                                      ## Number of parameters
+                                      j <- grep('of par', a)
+                                      n  <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+
+                                      aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = loglike, nParam = n,
+                                                                    AIC = aic)
+                                    }
+                                    aic_temp
+                                  }
+    aic_table
+  }else{
+    if(test){
+      mods <- mods[1:2]
+    }
+
+    for(i in 1:length(mods)){
+
+      modname <- paste0(alpha, '_gam_model_', i)
 
       ## Create design matrices for model i
       spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], ...)
@@ -122,50 +227,53 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
                         modname = modname, fixed = TRUE, out = "temp",
                         inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
 
-    ## Read output file
-    a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
+      ## Read output file
+      a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
     ## Evaluate model (if model converges, will equal TRUE)
     check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], ...)
 
-    if(check == FALSE){ # If model does not converge, save NA in AIC table
-      aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
-                                    AIC = NA)
+      if(check == FALSE){ # If model does not converge, save NA in AIC table
+        aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
+                                      AIC = NA)
 
-    }else{ # If model does converge, save results to AIC table
-      ## Extract log likelihood
-      j <- grep('-2log', a)
-      loglike <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+      }else{ # If model does converge, save results to AIC table
+        ## Extract log likelihood
+        j <- grep('-2log', a)
+        loglike <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
 
-      ## Extract AIC
-      j <- grep('AIC', a)
-      aic <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+        ## Extract AIC
+        j <- grep('AIC', a)
+        aic <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
 
-      ## Number of parameters
-      j <- grep('of par', a)
-      n  <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+        ## Number of parameters
+        j <- grep('of par', a)
+        n  <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
 
-      aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = loglike, nParam = n,
-                                    AIC = aic)
+        aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = loglike, nParam = n,
+                                      AIC = aic)
+      }
+
+      if(i == 1){
+        aic_tab <- aic_temp
+      }else{
+        aic_table <- dplyr::bind_rows(aic_tab, aic_temp)
+      }
+
     }
-
-    if(i == 1){
-      aic_tab <- aic_temp
-    }else{
-      aic_tab <- dplyr::bind_rows(aic_tab, aic_temp)
-    }
-
-    if(del) file.remove(paste0("inst/output/pres/temp/", modname, ".out"))
   }
 
+  if(del) file.remove(paste0("inst/output/pres/temp/", modname, ".out"))
   ## Add delta AIC column and sort by delta AIC
-  aic_tab <- dplyr::mutate(aic_tab, delta_AIC = AIC - min(AIC))
-  aic_tab <- dplyr::arrange(aic_tab, delta_AIC)
+  aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC))
+  aic_table <- dplyr::arrange(aic_table, delta_AIC)
 
   ## Write AIC table
-  write.csv(aic_tab, file = paste0("inst/output/aic/gam/", alpha, ".csv"), row.names = FALSE)
+  write.csv(aic_table, file = paste0("inst/output/aic/gam/", alpha, ".csv"), row.names = FALSE)
 
   ## Return AIC table
   if(trim) aic_tab <- aic_tab[1:25, ]
-  aic_tab
+  aic_table
+
 }
+
