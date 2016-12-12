@@ -5,11 +5,16 @@
 \title{test.presence.gof}
 \usage{
 test.presence.gof(modname, large = 4, pao2, mod, ...)
+
 }
 \value{
 1 if simulated and observed estimates are similar (model not overfit); 0 otherwise
 }
 \description{
+<<<<<<< HEAD
 Bootstrap GOF test: test if parameters from top model run with simulated data are consistent with original estimates
+=======
+Bootstrap GOF test: test if parameters from top model run with simulated data are not consistent with original estimates
+>>>>>>> 0bf7a472d6f630ad7eba765dedbe34ecdb817065
 }
 

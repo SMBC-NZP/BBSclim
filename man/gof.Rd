@@ -5,6 +5,7 @@
 \title{gof}
 \usage{
 gof(aic_tab, mods, cov_data, year_seq, Tenstops, ...)
+
 }
 \arguments{
 \item{aic_tab}{AIC table from RunGamMods}
