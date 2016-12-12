@@ -1,7 +1,6 @@
 #' write_one_matrix
 #'
 #' Function to write .dm file
-#' @export
 
 write_one_matrix <- function(dmnum,dm) {
   mat1=NULL
@@ -20,7 +19,6 @@ write_one_matrix <- function(dmnum,dm) {
 #' parse_output
 #'
 #' Function to parse Presence .out file
-#' @export
 
 parse_output <- function(outname) {
   output=readLines(outname)
