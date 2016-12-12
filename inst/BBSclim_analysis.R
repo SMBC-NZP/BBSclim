@@ -1,4 +1,6 @@
-
+# library(httr)
+# set_config(config(ssl_verifypeer = 0L))
+# devtools::install_github('crushing05/rBBS')
 library(rBBS)
 library(BBSclim)
 
@@ -21,7 +23,7 @@ alpha <- "lowa"
 
 spp_AOU <- GetAOU(alpha)
 
-spp_counts <- GetSppCounts(AOU = spp_AOU)
+spp_counts <- GetSppCounts(AOU = spp_AOU, Write = TRUE, path = 'inst/output/spp_counts')
 
 ### Remove outliers
 # 1) Compute knn matrix (for each point, mean distance to knn)
@@ -53,8 +55,6 @@ psi_mods <- GetPsiMods()
 
 spp_pao <- RPresence::read.pao(paste0("inst/output/pao/", alpha, ".pao"))
 
-
-library(foreach)
 
 spp_psi_aic <- RunPsiMods(pao = spp_pao, mods = psi_mods, alpha = alpha, test = Test,
                           time = annual, het = het_det, del = FALSE)
