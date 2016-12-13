@@ -66,7 +66,7 @@ gof <- function(aic_tab, mods, covs, year_seq, Tenstops, alpha, ...){
 
       if(gof.pass){
         file.rename(from = paste0("inst/output/pres/temp/", modname, ".out"),
-                    to = paste0("inst/output/pres/top/", modname, ".out"))
+                    to = paste0("inst/output/pres/top/", alpha, "_top.out"))
         temp.files <- list.files("inst/output/pres/temp")
         file.remove(paste0("inst/output/pres/temp/", temp.files))
       }

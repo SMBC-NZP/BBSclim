@@ -3,6 +3,8 @@
 export(GetBioVars)
 export(GetDM)
 export(GetGamMods)
+export(GetIndices)
+export(GetOccProb)
 export(GetPsiMods)
 export(RunGamMods)
 export(RunPsiMods)
