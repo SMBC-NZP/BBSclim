@@ -10,11 +10,6 @@ export(buffer_BBS)
 export(drop.bad.coef)
 export(gof)
 export(mod_eval)
-<<<<<<< HEAD
-=======
-export(sim.bbs.ms)
-export(test.presence.gof)
->>>>>>> 0bf7a472d6f630ad7eba765dedbe34ecdb817065
 export(top_covs)
 export(write_dm_and_run2)
 export(write_pao)

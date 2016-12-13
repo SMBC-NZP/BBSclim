@@ -8,13 +8,14 @@
 #' @export
 #'
 
-gof <- function(aic_tab, mods, cov_data, year_seq, Tenstops, ...){
+gof <- function(aic_tab, mods, covs, year_seq, Tenstops, alpha, ...){
 
   gof.pass <- 0
   model.num <- 0
 
   while (gof.pass==0) {
     modname <- aic_tab$Model[model.num + 1]
+    modnum <- aic_tab$Model_num[model.num + 1]
     mod_out <- scan(paste0("inst/output/pres/temp/", modname,".out"), what='character', sep='\n', quiet=T)
 
     jj <- grep('std.error', mod_out)
@@ -24,7 +25,7 @@ gof <- function(aic_tab, mods, cov_data, year_seq, Tenstops, ...){
     coefs <- as.numeric(substr(betas, 41,50))
     std.er <- as.numeric(substr(betas, 54,63))
 
-    covs_use <- top_covs(aic_tab, mods, psi = FALSE)
+    covs_use <- mods[[modnum]]
 
     psi.coefs <- coefs[grep('psi',betas)]
     th0.coefs <- coefs[grep('th0',betas)]
@@ -37,14 +38,14 @@ gof <- function(aic_tab, mods, cov_data, year_seq, Tenstops, ...){
     pi.coefs <- coefs[grep('pi1',betas)]
     if(length(pi.coefs)==0)		pi.coefs <- 0		# if no het
 
-    sim.data	<- sim.bbs.ms(covs = covs_use, cov_data = pao$unitcov,
+    sim.data	<- sim.bbs.ms(covs = covs_use, cov_data = covs,
                             psi.coefs=psi.coefs, th0.coefs=th0.coefs,
                             th1.coefs=th1.coefs, gam.coefs=gam.coefs,
                             eps.coefs=eps.coefs, p1.coefs=p1.coefs,
                             p2.coefs=p2.coefs, pi.coefs=pi.coefs, years=year_seq,
                             ...)
 
-    write_pao(counts = sim.data, covs = pao$unitcov, alpha = alpha, sim = TRUE, TenStops = stops)
+    write_pao(counts = sim.data, covs = covs, alpha = alpha, sim = TRUE, TenStops = Tenstops)
 
     sim_pao <- RPresence::read.pao(paste0("inst/output/pao/sim/", alpha, "_sim.pao"))
 
@@ -52,21 +53,22 @@ gof <- function(aic_tab, mods, cov_data, year_seq, Tenstops, ...){
       if(het)  initvals <- c(initvals, p2.coefs, pi.coefs)
 
       ## Create design matrices for model
-      sim_dm <- GetDM(pao = sim_pao, cov_list = mods[[i]], ...)
+      sim_dm <- GetDM(pao = sim_pao, cov_list = covs_use, ...)
 
       sim_name <- paste0(alpha, "_sim")
+
       ## Run model
-      write_dm_and_run2(pao = sim_pao, cov_list = mods[[i]], ..., dm_list = sim_dm,
+      write_dm_and_run2(pao = sim_pao, cov_list = covs_use, ..., dm_list = sim_dm,
                         modname = sim_name, fixed = TRUE, out = "temp",
                         inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
 
-      gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = mods[[i]])
+      gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use)
 
       if(gof.pass){
         file.rename(from = paste0("inst/output/pres/temp/", modname, ".out"),
                     to = paste0("inst/output/pres/top/", modname, ".out"))
         temp.files <- list.files("inst/output/pres/temp")
-        file.remove(temp.files)
+        file.remove(paste0("inst/output/pres/temp/", temp.files))
       }
     }  # end while loop
 

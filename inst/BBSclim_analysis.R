@@ -71,35 +71,6 @@ spp_gam_aic <- RunPsiMods(pao = spp_pao, mods = gam_mods, alpha = alpha, test = 
 
 
 
-
-### Move top model output to 'top/' and delete others
-# spp_top_mod <- top_covs(aic_tab = spp_gam_aic, mods = gam_mods, psi = FALSE)
-#
-#
-#
-# ### Goodness-of-fit of top model
-# aic_temp <- dplyr::data_frame(Model = "mod1", Model_num = 1, LogLik = 259231, nParam = 2,
-#                               AIC = 2165464)
-#
-# aic_temp2 <- dplyr::data_frame(Model = "mod2", Model_num = 2, LogLik = 252346, nParam = 3,
-#                               AIC = 2161654)
-# aic_tab <- dplyr::bind_rows(aic_temp, aic_temp2)
-# aic_tab <- dplyr::mutate(aic_tab, delta_AIC = AIC - min(AIC))
-# aic_tab <- dplyr::arrange(aic_tab, delta_AIC)
-#
-# spp_top_mod <- top_mod(aic_tab = aic_tab, mods = gam_mods, psi = FALSE)
-
-spp_gam_aic <- RunGamMods(pao = spp_pao, mods = gam_mods, alpha = alpha, test = Test,
-                          time = annual, het = het_det, del = FALSE)
-
-
-
-
-### Move top model output to 'top/' and delete others
-# spp_top_mod <- top_covs(aic_tab = spp_gam_aic, mods = gam_mods, psi = FALSE)
-#
-#
-#
 # ### Goodness-of-fit of top model
 aic_temp <- dplyr::data_frame(Model = "lowa_psi_model_3", Model_num = 1, LogLik = 259231, nParam = 2,
                               AIC = 2165464)
@@ -110,9 +81,11 @@ aic_tab <- dplyr::bind_rows(aic_temp, aic_temp2)
 aic_tab <- dplyr::mutate(aic_tab, delta_AIC = AIC - min(AIC))
 aic_tab <- dplyr::arrange(aic_tab, delta_AIC)
 
-spp_top_mod <- top_mod(aic_tab = aic_tab, mods = gam_mods, psi = FALSE)
+spp_top_mod <- top_covs(aic_tab = aic_tab, mods = gam_mods, psi = FALSE)
 
-
+spp_gof <- gof(aic_tab = aic_tab, mods = psi_mods, covs = spp_pao$unitcov,
+               year_seq = seq(from = 1997, to = 2014), Tenstops = Tenstops, alpha = alpha,
+               time = annual, het = het_det)
 
 
 

@@ -110,17 +110,17 @@ mod_eval <- function(pres_out, mod, pao2 , dig = 3, large = 8, time, het){
   if (mean(c(psi.keep, th0.keep, th1.keep, gam.keep, eps.keep, p1.keep, p2.keep, 1))==1) {
     if(num.betas[1]>1) {
       quads <- grep("psi.sq", betas)
-      psi.keep[quads - 1] 	<- coefs[quads] < 0	# '-1' is for intercept
+      psi.keep[quads - 1] <- coefs[quads] < 0	# '-1' is for intercept
       psi.cov	<- drop.bad.coef(psi.keep, mod$psi.cov)
     }
     if(num.betas[4]>1) {
       quads <- grep("gam1.sq", betas)
-      gam.keep[quads - 4 - sum(num.betas[1:3])] 	<- coefs[quads] < 0  # quads indicates position in all betas, but gam.keep is just for gam
+      gam.keep[quads - 4 - sum(num.betas[1:3])]	<- coefs[quads] < 0  # quads indicates position in all betas, but gam.keep is just for gam
       gam.cov	<- drop.bad.coef(gam.keep, mod$gam.cov)
     }
     if(num.betas[5]>1) {
       quads <- grep("eps1.sq",betas)
-      eps.keep[quads - 5 - sum(num.betas[1:4])] 	<- coefs[quads] > 0
+      eps.keep[quads - 5 - sum(num.betas[1:4])]	<- coefs[quads] > 0
       eps.cov	<- drop.bad.coef(eps.keep, mod$eps.cov)
     }
 
