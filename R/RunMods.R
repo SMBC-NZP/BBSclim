@@ -31,7 +31,7 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
                                       ## Run model
                                       BBSclim::write_dm_and_run2(pao = pao, cov_list = mods[[i]], ..., dm_list = spp_dm,
                                                                  modname = modname, fixed = TRUE, out = "temp",
-                                                                 inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
+                                                                 inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
 
                                       ## Read output file
                                       a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
@@ -77,7 +77,7 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
         ## Run model
         write_dm_and_run2(pao = pao, cov_list = mods[[i]], ..., dm_list = spp_dm,
                           modname = modname, fixed = TRUE, out = "temp",
-                          inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
+                          inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
 
         ## Read output file
         a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
@@ -179,7 +179,7 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
                                     ## Run model
                                     BBSclim::write_dm_and_run2(pao = pao, cov_list = mods[[i]], ..., dm_list = spp_dm,
                                                                modname = modname, fixed = TRUE, out = "temp",
-                                                               inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
+                                                               inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
 
                                     ## Read output file
                                     a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
@@ -225,7 +225,7 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
       ## Run model
       write_dm_and_run2(pao = pao, cov_list = mods[[i]], ..., dm_list = spp_dm,
                         modname = modname, fixed = TRUE, out = "temp",
-                        inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
+                        inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
 
       ## Read output file
       a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
