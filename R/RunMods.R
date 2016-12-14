@@ -116,13 +116,20 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
        }
       }
 
-      if(del) file.remove(paste0("inst/output/pres/temp/", modname, ".out"))
+
       ## Add delta AIC column and sort by delta AIC
       aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC))
       aic_table <- dplyr::arrange(aic_table, delta_AIC)
 
       ## Write AIC table
       write.csv(aic_table, file = paste0("inst/output/aic/psi/", alpha, ".csv"), row.names = FALSE)
+
+      ## Top psi model == last gam model, so rename and save (to avoid running again)
+      file.rename(from = paste0("inst/output/pres/temp/", aic_table$Model[1], ".out"),
+                  to = paste0("inst/output/pres/temp/", alpha, "_gam_model_961.out"))
+      temp.files <- list.files("inst/output/pres/temp")
+      temp.psi.files <- temp.files[grep("psi", temp.files)]
+      if(del) file.remove(paste0("inst/output/pres/temp/", temp.psi.files))
 
       ## Return AIC table
       aic_table
@@ -272,7 +279,7 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
   write.csv(aic_table, file = paste0("inst/output/aic/gam/", alpha, ".csv"), row.names = FALSE)
 
   ## Return AIC table
-  if(trim) aic_tab <- aic_tab[1:25, ]
+  if(trim) aic_table <- aic_tab[1:min(nrow(aic_table), 25), ]
   aic_table
 
 }

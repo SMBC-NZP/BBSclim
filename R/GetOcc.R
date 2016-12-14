@@ -49,7 +49,7 @@ GetOccProb <- function(alpha, years, buff_method = NULL, buffer = NULL){
     }else{
       psi.df3 <- dplyr::filter(psi.df2, lat < max(buffer$Latitude) + 2 & lat > min(buffer$Latitude) - 2 &
                                lon > min(buffer$Longitude) - 2 & lon < max(buffer$Longitude) + 2)
-      write.csv(psi.df3, file = paste0("inst/output/occ/", alpha, "_occ.csv"), row.name = FALSE)
+      write.csv(psi.df3, file = paste0("inst/output/occ/", alpha, "_occ.csv"), row.names = FALSE)
       psi.df3
   }
 }
@@ -97,13 +97,12 @@ raster.to.array <- function(alpha, years) {
 get.betas <- function(alpha) {
 
   # read top model and pull out betas and vc matrix
-  top.model.out <- scan(paste0("inst/output/pres/top/", alpha, "_psi_model_4.out"), what = 'character', sep = '\n', quiet = T)
+  top.model.out <- scan(paste0("inst/output/pres/top/", alpha, "_top.out"), what = 'character', sep = '\n', quiet = T)
 
-  # top.model.out <- scan(paste0("inst/output/pres/top/", alpha, "_top.out"), what = 'character', sep = '\n', quiet = T)
   jj <- grep('std.error', top.model.out)
-  jj.end <- grep('Individual Site estimates of <psi>', top.model.out)
+  jj.end <- grep('Variance-Covariance Matrix of Untransformed', top.model.out)
   # jj.end <- grep('Variance-Covariance Matrix of Untransformed', top.model.out)
-  betas <- top.model.out[(jj+1):(jj.end-2)]
+  betas <- top.model.out[(jj+1):(jj.end-1)]
 
   psi.betas <- betas[grep('psi', betas)]
   loc.per <- regexpr("psi", psi.betas)

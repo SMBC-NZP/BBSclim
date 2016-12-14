@@ -15,7 +15,7 @@
 #' @export
 
 
-buffer_BBS	<- function(spp_count, route_atrb = routes, buffer = 2, method = "rec") {
+buffer_BBS	<- function(spp_count, route_atrb = bbs$routes, buffer = 2, method = "rec") {
 
   if(method == "rec"){
     start_year <- min(spp_count$Year)

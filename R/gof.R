@@ -19,7 +19,7 @@ gof <- function(aic_tab, mods, covs, year_seq, Tenstops, alpha, ...){
     mod_out <- scan(paste0("inst/output/pres/temp/", modname,".out"), what='character', sep='\n', quiet=T)
 
     jj <- grep('std.error', mod_out)
-    jj2 <- grep('Individual Site estimates of <psi>', mod_out)
+    jj2 <- grep('Variance-Covariance Matrix of Untransformed', mod_out)
 
     betas <- mod_out[(jj+1):(jj2-1)]
     coefs <- as.numeric(substr(betas, 41,50))

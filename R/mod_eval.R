@@ -25,7 +25,7 @@ drop.bad.coef 	<- function(keep, cov) {
 
 mod_eval <- function(pres_out, mod, pao2 , dig = 3, large = 8, time, het){
   jj <- grep('std.error', pres_out)
-  jj2 <- grep('Individual Site estimates of <psi>', pres_out)
+  jj2 <- grep('Variance-Covariance Matrix of Untransformed', pres_out)
 
   betas <- pres_out[(jj + 1):(jj2 - 1)]
   coefs <- as.numeric(substr(betas, 41, 50))
