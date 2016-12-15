@@ -37,7 +37,7 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
                                       a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
                                       ## Evaluate model (if model converges, will equal TRUE)
-                                      check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], ...)
+                                      check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = FALSE, ...)
 
                                       if(check == FALSE){ # If model does not converge, save NA in AIC table
                                         aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -83,7 +83,7 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
         a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
       ## Evaluate model (if model converges, will equal TRUE)
-      check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], ...)
+      check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = FALSE, ...)
 
 
         if(check == FALSE){ # If model does not converge, save NA in AIC table
@@ -108,9 +108,9 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
         }
 
         if(i == 1){
-          aic_tab <- aic_temp
+          aic_table <- aic_temp
         }else{
-          aic_table <- dplyr::bind_rows(aic_tab, aic_temp)
+          aic_table <- dplyr::bind_rows(aic_table, aic_temp)
         }
 
        }
@@ -192,7 +192,7 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
                                     a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
                                     ## Evaluate model (if model converges, will equal TRUE)
-                                    check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], ...)
+                                    check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = TRUE, ...)
 
                                     if(check == FALSE){ # If model does not converge, save NA in AIC table
                                       aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -238,7 +238,7 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
       a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
     ## Evaluate model (if model converges, will equal TRUE)
-    check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], ...)
+    check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = TRUE, ...)
 
       if(check == FALSE){ # If model does not converge, save NA in AIC table
         aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -262,9 +262,9 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
       }
 
       if(i == 1){
-        aic_tab <- aic_temp
+        aic_table <- aic_temp
       }else{
-        aic_table <- dplyr::bind_rows(aic_tab, aic_temp)
+        aic_table <- dplyr::bind_rows(aic_table, aic_temp)
       }
 
     }
@@ -279,7 +279,7 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
   write.csv(aic_table, file = paste0("inst/output/aic/gam/", alpha, ".csv"), row.names = FALSE)
 
   ## Return AIC table
-  if(trim) aic_table <- aic_tab[1:min(nrow(aic_table), 25), ]
+  if(trim) aic_table <- aic_table[1:min(nrow(aic_table), 25), ]
   aic_table
 
 }
