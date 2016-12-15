@@ -7,10 +7,8 @@
 #' @param buffer Dataframe containing the buffered spp count data
 #' @export
 
-GetOccProb <- function(alpha, years, buff_method = NULL, buffer = NULL){
+GetOccProb <- function(betas, alpha, years, buff_method = "rec", buffer){
     climate <- raster.to.array(alpha, years)
-
-    betas <- get.betas(alpha)
 
     r.psi <- matrix(0, dim(climate)[1], length(years))
 
@@ -44,7 +42,7 @@ GetOccProb <- function(alpha, years, buff_method = NULL, buffer = NULL){
     psi.df2 <- tidyr::gather(psi.df, -lat, -lon, key = "Year", value = "Prob")
 
     if(is.null(buff_method)){
-      write.csv(psi.df2, file = paste0("inst/output/occ/", alpha, "_occ.csv"), row.name = FALSE)
+      write.csv(psi.df2, file = paste0("inst/output/occ/", alpha, "_occ.csv"), row.names = FALSE)
       psi.df2
     }else{
       psi.df3 <- dplyr::filter(psi.df2, lat < max(buffer$Latitude) + 2 & lat > min(buffer$Latitude) - 2 &
@@ -93,15 +91,15 @@ raster.to.array <- function(alpha, years) {
 #' get.betas
 #'
 #' Retrieve beta values and var-cov matrix from top model
+#' @export
 
-get.betas <- function(alpha) {
+GetBetas <- function(alpha) {
 
   # read top model and pull out betas and vc matrix
   top.model.out <- scan(paste0("inst/output/pres/top/", alpha, "_top.out"), what = 'character', sep = '\n', quiet = T)
 
   jj <- grep('std.error', top.model.out)
   jj.end <- grep('Variance-Covariance Matrix of Untransformed', top.model.out)
-  # jj.end <- grep('Variance-Covariance Matrix of Untransformed', top.model.out)
   betas <- top.model.out[(jj+1):(jj.end-1)]
 
   psi.betas <- betas[grep('psi', betas)]
@@ -128,19 +126,23 @@ get.betas <- function(alpha) {
   eps.betas <- as.numeric(substr(eps.betas, 41, 50))
   names(eps.betas) <- c("int", eps.names)
 
-  # jj <- grep('Variance-Covariance Matrix of Untransformed', top.model.out)
-  # jj.end <- grep('Individual Site estimates of <psi>', top.model.out)
-  # raw.vc <- top.model.out[(jj+2):(jj.end-2)]
-  # raw.vc2 <- (strsplit(raw.vc, " +"))
-  # raw.vc3 <- do.call("rbind", raw.vc2)
-  # first.dim <- dim(raw.vc3)[1]
-  # vc.mat <- matrix(as.numeric(raw.vc3[,-(1:2)]), nrow=first.dim)
+  jj <- grep('Variance-Covariance Matrix of Untransformed', top.model.out)
+  jj.end <- grep('Individual Site estimates of <psi>', top.model.out)
+  raw.vc <- top.model.out[(jj+2):(jj.end-2)]
+  raw.vc2 <- (strsplit(raw.vc, " +"))
+  raw.vc3 <- do.call("rbind", raw.vc2)
+  first.dim <- dim(raw.vc3)[1]
+  vc.mat <- matrix(as.numeric(raw.vc3[,-(1:2)]), nrow=first.dim)
 
-  # rownames(vc.mat) <- raw.vc3[,2]
-  # col.nms <- top.model.out[(jj + 1)]
-  # col.nms <- unlist(strsplit(col.nms, " +"))
-  # colnames(vc.mat) <- col.nms[-1]
+  rownames(vc.mat) <- raw.vc3[,2]
+  col.nms <- top.model.out[(jj + 1)]
+  col.nms <- unlist(strsplit(col.nms, " +"))
+  colnames(vc.mat) <- col.nms[-1]
 
-  return(list(psi.betas = psi.betas, gam.betas = gam.betas, eps.betas = eps.betas))#,
-              #vc.mat = vc.mat))
+  # the betas.vc$vc includes all params. need just psi, gam, eps, and not theta, p
+  gam.eps <- grep("B|C", colnames(vc.mat))
+  vc <- vc.mat[c(1:length(psi.betas), gam.eps), c(1:length(psi.betas), gam.eps)]
+
+  return(list(psi.betas = psi.betas, gam.betas = gam.betas, eps.betas = eps.betas,
+              vc.mat = vc))
 }

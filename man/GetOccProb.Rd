@@ -4,7 +4,7 @@
 \alias{GetOccProb}
 \title{GetOccProb}
 \usage{
-GetOccProb(alpha, years, buff_method = NULL, buffer = NULL)
+GetOccProb(betas, alpha, years, buff_method = "rec", buffer)
 }
 \arguments{
 \item{alpha}{Four letter alpha code for species of interest}
