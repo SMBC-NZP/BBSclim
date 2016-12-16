@@ -118,7 +118,7 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
 
 
       ## Add delta AIC column and sort by delta AIC
-      aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC))
+      aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC, na.rm = TRUE))
       aic_table <- dplyr::arrange(aic_table, delta_AIC)
 
       ## Write AIC table
@@ -272,7 +272,7 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
 
   if(del) file.remove(paste0("inst/output/pres/temp/", modname, ".out"))
   ## Add delta AIC column and sort by delta AIC
-  aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC))
+  aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC, na.rm = TRUE))
   aic_table <- dplyr::arrange(aic_table, delta_AIC)
 
   ## Write AIC table

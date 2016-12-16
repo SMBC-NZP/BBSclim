@@ -8,7 +8,7 @@
 #' @export
 #'
 
-gof <- function(aic_tab, mods, covs, year_seq, Tenstops, alpha, ...){
+gof <- function(aic_tab, mods, covs, year_seq, Tenstops, alpha, ..., det_hist){
 
   gof.pass <- 0
   model.num <- 0
@@ -43,14 +43,14 @@ gof <- function(aic_tab, mods, covs, year_seq, Tenstops, alpha, ...){
                             th1.coefs=th1.coefs, gam.coefs=gam.coefs,
                             eps.coefs=eps.coefs, p1.coefs=p1.coefs,
                             p2.coefs=p2.coefs, pi.coefs=pi.coefs, years=year_seq,
-                            ...)
+                            ..., det_hist)
 
     write_pao(counts = sim.data, covs = covs, alpha = alpha, sim = TRUE, TenStops = Tenstops)
 
     sim_pao <- RPresence::read.pao(paste0("inst/output/pao/sim/", alpha, "_sim.pao"))
 
       initvals <- c(psi.coefs, th0.coefs, th1.coefs, gam.coefs, eps.coefs, p1.coefs)
-      if(het)  initvals <- c(initvals, p2.coefs, pi.coefs)
+      if(length(p2.coefs) == 0)  initvals <- c(initvals, p2.coefs, pi.coefs)
 
       ## Create design matrices for model
       sim_dm <- GetDM(pao = sim_pao, cov_list = covs_use, ...)
@@ -62,13 +62,19 @@ gof <- function(aic_tab, mods, covs, year_seq, Tenstops, alpha, ...){
                         modname = sim_name, fixed = TRUE, out = "temp",
                         inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
 
-      gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use)
+      gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use, ...)
 
       if(gof.pass){
         file.rename(from = paste0("inst/output/pres/temp/", modname, ".out"),
                     to = paste0("inst/output/pres/top/", alpha, "_top.out"))
         temp.files <- list.files("inst/output/pres/temp")
         file.remove(paste0("inst/output/pres/temp/", temp.files))
+        temp.dm.files <- list.files("inst/output/dms")
+        file.remove(paste0("inst/output/dms/", temp.dm.files))
+      }else{
+        temp.files <- list.files("inst/output/pres/temp")
+        sim.file <- temp.files[grep("sim", temp.files)]
+        file.remove(paste0("inst/output/pres/temp/", sim.file))
       }
     }  # end while loop
 
@@ -80,7 +86,7 @@ gof <- function(aic_tab, mods, covs, year_seq, Tenstops, alpha, ...){
 
 sim.bbs.ms <-  function(covs, psi.coefs, th0.coefs, th1.coefs,
                         gam.coefs, eps.coefs, p1.coefs, p2.coefs,
-                        pi.coefs, years, cov_data, time, het) {
+                        pi.coefs, years, cov_data, time, het, det_hist) {
 
   # initial occupancy
 
@@ -160,7 +166,7 @@ sim.bbs.ms <-  function(covs, psi.coefs, th0.coefs, th1.coefs,
 
   history2 <- NULL
   for (ii in seq_along(years)) {
-    history[which(is.na(pao$det.data[,(ii-1)*tot.stops+1])), ii, ] <- NA
+    history[which(is.na(det_hist[,(ii-1)*tot.stops+1])), ii, ] <- NA
     #history[which(is.na(det.hist[,(ii-1)*tot.stops+2])==TRUE),ii,] <- NA
     history2 <- cbind(history2, history[, ii, ])
   }
@@ -174,7 +180,7 @@ sim.bbs.ms <-  function(covs, psi.coefs, th0.coefs, th1.coefs,
 #' Bootstrap GOF test: test if parameters from top model run with simulated data are consistent with original estimates
 #' @return 1 if simulated and observed estimates are similar (model not overfit); 0 otherwise
 
-test.presence.gof	<- function(modname, large = 4, pao2, mod, ...) {
+test.presence.gof	<- function(modname, large = 4, pao2, mod, time, het) {
 
   ###	read the output of the file we just ran
   mod_out2 <- scan(paste0("inst/output/pres/temp/", modname ,".out"), what='character', sep='\n', quiet=T)
