@@ -56,24 +56,24 @@ spp_pao <- RPresence::read.pao(paste0("inst/output/pao/", alpha, ".pao"))
 spp_psi_aic <- RunPsiMods(pao = spp_pao, mods = psi_mods, alpha = alpha,
                           time = annual, het = het_det, del = FALSE)
 
+# spp_psi_aic <- read.csv("inst/output/aic/psi/lowa.csv")
 
 ### Run gam/eps models with top covariates from psi models
 spp_psi_covs <- top_covs(aic_tab = spp_psi_aic, mods = psi_mods)
 
 gam_mods <- GetGamMods(psi_covs = spp_psi_covs)
 
-
 spp_gam_aic <- RunGamMods(pao = spp_pao, mods = gam_mods, alpha = alpha, test = Test,
                           time = annual, het = het_det, del = FALSE)
 
-
+# spp_gam_aic <- read.csv("inst/output/aic/gam/lowa.csv")
 
 # ### Goodness-of-fit of top model
 spp_top_mod <- top_covs(aic_tab = spp_gam_aic, mods = gam_mods, psi = FALSE)
 
 spp_gof <- gof(aic_tab = spp_gam_aic, mods = gam_mods, covs = spp_pao$unitcov,
                year_seq = years, Tenstops = tenstops, alpha = alpha,
-               time = annual, het = het_det)
+               time = annual, het = het_det, det_hist = spp_pao$det.data)
 
 
 ### Estimate annual occupancy probability for all raster cells in range
