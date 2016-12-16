@@ -83,5 +83,14 @@ library(dismo)
   NA_biovars <- lapply(biovar_files, get)
   names(NA_biovars) <- biovar_files
 
-  devtools::use_data(NA_biovars, overwrite = TRUE)
+# BCR shapefile
+  if (!require(gpclib)) install.packages("gpclib", type="source")
+  maptools::gpclibPermit()
+  new.crs <- maptools::CRS("+proj=longlat +datum=WGS84")
+  bcr.shapefile <- rgdal::readShapePoly("data-raw/bcr/BCR", verbose=TRUE, proj4string=new.crs)
+  bcr.shapefile@data$id <- rownames(bcr.shapefile@data)
+  bcr.points <- ggplot2::fortify(bcr.shapefile, region = "id")
+  bcr <- merge(bcr.points, bcr.shapefile@data, by = "id")
+
+  devtools::use_data(NA_biovars, bcr, overwrite = TRUE)
 

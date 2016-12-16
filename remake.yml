@@ -1,0 +1,41 @@
+packages:
+  
+  - BBSclim
+
+  - rBBS
+  - RPresence
+ 
+
+
+
+sources:
+  
+  - R/glob_opts.R
+
+targets:
+   NA_biovars:
+    command: data("NA_biovars")
+
+   spp_AOU:
+    command: GetAOU("lowa")
+
+   spp_counts:
+    command: GetSppCounts(spp_AOU, Write = TRUE, path = "inst/output/spp_counts")
+
+   spp_counts2:
+    command: RemoveOutliers(counts = spp_counts)
+
+   spp_buff:
+    command: buffer_BBS(spp_count = spp_counts2)
+
+   spp_clim:
+    command: GetBioVars(counts = spp_buff)
+
+   inst/output/pao/lowa.pao
+    command: write_pao(counts = spp_buff, covs = spp_clim, alpha = "lowa", Tenstops = tenstops)
+
+   psi_mods:
+    command: GetPsiMods()
+
+   spp_pao:
+    command: read.pao(paste0("inst/output/pao/", "lowa", ".pao"))

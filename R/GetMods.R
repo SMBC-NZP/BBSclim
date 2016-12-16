@@ -60,5 +60,6 @@ GetGamMods <- function(psi_covs){
     }
   }
 
-  gam_mods2
+  gam_mods3 <- gam_mods2[1:(length(gam_mods2) - 1)] # Last model == top psi model (don't run twice)
+  gam_mods3
 }

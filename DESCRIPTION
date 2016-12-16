@@ -16,12 +16,20 @@ Imports:
     plyr,
     raster,
     ncdf4,
+    sp,
+    rgdal,
+    maptools,
+    rgeos,
     dismo,
     maps,
     SDMTools,
     rvest,
     R.utils,
-    classInt
+    classInt,
+    doParallel,
+    parallel
+Depends:
+    foreach
 Remotes: github::crushing05/rBBS
 Encoding: UTF-8
 LazyData: true
