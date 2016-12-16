@@ -71,6 +71,7 @@ spp_gam_aic <- RunGamMods(pao = spp_pao, mods = gam_mods, alpha = alpha, test = 
 # ### Goodness-of-fit of top model
 spp_top_mod <- top_covs(aic_tab = spp_gam_aic, mods = gam_mods, psi = FALSE)
 
+
 spp_gof <- gof(aic_tab = spp_gam_aic, mods = gam_mods, covs = spp_pao$unitcov,
                year_seq = years, Tenstops = tenstops, alpha = alpha,
                time = annual, het = het_det, det_hist = spp_pao$det.data)
