@@ -10,11 +10,7 @@ library(BBSclim)
 source("R/glob_opts.R")
 
 ### Import raw 10-stop BBS data
-if(tenstops){
-  bbs <- BBS.tenstop::get_BBS10()
-}else{
-  bbs <- BBS.fiftystop::get_BBS50()
-}
+bbs <- GetBBS(Tenstops = tenstops)
 
 
 ### Get count data for species

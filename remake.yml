@@ -1,41 +1,50 @@
+## All packages that are used must be listed here:
 packages:
-  
   - BBSclim
-
   - rBBS
   - RPresence
- 
 
-
-
+## All R files that are used must be listed here:
 sources:
-  
   - R/glob_opts.R
 
+## Most of a remakefile will be targets.  They can be listed in any
+## order; whatever makes most sense.  Files can be split up and
+## included into the main file if you need to impose more structure.
 targets:
-   NA_biovars:
-    command: data("NA_biovars")
-
-   spp_AOU:
-    command: GetAOU("lowa")
-
-   spp_counts:
-    command: GetSppCounts(spp_AOU, Write = TRUE, path = "inst/output/spp_counts")
-
-   spp_counts2:
-    command: RemoveOutliers(counts = spp_counts)
-
-   spp_buff:
-    command: buffer_BBS(spp_count = spp_counts2)
-
-   spp_clim:
-    command: GetBioVars(counts = spp_buff)
-
-   inst/output/pao/lowa.pao
-    command: write_pao(counts = spp_buff, covs = spp_clim, alpha = "lowa", Tenstops = tenstops)
-
-   psi_mods:
-    command: GetPsiMods()
-
-   spp_pao:
-    command: read.pao(paste0("inst/output/pao/", "lowa", ".pao"))
+#   ## 'all' is a special target that will be used as the default
+#   ## target by 'remake'.  It doesn't actually make anything but
+#   ## "depends" on other targets.
+   all:
+   depends: plot.pdf
+# 
+# ## 'target_name' is a special variable here: it will pass 'data.csv'
+# ## through to the function 'download_data()' so that the data are
+# ## stored in the correct place.
+# data.csv:
+#   command: download_data(target_name)
+# 
+# ## 'processed' will be stored as an R object because it looks like
+# ## an object name rather than a file name (file names have
+# ## extensions or slashes in them).  It will be saved across
+# ## sessions.  Because it uses "data.csv", remake will work out that
+# ## this target depends on "data.csv".
+# processed:
+#   command: process_data("data.csv")
+# 
+# ## Specifying 'plot: true' here tells remake that you are creating a
+# ## plot.  It will sort out opening/closing the pdf device for you.
+# ## Because 'myplot' uses 'processed', remake will work out that this
+# ## target requires the processed target to be made first.
+# plot.pdf:
+#   command: myplot(processed)
+# plot: true
+# 
+# ## Like plot targets, there are also special knitr targets.  This
+# ## will arrange for "processed" to be available within the knit
+# ## function, along with all functions defined in "code.R".  This
+# ## automatically depends on the file report.Rmd, and will be updated
+# ## when that file changes or when "processed" changes.
+# report.md:
+#   depends: processed
+# knitr: true
