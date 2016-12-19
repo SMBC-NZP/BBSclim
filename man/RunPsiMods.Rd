@@ -4,7 +4,7 @@
 \alias{RunPsiMods}
 \title{RunPsiMods}
 \usage{
-RunPsiMods(pao, alpha, mods = psi_mods, del = TRUE, ..., test = FALSE,
+RunPsiMods(pao, alpha, mods = psi_mods, del = TRUE, ..., is.test = FALSE,
   Parallel = TRUE)
 }
 \arguments{
@@ -16,9 +16,9 @@ RunPsiMods(pao, alpha, mods = psi_mods, del = TRUE, ..., test = FALSE,
 
 \item{psi_mods}{list containing the parameters for each model to evaluate}
 
-\item{time}{Does p vary annually?}
+\item{is.annual}{Does p vary annually?}
 
-\item{het}{Heterogeneous detection?}
+\item{is.het}{Heterogeneous detection?}
 }
 \description{
 Runs full model set for 31 psi models, evalute each, write and return AIC table, delete output file (optional)

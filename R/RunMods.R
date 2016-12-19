@@ -5,19 +5,19 @@
 #' @param alpha alpha code for species of interest
 #' @param psi_mods list containing the parameters for each model to evaluate
 #' @param del Should .out files be deleted after model output in evaluated?
-#' @param time Does p vary annually?
-#' @param het Heterogeneous detection?
+#' @param is.annual Does p vary annually?
+#' @param is.het Heterogeneous detection?
 #' @export
 
 RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
-                       test = FALSE, Parallel = TRUE){
+                       is.test = FALSE, Parallel = TRUE){
 
     if(Parallel){
       cores <- parallel::detectCores()
       cl <- parallel::makeCluster(cores)
       doParallel::registerDoParallel(cl)
 
-      if(test){
+      if(is.test){
         mods <- mods[1:cores]
       }
 
@@ -63,7 +63,7 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
                                     }
       aic_table
     }else{
-      if(test){
+      if(is.test){
         mods <- mods[1:2]
       }
 
@@ -165,13 +165,13 @@ top_covs <- function(aic_tab, mods, psi = TRUE){
 
 
 RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
-                       test = FALSE, trim = TRUE, Parallel = TRUE){
+                       is.test = FALSE, trim = TRUE, Parallel = TRUE){
   if(Parallel){
     cores <- parallel::detectCores()
     cl <- parallel::makeCluster(cores)
     doParallel::registerDoParallel(cl)
 
-    if(test){
+    if(is.test){
       mods <- mods[1:cores]
     }
 
@@ -218,7 +218,7 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
                                   }
     aic_table
   }else{
-    if(test){
+    if(is.test){
       mods <- mods[1:2]
     }
 

@@ -83,7 +83,7 @@ parse_output <- function(outname) {
 #' @return A .out file containing the fitted model and parameters estimates (see ?occ.mod for details)
 #' @export
 
-write_dm_and_run2 <- function(pao, cov_list, out, het, time,
+write_dm_and_run2 <- function(pao, cov_list, out, is.het, is.annual,
                               dm_list = NULL, modname,
                               fixed = FALSE, inits = FALSE,
                               maxfn = 32000, alpha = NULL, parse = FALSE) {
@@ -94,8 +94,8 @@ write_dm_and_run2 <- function(pao, cov_list, out, het, time,
                        1 + length(cov_list$th1.cov),
                        1 + length(cov_list$gam.cov),
                        1 + length(cov_list$eps.cov),
-                       (1 + het) * (1 + length(cov_list$p1.cov)),
-                       het)  # last two are for p2 and pi
+                       (1 + is.het) * (1 + length(cov_list$p1.cov)),
+                       is.het)  # last two are for p2 and pi
     initvals	<- rep(0, total.betas)
   }else{
     initvals <- NULL

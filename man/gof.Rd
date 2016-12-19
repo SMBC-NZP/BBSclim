@@ -4,7 +4,7 @@
 \alias{gof}
 \title{gof}
 \usage{
-gof(aic_tab, mods, covs, year_seq, Tenstops, alpha, ..., det_hist)
+gof(aic_tab, mods, covs, year_seq, is.tenstops, alpha, ..., det_hist)
 }
 \arguments{
 \item{aic_tab}{AIC table from RunGamMods}

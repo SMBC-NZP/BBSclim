@@ -4,8 +4,8 @@
 \alias{write_dm_and_run2}
 \title{write_dm_and_run2}
 \usage{
-write_dm_and_run2(pao, cov_list, out, het, time, dm_list = NULL, modname,
-  fixed = FALSE, inits = FALSE, maxfn = 32000, alpha = NULL,
+write_dm_and_run2(pao, cov_list, out, is.het, is.annual, dm_list = NULL,
+  modname, fixed = FALSE, inits = FALSE, maxfn = 32000, alpha = NULL,
   parse = FALSE)
 }
 \arguments{

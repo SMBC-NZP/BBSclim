@@ -73,7 +73,7 @@ GetBioVars <- function(counts, index = c(1, 2, 8, 12, 18),
   }
 
   write.csv(clim_scale,
-            paste("inst/output/clim_scale", paste(alpha, "clim_scale.csv", sep = "_"), sep = "/"),
+            paste0("inst/output/", alpha, "/clim_scale.csv"),
             row.names = FALSE)
 
   ### Add squared climate variables
@@ -81,7 +81,7 @@ GetBioVars <- function(counts, index = c(1, 2, 8, 12, 18),
   colnames(sq_rxy) <- paste("sq", colnames(sq_rxy), sep = "_")
   rxy <- dplyr::bind_cols(rxy, sq_rxy)
 
-  write.csv(rxy, paste("inst/output/spp_clim", paste(alpha, "clim.csv", sep = "_"), sep = "/"),
+  write.csv(rxy, paste0("inst/output/", alpha, "/route_clim.csv"),
             row.names = FALSE)
   rxy
 }

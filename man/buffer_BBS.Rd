@@ -4,7 +4,7 @@
 \alias{buffer_BBS}
 \title{buffer_BBS}
 \usage{
-buffer_BBS(spp_count, route_atrb = bbs$routes, buffer = 2, method = "rec")
+buffer_BBS(spp_count, bbs, buffer = 2, method = "rec")
 }
 \arguments{
 \item{spp_count}{Data frame containing the count data for the focal species obtained using the `GetSppCounts()` function}

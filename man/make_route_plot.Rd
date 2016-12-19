@@ -4,7 +4,7 @@
 \alias{make_route_plot}
 \title{make_route_plot}
 \usage{
-make_route_plot(spp_buff, spp_counts, spp_counts2, alpha)
+make_route_plot(buff_routes, used_routes, raw_routes, alpha)
 }
 \description{
 plot all routes, including counts, buffer, and outliers
