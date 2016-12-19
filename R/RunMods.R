@@ -23,7 +23,7 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
 
       aic_table <- foreach::foreach(i=1:length(mods), .combine = rbind,
                                     .packages = c("dplyr", "BBSclim")) %dopar%{
-                                      modname <- paste0(alpha, '_psi_model_', i)
+                                      modname <- paste0('psi_model_', i)
 
                                       ## Create design matrices for model i
                                       spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], ...)
@@ -34,7 +34,7 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
                                                                  inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
 
                                       ## Read output file
-                                      a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
+                                      a <- scan(paste0('inst/output/', alpha, "/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
                                       ## Evaluate model (if model converges, will equal TRUE)
                                       check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = FALSE, ...)
@@ -69,7 +69,7 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
 
       for(i in 1:length(mods)){
 
-        modname <- paste0(alpha, '_psi_model_', i)
+        modname <- paste0('psi_model_', i)
 
         ## Create design matrices for model i
         spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], ...)
@@ -80,7 +80,7 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
                           inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
 
         ## Read output file
-        a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
+        a <- scan(paste0('inst/output/', alpha, "/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
       ## Evaluate model (if model converges, will equal TRUE)
       check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = FALSE, ...)
@@ -122,14 +122,14 @@ RunPsiMods <- function(pao, alpha, mods = psi_mods, del = TRUE, ...,
       aic_table <- dplyr::arrange(aic_table, delta_AIC)
 
       ## Write AIC table
-      write.csv(aic_table, file = paste0("inst/output/aic/psi/", alpha, ".csv"), row.names = FALSE)
+      write.csv(aic_table, file = paste0("inst/output/", alpha, "/psi_aic.csv"), row.names = FALSE)
 
       ## Top psi model == last gam model, so rename and save (to avoid running again)
-      file.rename(from = paste0("inst/output/pres/temp/", aic_table$Model[1], ".out"),
-                  to = paste0("inst/output/pres/temp/", alpha, "_gam_model_961.out"))
-      temp.files <- list.files("inst/output/pres/temp")
+      file.rename(from = paste0("inst/output/", alpha, "/", aic_table$Model[1], ".out"),
+                  to = paste0("inst/output/", alpha, "/", "gam_model_961.out"))
+      temp.files <- list.files(paste0("inst/output/", alpha))
       temp.psi.files <- temp.files[grep("psi", temp.files)]
-      if(del) file.remove(paste0("inst/output/pres/temp/", temp.psi.files))
+      if(del) file.remove(paste0("inst/output/", alpha, "/", temp.psi.files))
 
       ## Return AIC table
       aic_table
@@ -178,7 +178,7 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
     aic_table <- foreach::foreach(i=1:length(mods), .combine = rbind,
                                   .packages = c("dplyr", "BBSclim")) %dopar%{
 
-                                    modname <- paste0(alpha, '_gam_model_', i)
+                                    modname <- paste0('gam_model_', i)
 
                                     ## Create design matrices for model i
                                     spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], ...)
@@ -189,7 +189,7 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
                                                                inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
 
                                     ## Read output file
-                                    a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
+                                    a <- scan(paste0('inst/output/', alpha, "/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
                                     ## Evaluate model (if model converges, will equal TRUE)
                                     check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = TRUE, ...)
@@ -224,7 +224,7 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
 
     for(i in 1:length(mods)){
 
-      modname <- paste0(alpha, '_gam_model_', i)
+      modname <- paste0('gam_model_', i)
 
       ## Create design matrices for model i
       spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], ...)
@@ -235,7 +235,7 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
                         inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
 
       ## Read output file
-      a <- scan(paste0('inst/output/pres/temp/', modname, ".out"), what='c',sep='\n',quiet=TRUE)
+      a <- scan(paste0('inst/output/', alpha, "/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
     ## Evaluate model (if model converges, will equal TRUE)
     check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = TRUE, ...)
@@ -270,13 +270,13 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
     }
   }
 
-  if(del) file.remove(paste0("inst/output/pres/temp/", modname, ".out"))
+  if(del) file.remove(paste0("inst/output/", alpha, "/", modname, ".out"))
   ## Add delta AIC column and sort by delta AIC
   aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC, na.rm = TRUE))
   aic_table <- dplyr::arrange(aic_table, delta_AIC)
 
   ## Write AIC table
-  write.csv(aic_table, file = paste0("inst/output/aic/gam/", alpha, ".csv"), row.names = FALSE)
+  write.csv(aic_table, file = paste0("inst/output/", alpha, "/gam_aic.csv"), row.names = FALSE)
 
   ## Return AIC table
   if(trim) aic_table <- aic_table[1:min(nrow(aic_table), 25), ]

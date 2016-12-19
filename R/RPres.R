@@ -110,13 +110,13 @@ write_dm_and_run2 <- function(pao, cov_list, out, is.het, is.annual,
     fixedpars = NULL
   }
 
-  outname=paste('inst/output/pres/', out, "/", modname,'.out',sep='')
+  outname=paste('inst/output/', alpha, "/", modname,'.out',sep='')
   outname=gsub('*','X',outname, fixed=TRUE);  #  change '*' to 'X' in filename
   outname=gsub(':','_',outname, fixed=TRUE);  #  change ':' to '_' in filename
   if (file.exists(outname)) cat('\n**** output file exists - model not run\n***********\n') else {
-    if (is.null(alpha)) dmname='inst/output/dms/pres0001.dm';
+    if (is.null(alpha)) dmname=paste0("inst/output/", alpha, "/pres0001.dm");
     if (!is.null(alpha)) {
-      dmname = paste('inst/output/dms/', alpha, modname, '.dm', sep = "")
+      dmname = paste0('inst/output/', alpha,"/", modname, '.dm')
     }
     if (!is.null(dm_list$dm1)) {
       if (file.exists(dmname)) file.remove(dmname)

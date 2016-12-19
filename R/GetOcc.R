@@ -42,12 +42,12 @@ GetOccProb <- function(betas, alpha, years, buff_method = "rec", buffer){
     psi.df2 <- tidyr::gather(psi.df, -lat, -lon, key = "Year", value = "Prob")
 
     if(is.null(buff_method)){
-      write.csv(psi.df2, file = paste0("inst/output/occ/", alpha, "_occ.csv"), row.names = FALSE)
+      write.csv(psi.df2, file = paste0("inst/output/", alpha, "/occ.csv"), row.names = FALSE)
       psi.df2
     }else{
       psi.df3 <- dplyr::filter(psi.df2, lat < max(buffer$Latitude) + 2 & lat > min(buffer$Latitude) - 2 &
                                lon > min(buffer$Longitude) - 2 & lon < max(buffer$Longitude) + 2)
-      write.csv(psi.df3, file = paste0("inst/output/occ/", alpha, "_occ.csv"), row.names = FALSE)
+      write.csv(psi.df3, file = paste0("inst/output/", alpha, "/occ.csv"), row.names = FALSE)
       psi.df3
   }
 }
@@ -58,7 +58,7 @@ GetOccProb <- function(betas, alpha, years, buff_method = "rec", buffer){
 
 raster.to.array <- function(alpha, years) {
     index <- c(1,2,8,12,18)
-    scale.values <- read.csv(paste0("inst/output/clim_scale/", alpha, "_clim_scale.csv"))
+    scale.values <- read.csv(paste0("inst/output/", alpha, "/clim_scale.csv"))
     for (ii in seq_along(years)) {
 
       # get climate data within masked area
@@ -96,7 +96,7 @@ raster.to.array <- function(alpha, years) {
 GetBetas <- function(alpha) {
 
   # read top model and pull out betas and vc matrix
-  top.model.out <- scan(paste0("inst/output/pres/top/", alpha, "_top.out"), what = 'character', sep = '\n', quiet = T)
+  top.model.out <- scan(paste0("inst/output/", alpha, "/top_mod.out"), what = 'character', sep = '\n', quiet = T)
 
   jj <- grep('std.error', top.model.out)
   jj.end <- grep('Variance-Covariance Matrix of Untransformed', top.model.out)
