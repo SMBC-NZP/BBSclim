@@ -5,7 +5,7 @@
 \title{sim.bbs.ms}
 \usage{
 sim.bbs.ms(covs, psi.coefs, th0.coefs, th1.coefs, gam.coefs, eps.coefs,
-  p1.coefs, p2.coefs, pi.coefs, years, cov_data, time, het, pao)
+  p1.coefs, p2.coefs, pi.coefs, years, cov_data, time, het, det_hist)
 }
 \description{
 Simulate BBS data using covariates and coefficients from top model

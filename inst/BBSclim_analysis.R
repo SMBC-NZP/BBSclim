@@ -14,7 +14,7 @@ bbs <- GetBBS(Tenstops = tenstops)
 
 
 ### Get count data for species
-alpha <- "lowa"
+alpha <- "kewa"
 
 spp_AOU <- GetAOU(alpha)
 
@@ -28,6 +28,10 @@ spp_counts2 <- RemoveOutliers(counts = spp_counts)
 
 ### Add buffer around routes with counts > 0
 spp_buff <- buffer_BBS(spp_count = spp_counts2)
+
+
+### Make map of routes
+make_route_plot(spp_buff, spp_counts2, spp_counts, alpha)
 
 
 ### Load rasters containing bioclim estimates

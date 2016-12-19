@@ -29,8 +29,11 @@ Imports:
     doParallel,
     parallel
 Depends:
-    foreach
-Remotes: github::crushing05/rBBS
+    foreach,
+    ggplot2,
+    mapdata
+Remotes: github::crushing05/rBBS,
+         github::richfitz/datastorr
 Encoding: UTF-8
 LazyData: true
 Suggests:
