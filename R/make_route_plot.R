@@ -3,7 +3,10 @@
 #' plot all routes, including counts, buffer, and outliers
 #' @export
 
-make_route_plot <- function(buff_routes, used_routes, raw_routes, alpha){
+make_route_plot <- function(alpha, used_routes){
+  buff_routes <- read.csv(paste0("inst/output/", alpha, "/count_buff.csv"))
+  raw_routes <- read.csv(paste0("inst/output/", alpha, "/", alpha, "_counts.csv"))
+  
   usa <- map_data("state")
   canada <- map_data("worldHires", "Canada")
   mexico <- map_data("worldHires", "Mexico")

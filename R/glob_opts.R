@@ -6,6 +6,4 @@ years <- seq(from = start_yr, to = end_yr)
 het <- TRUE
 annual <- TRUE
 test <- TRUE
-alpha <- "kewa"
-
-save(tenstops, start_yr, end_yr, years, het, annual, test, alpha, file = "inst/glob_opts.RData")
+alpha <- "scta"

@@ -10,4 +10,3 @@ CreateSpp <- function(alpha){
   file.copy(from = "inst/output/.gitignore", to = paste0("inst/output/", alpha, "/.gitignore"))
 }
 
-CreateSpp(alpha = "scta")

@@ -15,7 +15,7 @@
 #' @export
 
 
-buffer_BBS	<- function(spp_count, bbs, buffer = 2, method = "rec") {
+buffer_BBS	<- function(alpha, spp_count, bbs, buffer = 2, method = "rec") {
 
   route_atrb <- bbs$routes
   
@@ -117,5 +117,4 @@ buffer_BBS	<- function(spp_count, bbs, buffer = 2, method = "rec") {
               paste0("inst/output/", alpha, "/count_buff.csv"),
               row.names = FALSE)
   }
-  spp_count_buff
 }

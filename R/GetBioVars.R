@@ -12,9 +12,12 @@
 #' @return   Ind_Year The value for biovar[Ind] in year Year
 #' @export
 
-GetBioVars <- function(counts, index = c(1, 2, 8, 12, 18),
+GetBioVars <- function(alpha, index = c(1, 2, 8, 12, 18),
                        ind_name = c("tmp", "dtr", "Twet", "Prec", "Pwarm"),
                        biovars = NA_biovars){
+  
+  counts <- read.csv(paste0("inst/output/", alpha, "/count_buff.csv"))
+  
   rxy <- dplyr::select(counts, routeID, Longitude, Latitude)
   rxy <- rxy[!duplicated(rxy),]
 
@@ -83,6 +86,5 @@ GetBioVars <- function(counts, index = c(1, 2, 8, 12, 18),
 
   write.csv(rxy, paste0("inst/output/", alpha, "/route_clim.csv"),
             row.names = FALSE)
-  rxy
 }
 
