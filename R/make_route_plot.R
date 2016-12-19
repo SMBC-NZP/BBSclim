@@ -41,7 +41,7 @@ make_route_plot <- function(buff_routes, used_routes, raw_routes, alpha){
   # p <- p + annotate("text", x = -71, 
                     # y = 5*(ymin%/%5 + as.logical(ymin%%5)) + 5, label = summ, size = 6, color = "#494949")
                     # 
-  to.pdf(print(p), filename = paste0("inst/output/rte_maps/", alpha, "_rts.pdf"), width = 10, height = 6)
+  to.pdf(print(p), filename = paste0("inst/output/", alpha, "/route_map.pdf"), width = 10, height = 6)
 }
 
 #' to.pdf

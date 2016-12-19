@@ -10,15 +10,17 @@ library(BBSclim)
 source("R/glob_opts.R")
 
 ### Import raw 10-stop BBS data
-bbs <- GetBBS(Tenstops = tenstops)
+bbs <- GetBBS(is.tenstops = tenstops)
 
 
 ### Get count data for species
 alpha <- "kewa"
 
+CreateSpp(alpha)
+
 spp_AOU <- GetAOU(alpha)
 
-spp_counts <- GetSppCounts(AOU = spp_AOU, Write = TRUE, path = 'inst/output/spp_counts')
+spp_counts <- GetSppCounts(AOU = spp_AOU, Write = TRUE, path = paste0('inst/output/', alpha))
 
 ### Remove outliers
 
@@ -27,7 +29,7 @@ spp_counts2 <- RemoveOutliers(counts = spp_counts)
 # need to save output in a way that # outliers can be added to report
 
 ### Add buffer around routes with counts > 0
-spp_buff <- buffer_BBS(spp_count = spp_counts2)
+spp_buff <- buffer_BBS(spp_count = spp_counts2, bbs = bbs)
 
 
 ### Make map of routes
@@ -50,7 +52,7 @@ write_pao(counts = spp_buff, covs = spp_clim, alpha = alpha, TenStops = tenstops
 ### Run psi models
 psi_mods <- GetPsiMods()
 
-spp_pao <- RPresence::read.pao(paste0("inst/output/pao/", alpha, ".pao"))
+spp_pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/spp.pao"))
 
 
 spp_psi_aic <- RunPsiMods(pao = spp_pao, mods = psi_mods, alpha = alpha,
