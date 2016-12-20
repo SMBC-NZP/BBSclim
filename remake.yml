@@ -1,50 +1,54 @@
-## All packages that are used must be listed here:
 packages:
   - BBSclim
   - rBBS
   - RPresence
-
-## All R files that are used must be listed here:
+  
 sources:
   - R/glob_opts.R
 
-## Most of a remakefile will be targets.  They can be listed in any
-## order; whatever makes most sense.  Files can be split up and
-## included into the main file if you need to impose more structure.
 targets:
-#   ## 'all' is a special target that will be used as the default
-#   ## target by 'remake'.  It doesn't actually make anything but
-#   ## "depends" on other targets.
-   all:
-   depends: plot.pdf
-# 
-# ## 'target_name' is a special variable here: it will pass 'data.csv'
-# ## through to the function 'download_data()' so that the data are
-# ## stored in the correct place.
-# data.csv:
-#   command: download_data(target_name)
-# 
-# ## 'processed' will be stored as an R object because it looks like
-# ## an object name rather than a file name (file names have
-# ## extensions or slashes in them).  It will be saved across
-# ## sessions.  Because it uses "data.csv", remake will work out that
-# ## this target depends on "data.csv".
-# processed:
-#   command: process_data("data.csv")
-# 
-# ## Specifying 'plot: true' here tells remake that you are creating a
-# ## plot.  It will sort out opening/closing the pdf device for you.
-# ## Because 'myplot' uses 'processed', remake will work out that this
-# ## target requires the processed target to be made first.
-# plot.pdf:
-#   command: myplot(processed)
-# plot: true
-# 
-# ## Like plot targets, there are also special knitr targets.  This
-# ## will arrange for "processed" to be available within the knit
-# ## function, along with all functions defined in "code.R".  This
-# ## automatically depends on the file report.Rmd, and will be updated
-# ## when that file changes or when "processed" changes.
-# report.md:
-#   depends: processed
-# knitr: true
+  all:
+    depends:
+      - inst/output/scta/route_clim.csv
+      - inst/output/scta/route_map.pdf
+  
+  inst/output/scta:
+    command: CreateSpp(I(alpha = "scta"))
+    
+  bbs:
+    command: GetBBS(I(is.tenstops = tenstops))
+    
+  spp_AOU:
+    command: GetAOU(I(alpha = alpha))
+
+  inst/output/scta/scta_counts.csv:
+    command: GetSppCounts(bbs_raw = bbs, AOU = spp_AOU, Write = TRUE, path = 'inst/output/scta')
+
+  spp_counts:
+    command: read.csv("inst/output/scta/scta_counts.csv")
+    
+  spp_counts2:
+    command: RemoveOutliers(counts = spp_counts)
+
+  inst/output/scta/count_buff.csv:
+    command: buffer_BBS(spp_count = spp_counts2, bbs = bbs, I(alpha = alpha))
+    
+  inst/output/scta/route_map.pdf:
+    command: make_route_plot(I(alpha = "scta"), used_routes = spp_counts2)
+    depends:
+      - inst/output/scta/count_buff.csv
+      - inst/output/scta/scta_counts.csv
+  
+  NA_biovars:
+    command: data(target_name)
+    
+  inst/output/scta/route_clim.csv:
+    command: GetBioVars(I(alpha = "scta"))
+    depends:
+      - NA_biovars
+      - inst/output/scta/count_buff.csv
+      
+  #inst/output/pao/scta.pao:
+   # command: write_pao(counts = spp_buff, covs = spp_clim, I(alpha = alpha), I(is.tenstops = tenstops))
+
+

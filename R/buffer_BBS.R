@@ -15,8 +15,10 @@
 #' @export
 
 
-buffer_BBS	<- function(spp_count, route_atrb = bbs$routes, buffer = 2, method = "rec") {
+buffer_BBS	<- function(alpha, spp_count, bbs, buffer = 2, method = "rec") {
 
+  route_atrb <- bbs$routes
+  
   if(method == "rec"){
     start_year <- min(spp_count$Year)
     end_year <- max(spp_count$Year)
@@ -47,7 +49,7 @@ buffer_BBS	<- function(spp_count, route_atrb = bbs$routes, buffer = 2, method = 
     spp_count_buff <- dplyr::bind_rows(spp_count, count_buff)
 
     write.csv(spp_count_buff,
-              paste("inst/output/buffered_counts", paste(alpha, "buff.csv", sep = "_"), sep = "/"),
+              paste0("inst/output/", alpha, "/count_buff.csv"),
               row.names = FALSE)
     }
 
@@ -75,7 +77,7 @@ buffer_BBS	<- function(spp_count, route_atrb = bbs$routes, buffer = 2, method = 
     spp_count_buff <- dplyr::bind_rows(spp_count, count_buff)
 
     write.csv(spp_count_buff,
-              paste("inst/output/buffered_counts", paste(alpha, "buff.csv", sep = "_"), sep = "/"),
+              paste0("inst/output/", alpha, "/count_buff.csv"),
               row.names = FALSE)
     }
 
@@ -112,8 +114,7 @@ buffer_BBS	<- function(spp_count, route_atrb = bbs$routes, buffer = 2, method = 
     spp_count_buff <- dplyr::bind_rows(spp_count, count_buff)
 
     write.csv(spp_count_buff,
-              paste("inst/output/buffered_counts", paste(alpha, "buff.csv", sep = "_"), sep = "/"),
+              paste0("inst/output/", alpha, "/count_buff.csv"),
               row.names = FALSE)
   }
-  spp_count_buff
 }

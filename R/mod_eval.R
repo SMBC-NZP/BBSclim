@@ -7,7 +7,7 @@
 #' @return TRUE if model converged; FALSE if not
 #' @export
 
-mod_eval <- function(pres_out, mod, pao2 , dig = 3, large = 8, time, het, strict = FALSE){
+mod_eval <- function(pres_out, mod, pao2 , dig = 3, large = 8, is.annual, is.het, strict = FALSE){
   jj <- grep('std.error', pres_out)
   jj2 <- grep('Variance-Covariance Matrix of Untransformed', pres_out)
 
@@ -17,7 +17,7 @@ mod_eval <- function(pres_out, mod, pao2 , dig = 3, large = 8, time, het, strict
 
   num.betas <- plyr::ldply(mod, function(x) length(x))$V1
 
-  if(time) num.betas[6] <- num.betas[6] + pao2$nseasons
+  if(is.annual) num.betas[6] <- num.betas[6] + pao2$nseasons
 
   psi.check <- th0.check <- th1.check <- gam.check <- eps.check <- p1.check <- p2.check <- stop.check <- NULL
   ### drop covariates with negative standard errors
@@ -38,7 +38,7 @@ mod_eval <- function(pres_out, mod, pao2 , dig = 3, large = 8, time, het, strict
   }
   if(num.betas[6] > 1) {
     p1.check <- p2.check  <- !is.na(std.er[(7 + sum(num.betas[1:5])):(sum(num.betas[1:6]) + 5)])
-    if(het) p2.check  <- !is.na(std.er[(7 + sum(num.betas[1:6])):(sum(num.betas[1:6]) + 5 + num.betas[6])])
+    if(is.het) p2.check  <- !is.na(std.er[(7 + sum(num.betas[1:6])):(sum(num.betas[1:6]) + 5 + num.betas[6])])
   }
 
 
@@ -63,7 +63,7 @@ mod_eval <- function(pres_out, mod, pao2 , dig = 3, large = 8, time, het, strict
     }
     if(num.betas[6]>1) {
       p1.check <- p2.check <- abs(std.er[(7 + sum(num.betas[1:5])):(sum(num.betas[1:6]) + 5)]) < large
-      if(het)	p2.check   	<- abs(std.er[(7 + sum(num.betas[1:6])):(sum(num.betas[1:6]) + 5 + num.betas[6])])<large
+      if(is.het)	p2.check   	<- abs(std.er[(7 + sum(num.betas[1:6])):(sum(num.betas[1:6]) + 5 + num.betas[6])])<large
     }
   }	# end the if statement
 

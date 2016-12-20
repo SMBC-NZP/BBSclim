@@ -4,7 +4,7 @@
 \alias{GetBBS}
 \title{GetBBS}
 \usage{
-GetBBS(Tenstops)
+GetBBS(is.tenstops)
 }
 \description{
 Retrieve BBS data files

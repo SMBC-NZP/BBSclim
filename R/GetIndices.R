@@ -34,7 +34,7 @@ GetIndices <- function(prob_df, ...){
   indices <- dplyr::left_join(indices, avg.lat)
   indices <- dplyr::left_join(indices, avg.lon)
 
-  write.csv(indices, file = paste0("inst/output/indices/", alpha, "_ind.csv"), row.names = FALSE)
+  write.csv(indices, file = paste0("inst/output/", alpha, "/indices.csv"), row.names = FALSE)
 
   indices
 }

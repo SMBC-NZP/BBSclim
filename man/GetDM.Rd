@@ -4,7 +4,7 @@
 \alias{GetDM}
 \title{GetDM}
 \usage{
-GetDM(pao, start_yr = 1997, cov_list, het, time, coord.p = TRUE,
+GetDM(pao, start_yr = 1997, cov_list, is.het, is.annual, coord.p = TRUE,
   coord.th = TRUE)
 }
 \arguments{
@@ -14,9 +14,9 @@ GetDM(pao, start_yr = 1997, cov_list, het, time, coord.p = TRUE,
 
 \item{cov_list}{List containing the index of covariates to include in each model}
 
-\item{het}{Logical; Should heterogeniety in detection be modeled? (default = TRUE)}
+\item{is.het}{Logical; Should heterogeniety in detection be modeled? (default = TRUE)}
 
-\item{time}{Logical; Should detection vary annually? (default = TRUE)}
+\item{is.annual}{Logical; Should detection vary annually? (default = TRUE)}
 
 \item{coord.p}{Logical; Should detection vary by lat/long (default = TRUE)}
 

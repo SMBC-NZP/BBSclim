@@ -8,7 +8,7 @@
 #' @export
 #'
 
-gof <- function(aic_tab, mods, covs, year_seq, Tenstops, alpha, ..., det_hist){
+gof <- function(aic_tab, mods, covs, year_seq, is.tenstops, alpha, ..., det_hist){
 
   gof.pass <- 0
   model.num <- 0
@@ -16,7 +16,7 @@ gof <- function(aic_tab, mods, covs, year_seq, Tenstops, alpha, ..., det_hist){
   while (gof.pass==0) {
     modname <- aic_tab$Model[model.num + 1]
     modnum <- aic_tab$Model_num[model.num + 1]
-    mod_out <- scan(paste0("inst/output/pres/temp/", modname,".out"), what='character', sep='\n', quiet=T)
+    mod_out <- scan(paste0("inst/output/", alpha, "/", modname,".out"), what='character', sep='\n', quiet=T)
 
     jj <- grep('std.error', mod_out)
     jj2 <- grep('Variance-Covariance Matrix of Untransformed', mod_out)
@@ -45,9 +45,9 @@ gof <- function(aic_tab, mods, covs, year_seq, Tenstops, alpha, ..., det_hist){
                             p2.coefs=p2.coefs, pi.coefs=pi.coefs, years=year_seq,
                             ..., det_hist)
 
-    write_pao(counts = sim.data, covs = covs, alpha = alpha, sim = TRUE, TenStops = Tenstops)
+    write_pao(counts = sim.data, covs = covs, alpha = alpha, sim = TRUE, is.tenstops = is.tenstops)
 
-    sim_pao <- RPresence::read.pao(paste0("inst/output/pao/sim/", alpha, "_sim.pao"))
+    sim_pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/sim.pao"))
 
       initvals <- c(psi.coefs, th0.coefs, th1.coefs, gam.coefs, eps.coefs, p1.coefs)
       if(length(p2.coefs) == 0)  initvals <- c(initvals, p2.coefs, pi.coefs)
@@ -65,16 +65,17 @@ gof <- function(aic_tab, mods, covs, year_seq, Tenstops, alpha, ..., det_hist){
       gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use, ...)
 
       if(gof.pass){
-        file.rename(from = paste0("inst/output/pres/temp/", modname, ".out"),
-                    to = paste0("inst/output/pres/top/", alpha, "_top.out"))
-        temp.files <- list.files("inst/output/pres/temp")
-        file.remove(paste0("inst/output/pres/temp/", temp.files))
-        temp.dm.files <- list.files("inst/output/dms")
-        file.remove(paste0("inst/output/dms/", temp.dm.files))
+        file.rename(from = paste0("inst/output/", alpha, "/", modname, ".out"),
+                    to = paste0("inst/output/", alpha, "/top_mod.out"))
+        temp.files <- list.files(paste0("inst/output/", alpha))
+        out.files <- temp.files(grep(".out", temp.files))
+        file.remove(paste0("inst/output/", alpha, "/", out.files))
+        dm.files <- temp.files(grep(".dm", temp.files))
+        file.remove(paste0("inst/output/", alpha, "/", dm.files))
       }else{
-        temp.files <- list.files("inst/output/pres/temp")
+        temp.files <- list.files(paste0("inst/output/", alpha))
         sim.file <- temp.files[grep("sim", temp.files)]
-        file.remove(paste0("inst/output/pres/temp/", sim.file))
+        file.remove(paste0("inst/output/", alpha, "/", sim.file))
       }
     }  # end while loop
 
@@ -86,7 +87,7 @@ gof <- function(aic_tab, mods, covs, year_seq, Tenstops, alpha, ..., det_hist){
 
 sim.bbs.ms <-  function(covs, psi.coefs, th0.coefs, th1.coefs,
                         gam.coefs, eps.coefs, p1.coefs, p2.coefs,
-                        pi.coefs, years, cov_data, time, het, det_hist) {
+                        pi.coefs, years, cov_data, is.annual, is.het, det_hist) {
 
   # initial occupancy
 
@@ -97,7 +98,7 @@ sim.bbs.ms <-  function(covs, psi.coefs, th0.coefs, th1.coefs,
 
 
   # the scale.stop is the effect of stop number (i.e., time of day)
-  if(tenstops){tot.stops <- 5}else{tot.stops <- 50}
+  if(is.tenstops){tot.stops <- 5}else{tot.stops <- 50}
   scale.stop <- cbind(scale(1:tot.stops), scale(1:tot.stops)^2)
   stop.ind <- grep('Stop', covs$p1.cov)
   coord.p <- grep('Lat|Lon', covs$p1.cov)  # which covariates are for lat/long
@@ -141,7 +142,7 @@ sim.bbs.ms <-  function(covs, psi.coefs, th0.coefs, th1.coefs,
 
       ones <- matrix(0, nrow = nrow(cov_data), ncol = length(years))
       ones[, yr] <- 1
-      if(!time) ones <- rep(1, nrow(cov_data))
+      if(!is.annual) ones <- rep(1, nrow(cov_data))
       stop.mat  <- matrix(scale.stop[ss - 1, stop.ind], nrow=nrow(cov_data), ncol=length(stop.ind), byrow=T)
       if(length(stop.ind) == 0)  stop.mat <- NULL
       if(length(coord.p) > 0)   coord.mat  <- as.matrix(cov_data[ , covs$p1.cov[coord.p]])
@@ -180,10 +181,10 @@ sim.bbs.ms <-  function(covs, psi.coefs, th0.coefs, th1.coefs,
 #' Bootstrap GOF test: test if parameters from top model run with simulated data are consistent with original estimates
 #' @return 1 if simulated and observed estimates are similar (model not overfit); 0 otherwise
 
-test.presence.gof	<- function(modname, large = 4, pao2, mod, time, het) {
+test.presence.gof	<- function(modname, large = 4, pao2, mod, is.annual, is.het) {
 
   ###	read the output of the file we just ran
-  mod_out2 <- scan(paste0("inst/output/pres/temp/", modname ,".out"), what='character', sep='\n', quiet=T)
+  mod_out2 <- scan(paste0("inst/output/", alpha, "/", modname ,".out"), what='character', sep='\n', quiet=T)
 
 
   jjx <- grep('std.error', mod_out2)
@@ -194,7 +195,7 @@ test.presence.gof	<- function(modname, large = 4, pao2, mod, time, het) {
 
   num.betas <- plyr::ldply(mod, function(x) length(x))$V1
 
-  if(time) num.betas[6] <- num.betas[6] + pao2$nseasons
+  if(is.annual) num.betas[6] <- num.betas[6] + pao2$nseasons
 
   # check for quadratic terms with significant wrong sign
   test.quad <- 1.96    					# for most models, require all quads to have correct sign

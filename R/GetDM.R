@@ -7,8 +7,8 @@
 #' @param cov_list List containing the index of covariates to include in each model
 #' @param psi_list List containing the index of covariates on psi to include in each model
 #' @param index Integer indicating which element in cov_list/psi_list to use
-#' @param het Logical; Should heterogeniety in detection be modeled? (default = TRUE)
-#' @param time Logical; Should detection vary annually? (default = TRUE)
+#' @param is.het Logical; Should heterogeniety in detection be modeled? (default = TRUE)
+#' @param is.annual Logical; Should detection vary annually? (default = TRUE)
 #' @param coord.p Logical; Should detection vary by lat/long (default = TRUE)
 #' @param coord.th Logical; Should local availabilty vary by lat/long (default = TRUE)
 #' @return A list containing 6 design matrices
@@ -21,7 +21,7 @@
 #' @export
 
 GetDM	<- function(pao,  start_yr = 1997, cov_list,
-                  het, time, coord.p = TRUE, coord.th = TRUE) {
+                  is.het, is.annual, coord.p = TRUE, coord.th = TRUE) {
 
 
   n_surv <- pao$nsurveys  # total num of surveys
@@ -118,7 +118,7 @@ GetDM	<- function(pao,  start_yr = 1997, cov_list,
              rep(c(rep(1, n_count),
                    rep(0, n_surv)), n_seas - 1))
   time2	<- matrix(time1, nrow = n_surv, ncol = n_seas - 1)  # warning is ok
-  if(time == FALSE)	time2 <- NULL
+  if(is.annual == FALSE)	time2 <- NULL
 
   coord.ind.p <- grep('Lat|Lon', cov_list$p1.cov)
   coord.mat.p <- matrix(rep(cov_list$p1.cov[coord.ind.p], n_surv), nrow = n_surv, byrow = TRUE)
@@ -140,8 +140,8 @@ GetDM	<- function(pao,  start_yr = 1997, cov_list,
   dm4 <- rbind(cbind(p1.dm, zeros), cbind(zeros, p1.dm))
   rownames(dm4) <- c(paste0('p1(', 1:n_surv,')'),paste0('p2(', 1:n_surv,')'))     # for het
 
-  if(het == FALSE) dm4 <- p1.dm
-  if(het == FALSE) rownames(dm4) <- c(paste0('p1(',1:n_surv,')'))     	# could get rid of parentheses
+  if(is.het == FALSE) dm4 <- p1.dm
+  if(is.het == FALSE) rownames(dm4) <- c(paste0('p1(',1:n_surv,')'))     	# could get rid of parentheses
   colnames(dm4) <- paste0('d', 1:dim(dm4)[2])
 
   # theta.pi

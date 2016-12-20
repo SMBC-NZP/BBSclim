@@ -4,7 +4,7 @@
 \alias{RunGamMods}
 \title{RunGamMods}
 \usage{
-RunGamMods(pao, alpha, mods = gam_mods, del = TRUE, ..., test = FALSE,
+RunGamMods(pao, alpha, mods = gam_mods, del = TRUE, ..., is.test = FALSE,
   trim = TRUE, Parallel = TRUE)
 }
 \arguments{
