@@ -57,9 +57,9 @@ spp_psi_aic <- RunPsiMods(pao = spp_pao, mods = psi_mods, alpha = alpha,
 ### Run gam/eps models with top covariates from psi models
 spp_psi_covs <- top_covs(aic_tab = spp_psi_aic, mods = psi_mods)
 
-gam_mods <- GetGamMods(psi_covs = spp_psi_covs)
+gam_mods <- GetGamMods(psi_covs = spp_psi_covs)[1:150]
 
-spp_gam_aic <- RunGamMods(pao = spp_pao, mods = gam_mods, alpha = alpha, test = Test,
+spp_gam_aic <- RunGamMods(pao = spp_pao, mods = gam_mods, alpha = alpha,
                           time = annual, het = het_det, del = FALSE)
 
 # spp_gam_aic <- read.csv("inst/output/aic/gam/lowa.csv")

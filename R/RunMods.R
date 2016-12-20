@@ -270,6 +270,24 @@ RunGamMods <- function(pao, alpha, mods = gam_mods, del = TRUE, ...,
     }
   }
 
+  b <- scan(paste0('inst/output/pres/temp/', alpha, "_gam_model_961.out"), what='c',sep='\n',quiet=TRUE)
+
+  j <- grep('-2log', b)
+  loglike <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
+
+  ## Extract AIC
+  j <- grep('AIC', b)
+  aic <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
+
+  ## Number of parameters
+  j <- grep('of par', b)
+  n  <- as.numeric(unlist(strsplit(a[b],'=',2))[2])
+
+  aic_last <- dplyr::data_frame(Model = paste0(alpha, "_gam_model_961"), Model_num = 961, LogLik = loglike, nParam = n,
+                                AIC = aic)
+
+  aic_table <- dplyr::bind_rows(aic_table, aic_last)
+
   if(del) file.remove(paste0("inst/output/pres/temp/", modname, ".out"))
   ## Add delta AIC column and sort by delta AIC
   aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC, na.rm = TRUE))
