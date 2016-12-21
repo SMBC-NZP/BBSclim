@@ -16,7 +16,7 @@ gof <- function(alpha, mods, pao){
   
   aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
   
-  clim_data <- read.csv(paste0("inst/output/", alpha, "/route_clim.csv"))
+  clim_data <- pao$unitcov
   
   det_hist <- pao$det.data
   
@@ -63,10 +63,10 @@ gof <- function(alpha, mods, pao){
                             th1.coefs=th1.coefs, gam.coefs=gam.coefs,
                             eps.coefs=eps.coefs, p1.coefs=p1.coefs,
                             p2.coefs=p2.coefs, pi.coefs=pi.coefs, years=year_seq,
-                            is.het = model_opts$het, is.annual = model_opts$annual, det_hist)
+                            is.het = model_opts$het, is.annual = model_opts$annual, det_hist, opts = global_opts)
 
     ## Create .pao file for simulated data
-    write_pao(alpha = alpha, is.tenstops = global_opts$tenstops, sim = TRUE)
+    write_pao(alpha = alpha, sim = TRUE)
 
     sim_pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/pres/sim.pao"))
 
@@ -82,7 +82,7 @@ gof <- function(alpha, mods, pao){
       ## Run model
       write_dm_and_run2(pao = sim_pao, cov_list = covs_use, is.het = model_opts$het, dm_list = sim_dm,
                         modname = sim_name, fixed = TRUE, 
-                        inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
+                        inits = TRUE, maxfn = '35000 vc lmt=5', alpha = alpha)
 
       ## Test whether coefs from simulated data are similar to coefs from top model
       gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use, 
@@ -116,7 +116,7 @@ gof <- function(alpha, mods, pao){
 
 sim.bbs.ms <-  function(covs, psi.coefs, th0.coefs, th1.coefs,
                         gam.coefs, eps.coefs, p1.coefs, p2.coefs,
-                        pi.coefs, years, cov_data, is.annual, is.het, det_hist) {
+                        pi.coefs, years, cov_data, is.annual, is.het, det_hist, opts) {
 
   # initial occupancy
 
@@ -127,7 +127,7 @@ sim.bbs.ms <-  function(covs, psi.coefs, th0.coefs, th1.coefs,
 
 
   # the scale.stop is the effect of stop number (i.e., time of day)
-  if(is.tenstops){tot.stops <- 5}else{tot.stops <- 50}
+  if(opts$tenstops){tot.stops <- 5}else{tot.stops <- 50}
   scale.stop <- cbind(scale(1:tot.stops), scale(1:tot.stops)^2)
   stop.ind <- grep('Stop', covs$p1.cov)
   coord.p <- grep('Lat|Lon', covs$p1.cov)  # which covariates are for lat/long
@@ -201,7 +201,7 @@ sim.bbs.ms <-  function(covs, psi.coefs, th0.coefs, th1.coefs,
     history2 <- cbind(history2, history[, ii, ])
   }
 
-  write.csv(history2, file = paste0("inst/output/", alpha, "/pres/sim_hist.csv"), row.names = FALSe)
+  write.csv(history2, file = paste0("inst/output/", alpha, "/pres/sim_hist.csv"), row.names = FALSE)
 } # end function
 
 
