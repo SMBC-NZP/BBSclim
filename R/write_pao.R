@@ -7,11 +7,12 @@
 #' @return A .pao file containing the detection histories, covariates, and summary information to input into Presence
 #' @export
 
-write_pao <- function(alpha, is.tenstops, sim = FALSE){
+write_pao <- function(alpha, sim = FALSE){
+  opts <- read.csv("inst/global_opts.csv")
   covs <- read.csv(paste0("inst/output/", alpha, "/route_clim.csv"))
   
   common <- code_lookup$common[code_lookup$alpha == toupper(alpha)]
-  if(is.tenstops) {tot_stops <- 5}else{tot_stops <- 50}
+  if(opts$tenstop) {tot_stops <- 5}else{tot_stops <- 50}
 
   if(!sim){
     counts <- read.csv(paste0("inst/output/", alpha, "/count_buff.csv"))

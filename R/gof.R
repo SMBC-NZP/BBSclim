@@ -8,15 +8,17 @@
 #' @export
 #'
 
-gof <- function(alpha, mods, det_hist){
-  opts <- read.csv("inst/model_opts.csv")
-  opts2 <- read.csv("inst/global_opts.csv")
+gof <- function(alpha, mods, pao){
+  model_opts <- read.csv("inst/model_opts.csv")
+  global_opts <- read.csv("inst/global_opts.csv")
   
-  year_seq <- seq(from = opts2$start_yr, to = opts2$end_yr)
+  year_seq <- seq(from = global_opts$start_yr, to = global_opts$end_yr)
   
   aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
   
   clim_data <- read.csv(paste0("inst/output/", alpha, "/route_clim.csv"))
+  
+  det_hist <- pao$det.data
   
   gof.pass <- 0
   model.num <- 0
@@ -61,10 +63,10 @@ gof <- function(alpha, mods, det_hist){
                             th1.coefs=th1.coefs, gam.coefs=gam.coefs,
                             eps.coefs=eps.coefs, p1.coefs=p1.coefs,
                             p2.coefs=p2.coefs, pi.coefs=pi.coefs, years=year_seq,
-                            is.het = opts$het, is.annual = opts$annual, det_hist)
+                            is.het = model_opts$het, is.annual = model_opts$annual, det_hist)
 
     ## Create .pao file for simulated data
-    write_pao(alpha = alpha, is.tenstops = opts$tenstops, sim = TRUE)
+    write_pao(alpha = alpha, is.tenstops = global_opts$tenstops, sim = TRUE)
 
     sim_pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/pres/sim.pao"))
 
@@ -73,12 +75,12 @@ gof <- function(alpha, mods, det_hist){
       if(length(p2.coefs) == 0)  initvals <- c(initvals, p2.coefs, pi.coefs)
 
       ## Create design matrices for model
-      sim_dm <- GetDM(pao = sim_pao, cov_list = covs_use, is.het = opts$het, is.annual = opts$annual)
+      sim_dm <- GetDM(pao = sim_pao, cov_list = covs_use, is.het = model_opts$het, is.annual = model_opts$annual)
 
       sim_name <- paste0(alpha, "_sim")
 
       ## Run model
-      write_dm_and_run2(pao = sim_pao, cov_list = covs_use, is.het = opts$het, dm_list = sim_dm,
+      write_dm_and_run2(pao = sim_pao, cov_list = covs_use, is.het = model_opts$het, dm_list = sim_dm,
                         modname = sim_name, fixed = TRUE, 
                         inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
 
@@ -86,7 +88,7 @@ gof <- function(alpha, mods, det_hist){
       gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use, 
                                     Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs, 
                                     Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
-                                    is.het = opts$het, is.annual = opts$annual)
+                                    is.het = model_opts$het, is.annual = model_opts$annual)
 
       if(gof.pass){
         # If model passes GOF test, change output file name to "top_mod.out"
@@ -97,6 +99,7 @@ gof <- function(alpha, mods, det_hist){
         files2zip <- dir(paste0("inst/output/", alpha, "/pres"), full.names = TRUE)
         zip(zipfile = paste0("inst/output/", alpha, '/presZip'), files = files2zip)
         
+        unlink(paste0("inst/output/", alpha, "/pres"), recursive = TRUE)
       }else{
         # If model does not pass GOF test, delete sim.out file so Presence can run again
         temp.files <- list.files(paste0("inst/output/", alpha, "/pres"))

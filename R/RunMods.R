@@ -161,7 +161,7 @@ top_covs <- function(alpha, mods, psi = TRUE){
 #' @export
 
 
-RunGamMods <- function(alpha, mods = gam_mods){
+RunGamMods <- function(alpha, pao, mods = gam_mods){
   opts <- read.csv("inst/model_opts.csv")
   
   if(opts$Parallel){
@@ -281,7 +281,7 @@ RunGamMods <- function(alpha, mods = gam_mods){
   
   ## Number of parameters
   j <- grep('of par', b)
-  n  <- as.numeric(unlist(strsplit(a[b],'=',2))[2])
+  n  <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
   
   aic_last <- dplyr::data_frame(Model = "gam_model_961", Model_num = 961, LogLik = loglike, nParam = n,
                                 AIC = aic)
