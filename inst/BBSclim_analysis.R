@@ -51,7 +51,7 @@ write_pao(counts = spp_buff, covs = spp_clim, alpha = alpha, is.tenstops = tenst
 ### Run psi models
 psi_mods <- GetPsiMods()
 
-spp_pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/spp.pao"))
+spp_pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/pres/pres_in.pao"))
 
 
 spp_psi_aic <- RunPsiMods(pao = spp_pao, mods = psi_mods, alpha = alpha, is.test = test,

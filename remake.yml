@@ -12,7 +12,7 @@ packages:
 targets:
   all:
     depends:
-      - inst/output/lowa/gam_aic.csv
+      - inst/output/lowa/top_mod.out
       - inst/output/lowa/route_map.pdf
 
 ## Load objects used for all species
@@ -95,7 +95,8 @@ targets:
       - inst/model_opts.csv
       - inst/global_opts.csv
       - inst/output/lowa/route_clim.csv
-  
+    quiet: TRUE
+    
 
 ## Generate indices
 

@@ -60,9 +60,23 @@ write_pao <- function(alpha, sim = FALSE){
   }else{
     det_hist <- read.csv(paste0("inst/output/", alpha, "/pres/sim_hist.csv"))
 
-    sitecovs <- covs
+    spp_clim <- dplyr::arrange(covs, routeID)
+    spp_clim2 <- dplyr::rename(spp_clim, Lat = Latitude, Lon = Longitude)
+    spp_clim2 <- dplyr::mutate(spp_clim2, Lat = (Lat - mean(Lat))/sd(Lat),
+                               Lon = (Lon - mean(Lon))/sd(Lon))
+    spp_clim3 <- dplyr::mutate(spp_clim2, sq_Lat = Lat ^ 2, sq_Lon = Lon ^ 2)
+    
+    for(ss in 1:tot_stops) {
+      sc <- scale(1:tot_stops)[ss];        #names(sc)  <- paste0('Stop',ss)
+      sc2 <- (scale(1:tot_stops)[ss])^2;   #names(sc2) <- paste0('sqStop',ss)
+      spp_clim3   <- cbind(spp_clim3, sc, sc2)
+      colnames(spp_clim3)[ncol(spp_clim3)-1] <- paste0('Stop',ss)
+      colnames(spp_clim3)[ncol(spp_clim3)] <- paste0('sq_Stop',ss)
+    }
+    
+    sitecovs	<- dplyr::select(spp_clim3, -routeID)
 
-    n_seasons <- dim(counts)[2] / tot_stops
+    n_seasons <- dim(det_hist)[2] / tot_stops
 
     spp_pao <- RPresence::create.pao(data = det_hist, nsurveyseason = rep(tot_stops, n_seasons),
                                      unitcov = sitecovs, survcov = NULL,

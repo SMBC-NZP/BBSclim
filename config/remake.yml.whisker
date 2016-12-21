@@ -13,7 +13,7 @@ targets:
   all:
     depends:
 {{#spp_names}}
-      - inst/output/{{spp_name}}/gam_aic.csv
+      - inst/output/{{spp_name}}/top_mod.out
       - inst/output/{{spp_name}}/route_map.pdf
 {{/spp_names}}
 
@@ -102,7 +102,8 @@ targets:
       - inst/model_opts.csv
       - inst/global_opts.csv
       - inst/output/{{spp_name}}/route_clim.csv
-  
+    quiet: TRUE
+    
 {{/spp_names}}
 
 
