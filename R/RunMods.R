@@ -269,6 +269,7 @@ RunGamMods <- function(alpha, mods = gam_mods){
     }
   }
 
+
   b <- scan(paste0("inst/output/", alpha, "/pres/gam_model_961.out"), what='c',sep='\n',quiet=TRUE)
   
   j <- grep('-2log', b)
@@ -287,6 +288,7 @@ RunGamMods <- function(alpha, mods = gam_mods){
   
   aic_table <- dplyr::bind_rows(aic_table, aic_last)
   
+
   ## Add delta AIC column and sort by delta AIC
   aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC, na.rm = TRUE))
   aic_table <- dplyr::arrange(aic_table, delta_AIC)
