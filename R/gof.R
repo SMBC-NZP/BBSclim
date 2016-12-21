@@ -8,16 +8,26 @@
 #' @export
 #'
 
-gof <- function(aic_tab, mods, covs, year_seq, is.tenstops, alpha, ..., det_hist){
-
+gof <- function(alpha, mods, det_hist){
+  opts <- read.csv("inst/model_opts.csv")
+  opts2 <- read.csv("inst/global_opts.csv")
+  
+  year_seq <- seq(from = opts2$start_yr, to = opts2$end_yr)
+  
+  aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
+  
+  clim_data <- read.csv(paste0("inst/output/", alpha, "/route_clim.csv"))
+  
   gof.pass <- 0
   model.num <- 0
 
   while (gof.pass==0) {
+    ## Read in .out file for current top model
     modname <- aic_tab$Model[model.num + 1]
     modnum <- aic_tab$Model_num[model.num + 1]
-    mod_out <- scan(paste0("inst/output/", alpha, "/", modname,".out"), what='character', sep='\n', quiet=T)
+    mod_out <- scan(paste0("inst/output/", alpha, "/pres/", modname,".out"), what='character', sep='\n', quiet=T)
 
+    ## Extract beta coef estimates and se
     jj <- grep('std.error', mod_out)
     jj2 <- grep('Variance-Covariance Matrix of Untransformed', mod_out)
 
@@ -25,8 +35,10 @@ gof <- function(aic_tab, mods, covs, year_seq, is.tenstops, alpha, ..., det_hist
     coefs <- as.numeric(substr(betas, 41,50))
     std.er <- as.numeric(substr(betas, 54,63))
 
+    ## Covariates included in the current top model
     covs_use <- mods[[modnum]]
 
+    ## Beta coefs
     psi.coefs <- coefs[grep('psi',betas)]
     th0.coefs <- coefs[grep('th0',betas)]
     th1.coefs <- coefs[grep('th1',betas)]
@@ -38,44 +50,58 @@ gof <- function(aic_tab, mods, covs, year_seq, is.tenstops, alpha, ..., det_hist
     pi.coefs <- coefs[grep('pi1',betas)]
     if(length(pi.coefs)==0)		pi.coefs <- 0		# if no het
 
-    sim.data	<- sim.bbs.ms(covs = covs_use, cov_data = covs,
+    ## se
+    psi.se <- std.er[grep('psi', betas)]
+    gam.se <- std.er[grep('gam', betas)]
+    eps.se <- std.er[grep('eps', betas)]
+    
+    ## Simulate new detection history from top model
+    sim.data	<- sim.bbs.ms(covs = covs_use, cov_data = clim_data,
                             psi.coefs=psi.coefs, th0.coefs=th0.coefs,
                             th1.coefs=th1.coefs, gam.coefs=gam.coefs,
                             eps.coefs=eps.coefs, p1.coefs=p1.coefs,
                             p2.coefs=p2.coefs, pi.coefs=pi.coefs, years=year_seq,
-                            ..., det_hist)
+                            is.het = opts$het, is.annual = opts$annual, det_hist)
 
-    write_pao(counts = sim.data, covs = covs, alpha = alpha, sim = TRUE, is.tenstops = is.tenstops)
+    ## Create .pao file for simulated data
+    write_pao(alpha = alpha, is.tenstops = opts$tenstops, sim = TRUE)
 
-    sim_pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/sim.pao"))
+    sim_pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/pres/sim.pao"))
 
+    ## Run Presence on simulated data
       initvals <- c(psi.coefs, th0.coefs, th1.coefs, gam.coefs, eps.coefs, p1.coefs)
       if(length(p2.coefs) == 0)  initvals <- c(initvals, p2.coefs, pi.coefs)
 
       ## Create design matrices for model
-      sim_dm <- GetDM(pao = sim_pao, cov_list = covs_use, ...)
+      sim_dm <- GetDM(pao = sim_pao, cov_list = covs_use, is.het = opts$het, is.annual = opts$annual)
 
       sim_name <- paste0(alpha, "_sim")
 
       ## Run model
-      write_dm_and_run2(pao = sim_pao, cov_list = covs_use, ..., dm_list = sim_dm,
-                        modname = sim_name, fixed = TRUE, out = "temp",
+      write_dm_and_run2(pao = sim_pao, cov_list = covs_use, is.het = opts$het, dm_list = sim_dm,
+                        modname = sim_name, fixed = TRUE, 
                         inits = TRUE, maxfn = '35000 lmt=5', alpha = alpha)
 
-      gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use, ...)
+      ## Test whether coefs from simulated data are similar to coefs from top model
+      gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use, 
+                                    Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs, 
+                                    Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
+                                    is.het = opts$het, is.annual = opts$annual)
 
       if(gof.pass){
-        file.rename(from = paste0("inst/output/", alpha, "/", modname, ".out"),
+        # If model passes GOF test, change output file name to "top_mod.out"
+        file.rename(from = paste0("inst/output/", alpha, "/pres/", modname, ".out"),
                     to = paste0("inst/output/", alpha, "/top_mod.out"))
-        temp.files <- list.files(paste0("inst/output/", alpha))
-        out.files <- temp.files(grep(".out", temp.files))
-        file.remove(paste0("inst/output/", alpha, "/", out.files))
-        dm.files <- temp.files(grep(".dm", temp.files))
-        file.remove(paste0("inst/output/", alpha, "/", dm.files))
+        
+        # Zip pres folder containing all other .out files
+        files2zip <- dir(paste0("inst/output/", alpha, "/pres"), full.names = TRUE)
+        zip(zipfile = paste0("inst/output/", alpha, '/presZip'), files = files2zip)
+        
       }else{
-        temp.files <- list.files(paste0("inst/output/", alpha))
+        # If model does not pass GOF test, delete sim.out file so Presence can run again
+        temp.files <- list.files(paste0("inst/output/", alpha, "/pres"))
         sim.file <- temp.files[grep("sim", temp.files)]
-        file.remove(paste0("inst/output/", alpha, "/", sim.file))
+        file.remove(paste0("inst/output/", alpha, "/pres/", sim.file))
       }
     }  # end while loop
 
@@ -172,7 +198,7 @@ sim.bbs.ms <-  function(covs, psi.coefs, th0.coefs, th1.coefs,
     history2 <- cbind(history2, history[, ii, ])
   }
 
-  history2
+  write.csv(history2, file = paste0("inst/output/", alpha, "/pres/sim_hist.csv"), row.names = FALSe)
 } # end function
 
 
@@ -181,14 +207,16 @@ sim.bbs.ms <-  function(covs, psi.coefs, th0.coefs, th1.coefs,
 #' Bootstrap GOF test: test if parameters from top model run with simulated data are consistent with original estimates
 #' @return 1 if simulated and observed estimates are similar (model not overfit); 0 otherwise
 
-test.presence.gof	<- function(modname, large = 4, pao2, mod, is.annual, is.het) {
+test.presence.gof	<- function(modname, large = 4, pao2, mod, is.annual, is.het,
+                              Psi.coefs, Gam.coefs, Eps.coefs, Psi.se, Gam.se, Eps.se) {
 
-  ###	read the output of the file we just ran
-  mod_out2 <- scan(paste0("inst/output/", alpha, "/", modname ,".out"), what='character', sep='\n', quiet=T)
+  ###	read the output from simulated model
+  mod_out2 <- scan(paste0("inst/output/", alpha, "/pres/", modname ,".out"), what='character', sep='\n', quiet=T)
 
 
+  ## Extract beta coefs and se
   jjx <- grep('std.error', mod_out2)
-  jjx2 <- grep('Individual Site estimates of <psi>', mod_out2)
+  jjx2 <- grep('Variance-Covariance Matrix of Untransformed', mod_out2)
   betas2 <- mod_out2[(jjx + 1):(jjx2 - 1)]
   coefs2 <- as.numeric(substr(betas2, 41,50))
   std.er2 <- as.numeric(substr(betas2, 54,63))
@@ -219,20 +247,15 @@ test.presence.gof	<- function(modname, large = 4, pao2, mod, is.annual, is.het) 
   gam.coefs2 <- coefs2[grep('gam',betas2)]
   eps.coefs2 <- coefs2[grep('eps',betas2)]
 
-  psi.se <- std.er[grep('psi',betas)]
-  gam.se <- std.er[grep('gam',betas)]
-  eps.se <- std.er[grep('eps',betas)]
+  psi.se2 <- std.er2[grep('psi', betas2)]
+  gam.se2 <- std.er2[grep('gam', betas2)]
+  eps.se2 <- std.er2[grep('eps', betas2)]
 
-  psi.se2 <- std.er2[grep('psi',betas2)]
-  gam.se2 <- std.er2[grep('gam',betas2)]
-  eps.se2 <- std.er2[grep('eps',betas2)]
-
-  z.score <- (c(psi.coefs, gam.coefs, eps.coefs) - c(psi.coefs2, gam.coefs2, eps.coefs2))/sqrt(c(psi.se, gam.se, eps.se)^2 + c(psi.se2, gam.se2, eps.se2)^2)
+  z.score <- (c(Psi.coefs, Gam.coefs, Eps.coefs) - c(psi.coefs2, gam.coefs2, eps.coefs2))/sqrt(c(Psi.se, Gam.se, Eps.se)^2 + c(psi.se2, gam.se2, eps.se2)^2)
   #if(mean(abs(z.score)<1.96)>0.8)  gof.pass <- 1
   #if(model.num==nrow(t))	   gof.pass <- 1
 
 
-  # could let NA on p slide
   wonky <- min(min(!is.na(std.er2[1:sum(num.betas[1:5])]) > 0), min(abs(!is.na(std.er2))) < large,
                mean(psi.check, na.rm=T), mean(gam.check, na.rm=T), mean(eps.check, na.rm=T),
                mean(abs(z.score)<1.96)>0.8)

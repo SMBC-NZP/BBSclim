@@ -7,11 +7,14 @@
 #' @return A .pao file containing the detection histories, covariates, and summary information to input into Presence
 #' @export
 
-write_pao <- function(counts, covs, alpha, sim = FALSE, is.tenstops){
+write_pao <- function(alpha, is.tenstops, sim = FALSE){
+  covs <- read.csv(paste0("inst/output/", alpha, "/route_clim.csv"))
+  
   common <- code_lookup$common[code_lookup$alpha == toupper(alpha)]
   if(is.tenstops) {tot_stops <- 5}else{tot_stops <- 50}
 
   if(!sim){
+    counts <- read.csv(paste0("inst/output/", alpha, "/count_buff.csv"))
     n_seasons <- max(counts$Year) - min(counts$Year) + 1
 
 
@@ -51,10 +54,11 @@ write_pao <- function(counts, covs, alpha, sim = FALSE, is.tenstops){
     spp_pao <- RPresence::create.pao(data = det_hist, nsurveyseason = rep(tot_stops, n_seasons),
                                      unitcov = sitecovs, survcov = NULL,
                                      title = paste(common, "PRESENCE Analysis", sep = " "),
-                                     paoname = paste0("inst/output/", alpha, "/spp.pao"))
+                                     paoname = paste0("inst/output/", alpha, "/pres/pres_in.pao"))
 
   }else{
-    det_hist <- counts
+    det_hist <- read.csv(paste0("inst/output/", alpha, "/pres/sim_hist.csv"))
+
     sitecovs <- covs
 
     n_seasons <- dim(counts)[2] / tot_stops
@@ -62,8 +66,7 @@ write_pao <- function(counts, covs, alpha, sim = FALSE, is.tenstops){
     spp_pao <- RPresence::create.pao(data = det_hist, nsurveyseason = rep(tot_stops, n_seasons),
                                      unitcov = sitecovs, survcov = NULL,
                                      title = paste(common, "PRESENCE Analysis", sep = " "),
-                                     paoname = paste0("inst/output/", alpha, "/sim.pao"))
+                                     paoname = paste0("inst/output/", alpha, "/pres/sim.pao"))
   }
   RPresence::write.pao(pao = spp_pao)
-  # spp_pao
 }

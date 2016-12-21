@@ -15,8 +15,14 @@
 #' @export
 
 
-buffer_BBS	<- function(alpha, spp_count, bbs, buffer = 2, method = "rec") {
+buffer_BBS	<- function(alpha, bbs, buffer = 2, method = "rec", raw = FALSE) {
 
+  if(raw){
+    spp_count <- read.csv(paste0("inst/output/", alpha, "/raw_counts.csv"))
+  }else{
+    spp_count <- read.csv(paste0("inst/output/", alpha, "/no_outlier_counts.csv"))
+  }
+  
   route_atrb <- bbs$routes
   
   if(method == "rec"){

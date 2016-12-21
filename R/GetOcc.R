@@ -29,8 +29,8 @@ GetOccProb <- function(betas, alpha, years, buff_method = "rec", buffer){
       r.psi[,yy]<- r.psi[, yy - 1] * (1 - r.eps) + (1 - r.psi[, yy - 1]) * r.gam
     }
 
-    all.values <- getValues(NA_biovars$biovars1997[[1]])   # extract climate values
-    coord.all <- coordinates(NA_biovars$biovars1997)
+    all.values <- raster::getValues(NA_biovars$biovars1997[[1]])   # extract climate values
+    coord.all <- sp::coordinates(NA_biovars$biovars1997)
     coord     <- coord.all[!is.na(all.values),]
 
 
