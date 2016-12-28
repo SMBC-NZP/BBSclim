@@ -7,7 +7,11 @@
 #' @param buffer Dataframe containing the buffered spp count data
 #' @export
 
-GetOccProb <- function(betas, alpha, years, buff_method = "rec", buffer){
+GetOccProb <- function(alpha, betas, buff_method = "rec", Write = TRUE){
+    opts <- read.csv('inst/global_opts.csv')
+    years <- seq(from = opts$start_yr, to = opts$end_yr)
+  
+    buffer <- read.csv(paste0('inst/output/', alpha, '/count_buff.csv'))
     climate <- raster.to.array(alpha, years)
 
     r.psi <- matrix(0, dim(climate)[1], length(years))
@@ -41,15 +45,24 @@ GetOccProb <- function(betas, alpha, years, buff_method = "rec", buffer){
 
     psi.df2 <- tidyr::gather(psi.df, -lat, -lon, key = "Year", value = "Prob")
 
-    if(is.null(buff_method)){
-      write.csv(psi.df2, file = paste0("inst/output/", alpha, "/occ.csv"), row.names = FALSE)
-      psi.df2
+    if(Write){
+      if(is.null(buff_method)){
+        write.csv(psi.df2, file = paste0("inst/output/", alpha, "/occ.csv"), row.names = FALSE)
+      }else{
+        psi.df3 <- dplyr::filter(psi.df2, lat < max(buffer$Latitude) + 2 & lat > min(buffer$Latitude) - 2 &
+                                   lon > min(buffer$Longitude) - 2 & lon < max(buffer$Longitude) + 2)
+        write.csv(psi.df3, file = paste0("inst/output/", alpha, "/occ.csv"), row.names = FALSE)
+      }
     }else{
-      psi.df3 <- dplyr::filter(psi.df2, lat < max(buffer$Latitude) + 2 & lat > min(buffer$Latitude) - 2 &
-                               lon > min(buffer$Longitude) - 2 & lon < max(buffer$Longitude) + 2)
-      write.csv(psi.df3, file = paste0("inst/output/", alpha, "/occ.csv"), row.names = FALSE)
-      psi.df3
-  }
+      if(is.null(buff_method)){
+        psi.df2
+      }else{
+        psi.df3 <- dplyr::filter(psi.df2, lat < max(buffer$Latitude) + 2 & lat > min(buffer$Latitude) - 2 &
+                                   lon > min(buffer$Longitude) - 2 & lon < max(buffer$Longitude) + 2)
+        psi.df3
+      }
+    }
+
 }
 
 #' raster.to.array
@@ -83,7 +96,7 @@ raster.to.array <- function(alpha, years) {
     dimnames(climate) <- list(1:(dim(climate)[1]),
                               c("int","tmp","sq_tmp","dtr","sq_dtr","Twet","sq_Twet","Prec","sq_Prec","Pwarm","sq_Pwarm"),
                               c(years))
-    climate
+   climate
 
   }   # end function
 

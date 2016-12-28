@@ -10,33 +10,41 @@
 #' @return    avg.lon = occupancy-weighted mean breeding longitude
 #' @export
 
-GetIndices <- function(prob_df, ...){
-
+GetIndices <- function(alpha){
+  prob_df <- read.csv(paste0('inst/output/', alpha, '/occ.csv'))
+  spp_buff <- read.csv(paste0('inst/output/', alpha, '/count_buff.csv'))
+  
+  opts <- read.csv('inst/global_opts.csv')
+  years <- seq(from = opts$start_yr, to = opts$end_yr)
+  
   prob_grp <- dplyr::group_by(prob_df, Year)
   prob_grp <- dplyr::mutate(prob_grp, cum.occ = cumsum(Prob)/sum(Prob))
-  avg.psi <- dplyr::summarise(prob_grp, avg.occ = mean(Prob))
-  avg.psi$se.occ <- delta(index = "avg.psi", est = avg.psi$avg.occ, ...)
-
-  s.lat <- dplyr::summarise(prob_grp, s.lat = range.limit(prob = Prob, coord = lat, limit = "south"))
-  s.lat$se.s.lat <- delta(index = "s.lat", est = s.lat$s.lat, ...)
-
-  n.lat <- dplyr::summarise(prob_grp, n.lat = range.limit(prob = Prob, coord = lat, limit = "north"))
-  n.lat$se.n.lat <- delta(index = "n.lat", est = n.lat$n.lat, ...)
-
-  avg.lat <- dplyr::summarise(prob_grp, avg.lat = sum(lat * Prob)/sum(Prob))
-  avg.lat$se.avg.lat <- delta(index = "avg.lat", est = avg.lat$avg.lat, ...)
-
-  avg.lon <- dplyr::summarise(prob_grp, avg.lon = sum(lon * Prob)/sum(Prob))
-  avg.lon$se.avg.lon <- delta(index = "avg.lon", est = avg.lon$avg.lon, ...)
-
-  indices <- dplyr::left_join(avg.psi, s.lat)
-  indices <- dplyr::left_join(indices, n.lat)
-  indices <- dplyr::left_join(indices, avg.lat)
-  indices <- dplyr::left_join(indices, avg.lon)
+  avg.psi <- dplyr::summarise(prob_grp, value = mean(Prob))
+  avg.psi$sd.err <- delta(index = "avg.psi", est = avg.psi$value, alpha, years, buff = spp_buff)
+  avg.psi$ind <- "avg.psi"
+  
+  s.lat <- dplyr::summarise(prob_grp, value = range.limit(prob = Prob, coord = lat, limit = "south"))
+  s.lat$sd.err <- delta(index = "s.lat", est = s.lat$value, alpha, years, buff = spp_buff)
+  s.lat$ind <- "s.lat"
+  
+  n.lat <- dplyr::summarise(prob_grp, value = range.limit(prob = Prob, coord = lat, limit = "north"))
+  n.lat$sd.err <- delta(index = "n.lat", est = n.lat$value, alpha, years, buff = spp_buff)
+  n.lat$ind <- "n.lat"
+  
+  avg.lat <- dplyr::summarise(prob_grp, value = sum(lat * Prob)/sum(Prob))
+  avg.lat$sd.err <- delta(index = "avg.lat", est = avg.lat$value, alpha, years, buff = spp_buff)
+  avg.lat$ind <- "avg.lat"
+  
+  avg.lon <- dplyr::summarise(prob_grp, value = sum(lon * Prob)/sum(Prob))
+  avg.lon$sd.err <- delta(index = "avg.lon", est = avg.lon$value, alpha, years, buff = spp_buff)
+  avg.lon$ind <- "avg.lon"
+  
+  indices <- dplyr::bind_rows(avg.psi, s.lat)
+  indices <- dplyr::bind_rows(indices, n.lat)
+  indices <- dplyr::bind_rows(indices, avg.lat)
+  indices <- dplyr::bind_rows(indices, avg.lon)
 
   write.csv(indices, file = paste0("inst/output/", alpha, "/indices.csv"), row.names = FALSE)
-
-  indices
 }
 
 #' delta
@@ -58,7 +66,7 @@ delta <- function(index, est, alpha, years, buff, epslon = 0.1e-10) {
         betas2 <- list(psi.betas = all.betas[1:len.psi],
                        gam.betas = all.betas[(len.psi+1):(len.psi + len.gam)],
                        eps.betas = all.betas[(len.psi + len.gam + 1):length(all.betas)])
-        prob_df2 <- GetOccProb(betas2, alpha, years, buffer = buff)
+        prob_df2 <- GetOccProb(alpha, betas2, Write = FALSE)
         prob_grp2 <- dplyr::group_by(prob_df2, Year)
         prob_grp2 <- dplyr::mutate(prob_grp2, cum.occ = cumsum(Prob)/sum(Prob))
         if(index == "avg.psi"){

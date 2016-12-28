@@ -80,9 +80,8 @@ spp_gof <- gof(aic_tab = spp_gam_aic, mods = gam_mods, covs = spp_pao$unitcov,
 
 ### Estimate annual occupancy probability for all raster cells in range
 spp_betas <- GetBetas(alpha)
-spp_occ <- GetOccProb(spp_betas, alpha, years, buffer = spp_buff)
+GetOccProb(alpha = alpha, betas = spp_betas)
 
-ggplot(spp_occ, aes(x = lon, y = lat, fill = Prob)) + geom_raster() + facet_wrap(~Year)
 
 ### Estimate annual indices of range dynamics
-spp_ind <- GetIndices(prob_df = spp_occ, alpha, years, spp_buff)
+GetIndices(alpha)
