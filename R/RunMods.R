@@ -4,16 +4,17 @@
 #' @param pao .pao file for species of interest
 #' @param alpha alpha code for species of interest
 #' @param psi_mods list containing the parameters for each model to evaluate
-#' @param del Should .out files be deleted after model output in evaluated?
-#' @param is.annual Does p vary annually?
-#' @param is.het Heterogeneous detection?
 #' @export
 
 RunPsiMods <- function(alpha, pao, mods = psi_mods){
     opts <- read.csv("inst/model_opts.csv")
-    
+
     if(opts$Parallel){
       cores <- parallel::detectCores()
+      if(!is.null(opts$limit.cores)){
+        cores <- min(cores, opts$limit.cores)
+      }
+
       cl <- parallel::makeCluster(cores)
       doParallel::registerDoParallel(cl)
 
@@ -29,10 +30,10 @@ RunPsiMods <- function(alpha, pao, mods = psi_mods){
                                       spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = opts$annual, is.het = opts$het)
 
                                       ## Run model
-                                      BBSclim::write_dm_and_run2(pao = pao, cov_list = mods[[i]], 
-                                                                 is.het = opts$het, 
+                                      BBSclim::write_dm_and_run2(pao = pao, cov_list = mods[[i]],
+                                                                 is.het = opts$het,
                                                                  dm_list = spp_dm,
-                                                                 modname = modname, fixed = TRUE, 
+                                                                 modname = modname, fixed = TRUE,
                                                                  inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
 
                                       ## Read output file
@@ -158,13 +159,20 @@ top_covs <- function(alpha, mods, psi = TRUE){
 #'
 #' Runs full model set for 961 gamma/epsilon models, evaluate each, write and return AIC table, delete .out files (optional)
 #' @param gam_mods list containing the covariates for each model
+#' @param limit.cores Optional limit to the # of cores used for parallel
 #' @export
 
 
 RunGamMods <- function(alpha, pao, mods = gam_mods){
   opts <- read.csv("inst/model_opts.csv")
-  
+
   if(opts$Parallel){
+
+    cores <- parallel::detectCores()
+    if(!is.null(opts$limit.cores)){
+      cores <- min(cores, opts$limit.cores)
+    }
+
     cores <- parallel::detectCores()
     cl <- parallel::makeCluster(cores)
     doParallel::registerDoParallel(cl)
@@ -183,14 +191,14 @@ RunGamMods <- function(alpha, pao, mods = gam_mods){
 
                                     ## Run model
                                     BBSclim::write_dm_and_run2(pao = pao, cov_list = mods[[i]], is.het = opts$het, dm_list = spp_dm,
-                                                               modname = modname, fixed = TRUE, 
+                                                               modname = modname, fixed = TRUE,
                                                                inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
 
                                     ## Read output file
                                     a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
                                     ## Evaluate model (if model converges, will equal TRUE)
-                                    check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = TRUE, 
+                                    check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = TRUE,
                                                                is.het = opts$het, is.annual = opts$annual)
 
                                     if(check == FALSE){ # If model does not converge, save NA in AIC table
@@ -230,7 +238,7 @@ RunGamMods <- function(alpha, pao, mods = gam_mods){
 
       ## Run model
       write_dm_and_run2(pao = pao, cov_list = mods[[i]], is.het = opts$het, dm_list = spp_dm,
-                        modname = modname, fixed = TRUE, 
+                        modname = modname, fixed = TRUE,
                         inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
 
       ## Read output file
@@ -271,23 +279,23 @@ RunGamMods <- function(alpha, pao, mods = gam_mods){
 
 
   b <- scan(paste0("inst/output/", alpha, "/pres/gam_model_961.out"), what='c',sep='\n',quiet=TRUE)
-  
+
   j <- grep('-2log', b)
   loglike <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
-  
+
   ## Extract AIC
   j <- grep('AIC', b)
   aic <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
-  
+
   ## Number of parameters
   j <- grep('of par', b)
   n  <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
-  
+
   aic_last <- dplyr::data_frame(Model = "gam_model_961", Model_num = 961, LogLik = loglike, nParam = n,
                                 AIC = aic)
-  
+
   aic_table <- dplyr::bind_rows(aic_table, aic_last)
-  
+
 
   ## Add delta AIC column and sort by delta AIC
   aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC, na.rm = TRUE))

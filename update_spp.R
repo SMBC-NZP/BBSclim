@@ -12,7 +12,8 @@ model_opts <- data.frame(het = TRUE,       # Heterogeneous detection?
                          annual = TRUE,    # Annual variation in p?
                          psi.test = TRUE,  # Run subset of psi models?
                          gam.test = TRUE,  # Run subset of gam models?
-                         Parallel = TRUE)      # Delete .out files once top model is selected?
+                         Parallel = TRUE,
+                         limit.cores = 50)      # Delete .out files once top model is selected?
 
 write.csv(model_opts, "inst/model_opts.csv", row.names = FALSE)
 
