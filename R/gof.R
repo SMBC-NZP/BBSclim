@@ -11,15 +11,15 @@
 gof <- function(alpha, mods, pao){
   model_opts <- read.csv("inst/model_opts.csv")
   global_opts <- read.csv("inst/global_opts.csv")
-  
+
   year_seq <- seq(from = global_opts$start_yr, to = global_opts$end_yr)
-  
+
   aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
-  
+
   clim_data <- pao$unitcov
-  
+
   det_hist <- pao$det.data
-  
+
   gof.pass <- 0
   model.num <- 0
 
@@ -38,7 +38,18 @@ gof <- function(alpha, mods, pao){
     std.er <- as.numeric(substr(betas, 54,63))
 
     ## Covariates included in the current top model
-    covs_use <- mods[[modnum]]
+    if(modnum == 961){
+      covs_use <- list(psi.cov = mods[[1]]$psi.cov, th0.cov = mods[[1]]$th0.cov,
+                       th1.cov = mods[[1]]$th1.cov,
+                       gam.cov = c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet",
+                                   "Prec", "sq_Prec", "Pwarm", "sq_Pwarm"),
+                       eps.cov = c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet",
+                                   "Prec", "sq_Prec", "Pwarm", "sq_Pwarm"),
+                       p1.cov = mods[[1]]$p1.cov)
+    }else{
+      covs_use <- mods[[modnum]]
+    }
+
 
     ## Beta coefs
     psi.coefs <- coefs[grep('psi',betas)]
@@ -56,7 +67,7 @@ gof <- function(alpha, mods, pao){
     psi.se <- std.er[grep('psi', betas)]
     gam.se <- std.er[grep('gam', betas)]
     eps.se <- std.er[grep('eps', betas)]
-    
+
     ## Simulate new detection history from top model
     sim.data	<- sim.bbs.ms(covs = covs_use, cov_data = clim_data,
                             psi.coefs=psi.coefs, th0.coefs=th0.coefs,
@@ -81,12 +92,12 @@ gof <- function(alpha, mods, pao){
 
       ## Run model
       write_dm_and_run2(pao = sim_pao, cov_list = covs_use, is.het = model_opts$het, dm_list = sim_dm,
-                        modname = sim_name, fixed = TRUE, 
+                        modname = sim_name, fixed = TRUE,
                         inits = TRUE, maxfn = '35000 vc lmt=5', alpha = alpha)
 
       ## Test whether coefs from simulated data are similar to coefs from top model
-      gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use, 
-                                    Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs, 
+      gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use,
+                                    Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs,
                                     Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
                                     is.het = model_opts$het, is.annual = model_opts$annual)
 
@@ -94,11 +105,11 @@ gof <- function(alpha, mods, pao){
         # If model passes GOF test, change output file name to "top_mod.out"
         file.rename(from = paste0("inst/output/", alpha, "/pres/", modname, ".out"),
                     to = paste0("inst/output/", alpha, "/top_mod.out"))
-        
+
         # Zip pres folder containing all other .out files
         files2zip <- dir(paste0("inst/output/", alpha, "/pres"), full.names = TRUE)
         zip(zipfile = paste0("inst/output/", alpha, '/presZip'), files = files2zip)
-        
+
         unlink(paste0("inst/output/", alpha, "/pres"), recursive = TRUE)
       }else{
         # If model does not pass GOF test, delete sim.out file so Presence can run again
