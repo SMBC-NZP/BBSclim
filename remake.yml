@@ -9,8 +9,7 @@ packages:
 targets:
   all:
     depends:
-      - inst/output/lowa/top_mod.out
-      - inst/output/lowa/route_map.pdf
+      - lowa
 
 ## Load objects used for all species
   bbs:
@@ -97,5 +96,45 @@ targets:
 
 
 ## Generate indices
+  spp_betas:
+    command: GetBetas(I(alpha = "lowa"))
+    depends:
+      - inst/output/lowa/top_mod.out
 
+  inst/output/lowa/occ.csv:
+    command: GetOccProb(I(alpha = "lowa"), betas = spp_betas)
+    depends:
+      - inst/global_opts.csv
+      - inst/output/lowa/count_buff.csv
+
+  inst/output/lowa/indices.csv:
+    command: GetIndices(I(alpha = "lowa"))
+    depends:
+      - inst/output/lowa/occ.csv
+      - inst/output/lowa/count_buff.csv
+      - inst/global_opts.csv
+
+  lowa:
+    command: GetSummary(I(alpha = "lowa"))
+    depends:
+      - inst/output/lowa/count_buff.csv
+      - inst/output/lowa/raw_counts.csv
+      - inst/output/lowa/no_outlier_counts.csv
+      - inst/output/lowa/psi_aic.csv
+      - inst/output/lowa/gam_aic.csv
+      - inst/output/lowa/top_mod.out
+## Generate reports
+#  reports/lowa.md:
+#    knitr:
+#      input: reports/report.Rmd
+#      chdir: true
+#      auto_figure_prefix: true
+#    depends:
+#      - spp_summ: lowa
+#      - R/reports.R
+#    cleanup_level: purge
+
+#  reports/lowa.html:
+#    command: render_html("reports/lowa.md")
+#    cleanup_level: purge
 

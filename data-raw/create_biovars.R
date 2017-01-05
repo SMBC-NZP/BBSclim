@@ -90,7 +90,12 @@ library(dismo)
   bcr.shapefile <- rgdal::readShapePoly("data-raw/bcr/BCR", verbose=TRUE, proj4string=new.crs)
   bcr.shapefile@data$id <- rownames(bcr.shapefile@data)
   bcr.points <- ggplot2::fortify(bcr.shapefile, region = "id")
-  bcr <- merge(bcr.points, bcr.shapefile@data, by = "id")
+  bcr <- merge(bcr.points, bcr.shapefile@data, by = "id")code_lookup <- read.csv("data-raw/code_lookup.csv")
 
-  devtools::use_data(NA_biovars, bcr, overwrite = TRUE)
+# Alpha code look-up table
+  code_lookup <- read.csv("data-raw/code_lookup.csv")
+  code_lookup <- dplyr::select(code_lookup, -group)
+
+
+  devtools::use_data(NA_biovars, bcr, code_lookup, overwrite = TRUE)
 

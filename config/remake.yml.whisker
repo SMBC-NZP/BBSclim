@@ -10,8 +10,7 @@ targets:
   all:
     depends:
 {{#spp_names}}
-      - inst/output/{{spp_name}}/top_mod.out
-      - inst/output/{{spp_name}}/route_map.pdf
+      - {{spp_name}}
 {{/spp_names}}
 
 
@@ -107,6 +106,48 @@ targets:
 
 ## Generate indices
 {{#spp_names}}
+  spp_betas:
+    command: GetBetas(I(alpha = "{{spp_name}}"))
+    depends:
+      - inst/output/{{spp_name}}/top_mod.out
 
+  inst/output/{{spp_name}}/occ.csv:
+    command: GetOccProb(I(alpha = "{{spp_name}}"), betas = spp_betas)
+    depends:
+      - inst/global_opts.csv
+      - inst/output/{{spp_name}}/count_buff.csv
 
+  inst/output/{{spp_name}}/indices.csv:
+    command: GetIndices(I(alpha = "{{spp_name}}"))
+    depends:
+      - inst/output/{{spp_name}}/occ.csv
+      - inst/output/{{spp_name}}/count_buff.csv
+      - inst/global_opts.csv
+
+  {{spp_name}}:
+    command: GetSummary(I(alpha = "{{spp_name}}"))
+    depends:
+      - inst/output/{{spp_name}}/count_buff.csv
+      - inst/output/{{spp_name}}/raw_counts.csv
+      - inst/output/{{spp_name}}/no_outlier_counts.csv
+      - inst/output/{{spp_name}}/psi_aic.csv
+      - inst/output/{{spp_name}}/gam_aic.csv
+      - inst/output/{{spp_name}}/top_mod.out
+{{/spp_names}}
+
+## Generate reports
+{{#spp_names}}
+#  reports/{{spp_name}}.md:
+#    knitr:
+#      input: reports/report.Rmd
+#      chdir: true
+#      auto_figure_prefix: true
+#    depends:
+#      - spp_summ: {{spp_name}}
+#      - R/reports.R
+#    cleanup_level: purge
+
+#  reports/{{spp_name}}.html:
+#    command: render_html("reports/{{spp_name}}.md")
+#    cleanup_level: purge
 {{/spp_names}}
