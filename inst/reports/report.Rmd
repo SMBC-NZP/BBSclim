@@ -1,0 +1,65 @@
+
+# Summary report for: `r spp_summ$spp_name`
+
+
+## Overview of BBS data
+
+Number of routes: `r spp_summ$n.routes`  
+
+Number of outliers: `r spp_summ$n.outliers`
+
+Number of buffered routes: `r spp_summ$n.buffer`
+
+```{r route_map, echo=FALSE, fig.width=12, fig.height=10}
+PlotRoutes(spp_summ$alpha)
+```
+
+
+```{r summary_table, results='asis', echo=FALSE}
+# From the ms functions:
+tab <- summary_table(data_study$data, baad_dictionary)
+kable(tab[names(tab) != "Studies"], "markdown", align="l", padding=10)
+```
+
+```{r world_map, echo=FALSE, fig.width=12, fig.height=10}
+drawWorldPlot(data_study$data)
+```
+
+And locally within the country:
+
+```{r country_map, echo=FALSE, fig.width=12, fig.height=10}
+map_sites_all_countries(data_study$data)
+```
+
+The sites sampled are:
+
+```{r location_level_info, echo=FALSE, comment='', results='asis'}
+kable(location_level_info(data_study$data), "markdown", align="l", padding=2)
+```
+
+The growing conditions of sampled plants was:
+
+```{r stand_level_info, echo=FALSE, comment='', results="asis"}
+kable(stand_level_info(data_study$data), "markdown", align="l", padding=2)
+```
+
+## Species sampled
+
+```{r species_level_info, echo=FALSE, comment='', results="asis"}
+kable(species_level_info(data_study$data), "markdown", align="l", padding=2)
+```
+
+## Methods used
+
+```{r metadata, echo=FALSE, comment='', results="asis"}
+metadata <- data_study$metadata
+writeLines(sprintf("**%s**: %s\n", metadata$Topic, metadata$Description))
+```
+
+## Plots of data
+
+This is how the study `r study_name` fits in the entire dataset (grey). each colour represents a species. A legend of species names with colours is included at the end for reports with 1 < n < 20 species.
+
+```{r variable_plots, fig.height=12, fig.width=12, echo=FALSE}
+report_variable_plots(data_study, baad_data, baad_dictionary)
+```
