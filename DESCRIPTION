@@ -34,6 +34,7 @@ Depends:
     mapdata
 Remotes: github::crushing05/rBBS,
          github::richfitz/datastorr
+         github::krlmlr/here
 Encoding: UTF-8
 LazyData: true
 Suggests:

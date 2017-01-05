@@ -6,15 +6,15 @@
 #' @export
 
 PlotRoutes <- function(alpha, psi = FALSE){
-  buff_routes <- read.csv(paste0("inst/output/", alpha, "/count_buff.csv"))
-  raw_routes <- read.csv(paste0("inst/output/", alpha, "/raw_counts.csv"))
-  used_routes <- read.csv(paste0("inst/output/", alpha, "/no_outlier_counts.csv"))
-  psi <- read.csv(paste0('inst/output/', alpha, '/occ.csv'))
-  psi <- dplyr::filter(psi, Year == min(raw_routes$Year))
+  buff_routes <- read.csv(here::here(paste0('output/', alpha, '/count_buff.csv')))
+  raw_routes <- read.csv(here::here(paste0('output/', alpha, '/raw_counts.csv')))
+  used_routes <- read.csv(here::here(paste0('output/', alpha, '/no_outlier_counts.csv')))
+  #psi <- read.csv(paste0('inst/output/', alpha, '/occ.csv'))
+  #psi <- dplyr::filter(psi, Year == min(raw_routes$Year))
 
-  usa <- map_data("state")
-  canada <- map_data("worldHires", "Canada")
-  mexico <- map_data("worldHires", "Mexico")
+  usa <- ggplot2::map_data("state")
+  canada <- ggplot2::map_data("worldHires", "Canada")
+  mexico <- ggplot2::map_data("worldHires", "Mexico")
 
   spp_buff2 <- dplyr::distinct(buff_routes, routeID, .keep_all = TRUE)
   spp_rts <- dplyr::distinct(used_routes, routeID, .keep_all = TRUE)
@@ -125,7 +125,7 @@ PlotPsi <- function(alpha){
 #' MapPsi
 #'
 #' Annual occupancy probability maps
-#' @param alpha
+#' @param alpha 4-letter alpha code for species of interest
 #' @param proj Should maps be projected? (Probably but much slower)
 #' @export
 
@@ -161,3 +161,15 @@ MapPsi <- function(alpha, proj = FALSE){
 
 
 }
+
+#' md2html
+#'
+#' Function to covert .md file to html (ht https://github.com/richfitz/modeladequacy)
+#' @export
+
+md2html <- function(filename) {
+  dest <- paste0(tools::file_path_sans_ext(filename), ".html")
+  opts <- setdiff(markdownHTMLOptions(TRUE), 'base64_images')
+  markdownToHTML(filename, dest, options=opts)
+}
+
