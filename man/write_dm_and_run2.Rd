@@ -4,16 +4,14 @@
 \alias{write_dm_and_run2}
 \title{write_dm_and_run2}
 \usage{
-write_dm_and_run2(pao, cov_list, out, is.het, is.annual, dm_list = NULL,
-  modname, fixed = FALSE, inits = FALSE, maxfn = 32000, alpha = NULL,
+write_dm_and_run2(pao, cov_list, is.het, dm_list = NULL, modname,
+  fixed = FALSE, inits = FALSE, maxfn = 32000, alpha = NULL,
   parse = FALSE)
 }
 \arguments{
 \item{pao}{.pao file for analysis}
 
 \item{cov_list}{List containing the covariates for each parameter}
-
-\item{out}{Which output folder should results be written to?}
 
 \item{dm_list}{List containing the design matrices for each parameter}
 
@@ -22,6 +20,8 @@ write_dm_and_run2(pao, cov_list, out, is.het, is.annual, dm_list = NULL,
 \item{fixed}{vector of fixed values (eg., fixed(1)=0, fixed(4)=.1 -> fixed=c(0,.1); names(fixed)=c(1,4))}
 
 \item{maxfn}{maximum number if iterations for optimization routine}
+
+\item{out}{Which output folder should results be written to?}
 
 \item{initvals}{vector of beta initial values}
 }

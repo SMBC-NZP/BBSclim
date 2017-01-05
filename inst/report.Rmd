@@ -1,0 +1,19 @@
+```{r echo = FALSE, message = FALSE}
+library(ggplot2)
+library(mapdata)
+```
+
+# Summary report for: `r spp_summ$spp_name`
+
+
+## Overview of BBS data
+
+Number of routes: `r spp_summ$n.routes`  
+
+Number of outliers: `r spp_summ$n.outliers`
+
+Number of buffered routes: `r spp_summ$n.buffer`
+
+```{r echo=FALSE, message = FALSE, fig.width=12, fig.height=10}
+BBSclim::PlotRoutes(alpha = spp_summ$alpha)
+```

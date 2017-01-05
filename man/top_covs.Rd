@@ -4,14 +4,14 @@
 \alias{top_covs}
 \title{top_covs}
 \usage{
-top_covs(aic_tab, mods, psi = TRUE)
+top_covs(alpha, mods, psi = TRUE)
 }
 \arguments{
-\item{aic_tab}{AIC table from RunPsiMods or RunGamMods}
-
 \item{mods}{List of models}
 
 \item{psi}{Return top psi model (TRUE) or gamma/epsilon model (FALSE)}
+
+\item{aic_tab}{AIC table from RunPsiMods or RunGamMods}
 }
 \description{
 Get covariates of top model

@@ -4,14 +4,14 @@
 \alias{buffer_BBS}
 \title{buffer_BBS}
 \usage{
-buffer_BBS(spp_count, bbs, alpha, buffer = 2, method = "rec")
+buffer_BBS(alpha, bbs, buffer = 2, method = "rec", raw = FALSE)
 }
 \arguments{
-\item{spp_count}{Data frame containing the count data for the focal species obtained using the `GetSppCounts()` function}
-
 \item{buffer}{Numeric value indicating the number of degrees to buffer the count data (default = 2)}
 
 \item{method}{Which buffer method to use? Options include: "rec", "bcr", "bcr + rec" (default = "rec")}
+
+\item{spp_count}{Data frame containing the count data for the focal species obtained using the `GetSppCounts()` function}
 
 \item{routes}{Data frame containing the route data obtained from the function `GetRoutes()`}
 }

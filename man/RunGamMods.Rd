@@ -4,11 +4,12 @@
 \alias{RunGamMods}
 \title{RunGamMods}
 \usage{
-RunGamMods(pao, alpha, mods = gam_mods, del = TRUE, ..., is.test = FALSE,
-  trim = TRUE, Parallel = TRUE)
+RunGamMods(alpha, pao, mods = gam_mods)
 }
 \arguments{
 \item{gam_mods}{list containing the covariates for each model}
+
+\item{limit.cores}{Optional limit to the # of cores used for parallel}
 }
 \description{
 Runs full model set for 961 gamma/epsilon models, evaluate each, write and return AIC table, delete .out files (optional)
