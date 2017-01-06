@@ -9,6 +9,14 @@
 RunPsiMods <- function(alpha, pao, mods = psi_mods){
     opts <- read.csv("inst/model_opts.csv")
 
+    annual_aic <- read.csv(annual_aic, file = paste0("inst/output/", alpha, "/annual_aic.csv"))
+
+    if(annual_aic$Model[1] == "annual"){
+      annual <- TRUE
+    }else{
+      annual <- FALSE
+    }
+
     if(opts$Parallel){
       cores <- parallel::detectCores()
       if(!is.null(opts$limit.cores)){
@@ -27,7 +35,7 @@ RunPsiMods <- function(alpha, pao, mods = psi_mods){
                                       modname <- paste0('psi_model_', i)
 
                                       ## Create design matrices for model i
-                                      spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = opts$annual, is.het = opts$het)
+                                      spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
                                       ## Run model
                                       BBSclim::write_dm_and_run2(pao = pao, cov_list = mods[[i]],
@@ -40,7 +48,7 @@ RunPsiMods <- function(alpha, pao, mods = psi_mods){
                                       a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
                                       ## Evaluate model (if model converges, will equal TRUE)
-                                      check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = FALSE, is.annual = opts$annual, is.het = opts$het)
+                                      check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = FALSE, is.annual = annual, is.het = opts$het)
 
                                       if(check == FALSE){ # If model does not converge, save NA in AIC table
                                         aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -75,7 +83,7 @@ RunPsiMods <- function(alpha, pao, mods = psi_mods){
         modname <- paste0('psi_model_', i)
 
         ## Create design matrices for model i
-        spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.annual = opts$annual, is.het = opts$het)
+        spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
         ## Run model
         write_dm_and_run2(pao = pao, cov_list = mods[[i]], is.het = opts$het, dm_list = spp_dm,
@@ -86,7 +94,7 @@ RunPsiMods <- function(alpha, pao, mods = psi_mods){
         a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c', sep='\n', quiet=TRUE)
 
       ## Evaluate model (if model converges, will equal TRUE)
-      check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = FALSE, is.annual = opts$annual, is.het = opts$het)
+      check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = FALSE, is.annual = annual, is.het = opts$het)
 
 
         if(check == FALSE){ # If model does not converge, save NA in AIC table
@@ -166,6 +174,14 @@ top_covs <- function(alpha, mods, psi = TRUE){
 RunGamMods <- function(alpha, pao, mods = gam_mods){
   opts <- read.csv("inst/model_opts.csv")
 
+  annual_aic <- read.csv(annual_aic, file = paste0("inst/output/", alpha, "/annual_aic.csv"))
+
+  if(annual_aic$Model[1] == "annual"){
+    annual <- TRUE
+  }else{
+    annual <- FALSE
+  }
+
   if(opts$Parallel){
 
     cores <- parallel::detectCores()
@@ -187,7 +203,7 @@ RunGamMods <- function(alpha, pao, mods = gam_mods){
                                     modname <- paste0('gam_model_', i)
 
                                     ## Create design matrices for model i
-                                    spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = opts$annual, is.het = opts$het)
+                                    spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
                                     ## Run model
                                     BBSclim::write_dm_and_run2(pao = pao, cov_list = mods[[i]], is.het = opts$het, dm_list = spp_dm,
@@ -199,7 +215,7 @@ RunGamMods <- function(alpha, pao, mods = gam_mods){
 
                                     ## Evaluate model (if model converges, will equal TRUE)
                                     check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = TRUE,
-                                                               is.het = opts$het, is.annual = opts$annual)
+                                                               is.het = opts$het, is.annual = annual)
 
                                     if(check == FALSE){ # If model does not converge, save NA in AIC table
                                       aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -234,7 +250,7 @@ RunGamMods <- function(alpha, pao, mods = gam_mods){
       modname <- paste0('gam_model_', i)
 
       ## Create design matrices for model i
-      spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.het = opts$het, is.annual = opts$annual)
+      spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.het = opts$het, is.annual = annual)
 
       ## Run model
       write_dm_and_run2(pao = pao, cov_list = mods[[i]], is.het = opts$het, dm_list = spp_dm,
@@ -245,7 +261,7 @@ RunGamMods <- function(alpha, pao, mods = gam_mods){
       a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
     ## Evaluate model (if model converges, will equal TRUE)
-    check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = TRUE, is.het = opts$het, is.annual = opts$annual)
+    check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = TRUE, is.het = opts$het, is.annual = annual)
 
       if(check == FALSE){ # If model does not converge, save NA in AIC table
         aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,

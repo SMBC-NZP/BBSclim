@@ -12,6 +12,14 @@ gof <- function(alpha, mods, pao){
   mod_opts <- read.csv("inst/model_opts.csv")
   glob_opts <- read.csv("inst/global_opts.csv")
 
+  annual_aic <- read.csv(annual_aic, file = paste0("inst/output/", alpha, "/annual_aic.csv"))
+
+  if(annual_aic$Model[1] == "annual"){
+    annual <- TRUE
+  }else{
+    annual <- FALSE
+  }
+
   year_seq <- seq(from = glob_opts$start_yr, to = glob_opts$end_yr)
 
   aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
@@ -74,7 +82,7 @@ gof <- function(alpha, mods, pao){
                             th1.coefs=th1.coefs, gam.coefs=gam.coefs,
                             eps.coefs=eps.coefs, p1.coefs=p1.coefs,
                             p2.coefs=p2.coefs, pi.coefs=pi.coefs, years=year_seq,
-                            is.het = mod_opts$het, is.annual = mod_opts$annual, det_hist, opts = glob_opts)
+                            is.het = mod_opts$het, is.annual = annual, det_hist, opts = glob_opts)
 
     ## Create .pao file for simulated data
     write_pao(alpha = alpha, sim = TRUE)
@@ -86,7 +94,7 @@ gof <- function(alpha, mods, pao){
       if(length(p2.coefs) == 0)  initvals <- c(initvals, p2.coefs, pi.coefs)
 
       ## Create design matrices for model
-      sim_dm <- GetDM(pao = sim_pao, cov_list = covs_use, is.het = mod_opts$het, is.annual = mod_opts$annual)
+      sim_dm <- GetDM(pao = sim_pao, cov_list = covs_use, is.het = mod_opts$het, is.annual = annual)
 
       sim_name <- paste0(alpha, "_sim")
 
@@ -99,7 +107,7 @@ gof <- function(alpha, mods, pao){
       gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use,
                                     Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs,
                                     Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
-                                    is.het = mod_opts$het, is.annual = mod_opts$annual)
+                                    is.het = mod_opts$het, is.annual = annual)
 
       if(gof.pass){
         # If model passes GOF test, change output file name to "top_mod.out"

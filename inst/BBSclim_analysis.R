@@ -1,5 +1,4 @@
-# library(httr)
-# set_config(config(ssl_verifypeer = 0L))
+# httr::set_config(config(ssl_verifypeer = 0L))
 # devtools::install_github('crushing05/rBBS')
 # devtools::install_github('crushing05/BBS.tenstop')
 # devtools::install_github('crushing05/BBS.fiftystop')
@@ -28,7 +27,7 @@ spp_counts2 <- RemoveOutliers(counts = spp_counts)
 # need to save output in a way that # outliers can be added to report
 
 ### Add buffer around routes with counts > 0
-spp_buff <- buffer_BBS(spp_count = spp_counts2, bbs = bbs, alpha = alpha)
+spp_buff <- buffer_BBS(bbs = bbs, alpha = alpha)
 
 
 ### Make map of routes
@@ -40,18 +39,22 @@ data("NA_biovars")
 
 
 ### Extract annual bioclim estimates for Wood Thrush BBS routes
-spp_clim <- GetBioVars(counts = spp_buff, alpha = alpha)
+spp_clim <- GetBioVars(alpha = alpha)
 
 
 ### Save occupancy and climate data as .pao file for input into Presence
 
-write_pao(counts = spp_buff, covs = spp_clim, alpha = alpha, is.tenstops = tenstops)
+write_pao(alpha = alpha)
 
-
-### Run psi models
+### Test for annual variation in p
 psi_mods <- GetPsiMods()
 
 spp_pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/pres/pres_in.pao"))
+
+spp_annual <- test_annual(alpha = alpha, pao = spp_pao)
+
+### Run psi models
+
 
 
 spp_psi_aic <- RunPsiMods(pao = spp_pao, mods = psi_mods, alpha = alpha, is.test = test,
@@ -85,3 +88,7 @@ GetOccProb(alpha = alpha, betas = spp_betas)
 
 ### Estimate annual indices of range dynamics
 GetIndices(alpha)
+
+
+lowa <- GetSummary(alpha)
+lowa

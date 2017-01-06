@@ -5,12 +5,15 @@ packages:
   - BBSclim
   - rBBS
   - RPresence
+  - rmarkdown
+  - knitr
+  - markdown
 
 targets:
   all:
     depends:
 {{#spp_names}}
-      - {{spp_name}}
+      - inst/output/{{spp_name}}/report.html
 {{/spp_names}}
 
 
@@ -80,10 +83,16 @@ targets:
   {{spp_name}}_pao:
     command: read.pao(f = "inst/output/{{spp_name}}/pres/pres_in.pao")
 
+  inst/output/{{spp_name}}/annual_aic.csv:
+    command: test_annual(I(alpha = "{{spp_name}}"), pao = {{spp_name}}_pao)
+    depends:
+      - inst/model_opts.csv
+
   inst/output/{{spp_name}}/psi_aic.csv:
     command: RunPsiMods(I(alpha = "{{spp_name}}"), pao = {{spp_name}}_pao, mods = psi_mods)
     depends:
       - inst/model_opts.csv
+      - inst/output/{{spp_name}}/annual_aic.csv:
 
   {{spp_name}}_psi_covs:
     command: top_covs(I(alpha = "{{spp_name}}"), mods = psi_mods)
@@ -97,6 +106,7 @@ targets:
     command: RunGamMods(I(alpha = "{{spp_name}}"), pao = {{spp_name}}_pao, mods = {{spp_name}}_gam_mods)
     depends:
       - inst/model_opts.csv
+      - inst/output/{{spp_name}}/annual_aic.csv:
 
   inst/output/{{spp_name}}/top_mod.out:
     command: gof(I(alpha = "{{spp_name}}"), mods = {{spp_name}}_gam_mods, pao = {{spp_name}}_pao)
@@ -138,22 +148,24 @@ targets:
       - inst/output/{{spp_name}}/no_outlier_counts.csv
       - inst/output/{{spp_name}}/psi_aic.csv
       - inst/output/{{spp_name}}/gam_aic.csv
+      - inst/output/{{spp_name}}/annual_aic.csv
       - inst/output/{{spp_name}}/top_mod.out
 {{/spp_names}}
 
+
 ## Generate reports
 {{#spp_names}}
-#  reports/{{spp_name}}.md:
-#    knitr:
-#      input: reports/report.Rmd
-#      chdir: true
-#      auto_figure_prefix: true
-#    depends:
-#      - spp_summ: {{spp_name}}
-#      - R/reports.R
-#    cleanup_level: purge
+  inst/output/{{spp_name}}/report.md:
+    knitr:
+      input: inst/report.Rmd
+    depends:
+      - spp_summ: {{spp_name}}
+      - R/reports.R
+      - inst/output/{{spp_name}}/occ.csv
+      - inst/output/{{spp_name}}/indices.csv
+    cleanup_level: purge
+  inst/output/{{spp_name}}/report.html:
+    command: md2html("inst/output/{{spp_name}}/report.md")
+    cleanup_level: purge
 
-#  reports/{{spp_name}}.html:
-#    command: render_html("reports/{{spp_name}}.md")
-#    cleanup_level: purge
 {{/spp_names}}

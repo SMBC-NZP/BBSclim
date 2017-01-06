@@ -4,7 +4,7 @@
 \alias{PlotRoutes}
 \title{PlotRoutes}
 \usage{
-PlotRoutes(alpha, psi = FALSE)
+PlotRoutes(alpha)
 }
 \arguments{
 \item{alpha}{4-letter alpha code for species of interest}

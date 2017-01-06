@@ -5,12 +5,10 @@
 #' @param psi Should occupancy probability (in year 1) be plotted? (*doesn't work yet*)
 #' @export
 
-PlotRoutes <- function(alpha, psi = FALSE){
+PlotRoutes <- function(alpha){
   buff_routes <- read.csv(here::here(paste0('output/', alpha, '/count_buff.csv')))
   raw_routes <- read.csv(here::here(paste0('output/', alpha, '/raw_counts.csv')))
   used_routes <- read.csv(here::here(paste0('output/', alpha, '/no_outlier_counts.csv')))
-  #psi <- read.csv(paste0('inst/output/', alpha, '/occ.csv'))
-  #psi <- dplyr::filter(psi, Year == min(raw_routes$Year))
 
   usa <- ggplot2::map_data("state")
   canada <- ggplot2::map_data("worldHires", "Canada")
@@ -27,15 +25,9 @@ PlotRoutes <- function(alpha, psi = FALSE){
   ymin <- min(min(spp_buff2$Latitude), min(spp_out$Latitude)) - 4
   ymax <- max(max(spp_buff2$Latitude), max(spp_out$Latitude)) + 4
 
-  if(nrow(spp_out) == 1){
-    summ <- paste(nrow(spp_rts), " routes (", nrow(spp_out), " outlier)", sep = "")
-  }else{
-    summ <- paste(nrow(spp_rts), " routes (", nrow(spp_out), " outliers)", sep = "")
-  }
 
   p <- ggplot() + theme(panel.background = element_rect(fill = "#CDD2D4", color = NA), axis.title = element_blank())
   p <- p + coord_map(projection = "lambert", lat0 = 25, lat1 = 50, xlim = c(xmin, xmax), ylim = c(ymin, ymax))
-  if(psi){p <- p + geom_tile(data = psi, aes(x = lon, y = lat, fill = Prob))}
   p <- p + geom_polygon(data = usa, aes(x=long, y = lat, group = group), fill = "#F0F0F1",  color="#909090") +
     geom_polygon(data = canada, aes(x=long, y = lat, group = group), fill = "#F0F0F1", color="#909090") +
     geom_polygon(data = mexico, aes(x=long, y = lat, group = group),  fill = "#F0F0F1", color="#909090")
@@ -58,7 +50,7 @@ PlotRoutes <- function(alpha, psi = FALSE){
 #' @export
 
 PlotLat <- function(alpha){
-  indices <- read.csv(paste0('inst/output/', alpha, '/indices.csv'))
+  indices <- read.csv(here::here(paste0('output/', alpha, '/indices.csv')))
   lat.indices <- dplyr::filter(indices, ind == "n.lat" | ind == "s.lat" | ind == "avg.lat")
 
   p <- ggplot(lat.indices, aes(x = Year, y = value, group = ind))
@@ -81,7 +73,7 @@ PlotLat <- function(alpha){
 #' @export
 
 PlotLon <- function(alpha){
-  indices <- read.csv(paste0('inst/output/', alpha, '/indices.csv'))
+  indices <- read.csv(here::here(paste0('output/', alpha, '/indices.csv')))
   lon.indices <- dplyr::filter(indices, ind == "avg.lon")
 
   p <- ggplot(lon.indices, aes(x = Year, y = value, group = ind))
@@ -104,7 +96,7 @@ PlotLon <- function(alpha){
 #' @export
 
 PlotPsi <- function(alpha){
-  indices <- read.csv(paste0('inst/output/', alpha, '/indices.csv'))
+  indices <- read.csv(here::here(paste0('output/', alpha, '/indices.csv')))
   psi.indices <- dplyr::filter(indices, ind == "avg.psi")
   y.min <- 0
   y.max <- plyr::round_any(max(psi.indices$value + 1.96 * psi.indices$sd.err), 0.1, f = ceiling)
@@ -130,8 +122,8 @@ PlotPsi <- function(alpha){
 #' @export
 
 MapPsi <- function(alpha, proj = FALSE){
-  psi <- read.csv(paste0('inst/output/', alpha, '/occ.csv'))
-  indices <- read.csv(paste0('inst/output/', alpha, '/indices.csv'))
+  psi <- read.csv(here::here(paste0('output/', alpha, '/occ.csv')))
+  indices <- read.csv(here::here(paste0('output/', alpha, '/indices.csv')))
   indices <- dplyr::filter(indices, ind %in% c("s.lat", "n.lat", "avg.lat"))
 
   xmin <- min(psi$lon) - 3
@@ -170,6 +162,6 @@ MapPsi <- function(alpha, proj = FALSE){
 md2html <- function(filename) {
   dest <- paste0(tools::file_path_sans_ext(filename), ".html")
   opts <- setdiff(markdownHTMLOptions(TRUE), 'base64_images')
-  markdownToHTML(filename, dest, options=opts)
+  markdownToHTML(filename, dest, options = opts)
 }
 

@@ -17,10 +17,9 @@ global_opts <- function(tenstops = TRUE, start_yr = 1997, end_yr = 2014){
 #' Set model options for running presence
 #' @export
 
-model_opts <- function(psi.test = FALSE, gam.test = FALSE, het = TRUE, annual = TRUE,
+model_opts <- function(psi.test = FALSE, gam.test = FALSE, het = TRUE,
                        Parallel = TRUE, limit.cores = 50){
     opts <- data.frame(het = het,       # Heterogeneous detection?
-                       annual = annual,    # Annual variation in p?
                        psi.test = psi.test,  # Run subset of psi models?
                        gam.test =gam.test,  # Run subset of gam models?
                        Parallel = Parallel,
@@ -28,3 +27,4 @@ model_opts <- function(psi.test = FALSE, gam.test = FALSE, het = TRUE, annual = 
 
   write.csv(opts, "inst/model_opts.csv", row.names = FALSE)
 }
+
