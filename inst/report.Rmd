@@ -20,7 +20,8 @@ BBSclim::PlotRoutes(alpha = spp_summ$spp_alpha)
 
 ## Results
 
-Annual variation in $p$: `r spp_summ$annual`
+Annual variation in $p$: **`r spp_summ$annual`**
+
 
 ## $\psi$ maps
 ```{r psi_map, echo = FALSE, message = FALSE}
@@ -29,7 +30,7 @@ BBSclim::MapPsi(alpha = spp_summ$spp_alpha)
 
 ## AIC Tables
 ### Annual variation AIC table
-```{r psi_results, echo=FALSE, comment='', results='asis'}
+```{r annual_results, echo=FALSE, comment='', results='asis'}
 kable(spp_summ$annual.aic, "markdown", align="c", padding=2)
 ```
 
@@ -49,7 +50,7 @@ kable(spp_summ$gam.aic[1:max(which(!is.na(spp_summ$gam.aic$LogLik))), -1], "mark
 kable(spp_summ$psi.betas, "markdown", align="c", padding=2)
 ```
 
-### $\theta$, $\theta'$, $\p$ & $\omega$
-```{r betas, echo=FALSE, comment='', results='asis'}
+### $\theta$, $\theta'$, $p$ & $\omega$
+```{r betas2, echo=FALSE, comment='', results='asis'}
 kable(spp_summ$p.betas, "markdown", align="c", padding=2)
 ```

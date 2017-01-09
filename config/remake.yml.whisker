@@ -92,7 +92,7 @@ targets:
     command: RunPsiMods(I(alpha = "{{spp_name}}"), pao = {{spp_name}}_pao, mods = psi_mods)
     depends:
       - inst/model_opts.csv
-      - inst/output/{{spp_name}}/annual_aic.csv:
+      - inst/output/{{spp_name}}/annual_aic.csv
 
   {{spp_name}}_psi_covs:
     command: top_covs(I(alpha = "{{spp_name}}"), mods = psi_mods)
@@ -106,7 +106,7 @@ targets:
     command: RunGamMods(I(alpha = "{{spp_name}}"), pao = {{spp_name}}_pao, mods = {{spp_name}}_gam_mods)
     depends:
       - inst/model_opts.csv
-      - inst/output/{{spp_name}}/annual_aic.csv:
+      - inst/output/{{spp_name}}/annual_aic.csv
 
   inst/output/{{spp_name}}/top_mod.out:
     command: gof(I(alpha = "{{spp_name}}"), mods = {{spp_name}}_gam_mods, pao = {{spp_name}}_pao)

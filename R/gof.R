@@ -12,7 +12,7 @@ gof <- function(alpha, mods, pao){
   mod_opts <- read.csv("inst/model_opts.csv")
   glob_opts <- read.csv("inst/global_opts.csv")
 
-  annual_aic <- read.csv(annual_aic, file = paste0("inst/output/", alpha, "/annual_aic.csv"))
+  annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
 
   if(annual_aic$Model[1] == "annual"){
     annual <- TRUE
