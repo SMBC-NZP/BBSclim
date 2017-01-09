@@ -153,13 +153,14 @@ top_covs <- function(alpha, mods, psi = TRUE){
     if(psi){
       aic_tab <- read.csv(paste0("inst/output/", alpha, "/psi_aic.csv"))
       top <- aic_tab$Model_num[1]
-      covs <- mods[[top]]$psi.cov
+      covs <- mods[[top]]
       covs
     }else{
       aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
       top <- aic_tab$Model_num[1]
       covs <- mods[[top]]
-      covs
+      covs.df <- data.frame(gam_covs = covs$gam.cov, eps_covs = covs$eps.cov)
+      covs.df
     }
 }
 
