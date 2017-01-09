@@ -12,7 +12,7 @@ GetSummary <- function(alpha, gam_mods){
   common <- BBSclim::code_lookup$common[BBSclim::code_lookup$alpha == toupper(alpha)]
 
   ## Did p vary annually?
-  annual_aic <- read.csv(annual_aic, file = paste0("inst/output/", alpha, "/annual_aic.csv"))
+  annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
 
   if(annual_aic$Model[1] == "annual"){
     annual <- "Yes"
@@ -28,20 +28,18 @@ GetSummary <- function(alpha, gam_mods){
   outliers <- unique(raw_counts$routeID[!('%in%'(raw_counts$routeID, used_counts$routeID))])
 
   ### Annual variation in p AIC table
-  annual_aic <- read.csv(paste0('inst/output/', alpha, '/annual_aic.csv'))
-  colnames(annual_aic) <- c("Model", "LogLik", "k", "AIC", "$//delta AIC")
+  colnames(annual_aic) <- c("Model", "LogLik", "k", "AIC", "$\\Delta$AIC")
 
 
   ### Psi models AIC table
   psi_aic <- read.csv(paste0('inst/output/', alpha, '/psi_aic.csv'))
   psi_aic <- psi_aic[1:10,]
-  colnames(psi_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$//delta AIC")
+  colnames(psi_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$AIC")
 
 
   ### Gamma/Epsilon AIC table
   gam_aic <- read.csv(paste0('inst/output/', alpha, '/gam_aic.csv'))
   gam_aic <- gam_aic[1:25,]
-  colnames(gam_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$//delta AIC")
 
   ## Extract beta coef estimates and se
   top_mod <- scan(paste0("inst/output/", alpha, "/top_mod.out"), what='character', sep='\n', quiet=T)
@@ -74,7 +72,7 @@ GetSummary <- function(alpha, gam_mods){
   ## AIC table for th, th0, p, & omega
   p_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, covs_use = covs_use, nuisance = TRUE)
 
-
+  colnames(gam_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$AIC")
 
   summ <- list(spp_name = common,
        spp_alpha = alpha,

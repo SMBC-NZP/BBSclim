@@ -9,7 +9,7 @@
 RunPsiMods <- function(alpha, pao, mods = psi_mods){
     opts <- read.csv("inst/model_opts.csv")
 
-    annual_aic <- read.csv(annual_aic, file = paste0("inst/output/", alpha, "/annual_aic.csv"))
+    annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
 
     if(annual_aic$Model[1] == "annual"){
       annual <- TRUE
@@ -174,7 +174,7 @@ top_covs <- function(alpha, mods, psi = TRUE){
 RunGamMods <- function(alpha, pao, mods = gam_mods){
   opts <- read.csv("inst/model_opts.csv")
 
-  annual_aic <- read.csv(annual_aic, file = paste0("inst/output/", alpha, "/annual_aic.csv"))
+  annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
 
   if(annual_aic$Model[1] == "annual"){
     annual <- TRUE
