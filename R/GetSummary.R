@@ -53,13 +53,13 @@ GetSummary <- function(alpha, gam_mods){
 
   ## Covariates included in the top model
   modnum <- gam_aic$Model_num[1]
-  if(modnum == 961){
-    covs_use <- list(psi.cov = mods[[1]]$psi.cov, th0.cov = mods[[1]]$th0.cov,
+  if(modnum == 31){
+    covs_use <- list(psi.cov = c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet",
+                                 "Prec", "sq_Prec", "Pwarm", "sq_Pwarm"),
+                     th0.cov = mods[[1]]$th0.cov,
                      th1.cov = mods[[1]]$th1.cov,
-                     gam.cov = c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet",
-                                 "Prec", "sq_Prec", "Pwarm", "sq_Pwarm"),
-                     eps.cov = c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet",
-                                 "Prec", "sq_Prec", "Pwarm", "sq_Pwarm"),
+                     gam.cov = mods[[1]]$gam.cov,
+                     eps.cov = mods[[1]]$eps.cov,
                      p1.cov = mods[[1]]$p1.cov)
   }else{
     covs_use <- mods[[modnum]]

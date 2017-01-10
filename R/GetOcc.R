@@ -10,7 +10,7 @@
 GetOccProb <- function(alpha, betas, buff_method = "rec", Write = TRUE){
     opts <- read.csv('inst/global_opts.csv')
     years <- seq(from = opts$start_yr, to = opts$end_yr)
-  
+
     buffer <- read.csv(paste0('inst/output/', alpha, '/count_buff.csv'))
     climate <- raster.to.array(alpha, years)
 
@@ -113,11 +113,11 @@ GetBetas <- function(alpha) {
 
   jj <- grep('std.error', top.model.out)
   jj.end <- grep('Variance-Covariance Matrix of Untransformed', top.model.out)
-  betas <- top.model.out[(jj+1):(jj.end-1)]
+  betas <- top.model.out[(jj + 1):(jj.end - 1)]
 
   psi.betas <- betas[grep('psi', betas)]
   loc.per <- regexpr("psi", psi.betas)
-  psi.names <- substr(psi.betas, loc.per+4, loc.per+10)
+  psi.names <- substr(psi.betas, loc.per + 4, loc.per + 10)
   psi.names <- gsub("[0-9]", "", psi.names)[-1]
   psi.names <- gsub("_$", "", psi.names)
   psi.betas <- as.numeric(substr(psi.betas, 41, 50))
@@ -125,7 +125,7 @@ GetBetas <- function(alpha) {
 
   gam.betas <- betas[grep('gam', betas)]
   loc.per <- regexpr("gam", gam.betas)
-  gam.names <- substr(gam.betas, loc.per+5, loc.per+12)
+  gam.names <- substr(gam.betas, loc.per + 5, loc.per + 12)
   gam.names <- gsub("[0-9]","",gam.names)[-1]
   gam.names <- gsub("_$", "", gam.names)
   gam.betas <- as.numeric(substr(gam.betas, 41, 50))
@@ -133,7 +133,7 @@ GetBetas <- function(alpha) {
 
   eps.betas <- betas[grep('eps', betas)]
   loc.per <- regexpr("eps", eps.betas)
-  eps.names <- substr(eps.betas, loc.per+5, loc.per+12)
+  eps.names <- substr(eps.betas, loc.per + 5, loc.per + 12)
   eps.names <- gsub("[0-9]","",eps.names)[-1]
   eps.names <- gsub("_$", "", eps.names)
   eps.betas <- as.numeric(substr(eps.betas, 41, 50))
@@ -141,11 +141,11 @@ GetBetas <- function(alpha) {
 
   jj <- grep('Variance-Covariance Matrix of Untransformed', top.model.out)
   jj.end <- grep('Individual Site estimates of <psi>', top.model.out)
-  raw.vc <- top.model.out[(jj+2):(jj.end-2)]
+  raw.vc <- top.model.out[(jj + 2):(jj.end - 2)]
   raw.vc2 <- (strsplit(raw.vc, " +"))
   raw.vc3 <- do.call("rbind", raw.vc2)
   first.dim <- dim(raw.vc3)[1]
-  vc.mat <- matrix(as.numeric(raw.vc3[,-(1:2)]), nrow=first.dim)
+  vc.mat <- matrix(as.numeric(raw.vc3[, -(1:2)]), nrow=first.dim)
 
   rownames(vc.mat) <- raw.vc3[,2]
   col.nms <- top.model.out[(jj + 1)]

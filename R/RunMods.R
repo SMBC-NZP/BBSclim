@@ -128,16 +128,31 @@ RunPsiMods <- function(alpha, pao, mods = psi_mods){
       }
 
 
-      ## Add delta AIC column and sort by delta AIC
-      aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC, na.rm = TRUE))
-      aic_table <- dplyr::arrange(aic_table, delta_AIC)
+    b <- scan(paste0("inst/output/", alpha, "/pres/psi_model_31.out"), what='c',sep='\n',quiet=TRUE)
 
-      ## Write AIC table
-      write.csv(aic_table, file = paste0("inst/output/", alpha, "/psi_aic.csv"), row.names = FALSE)
+    j <- grep('-2log', b)
+    loglike <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
 
-      ## Top psi model == last gam model, so rename and save (to avoid running again)
-      file.rename(from = paste0("inst/output/", alpha, "/pres/", aic_table$Model[1], ".out"),
-                  to = paste0("inst/output/", alpha, "/pres/", "gam_model_961.out"))
+    ## Extract AIC
+    j <- grep('AIC', b)
+    aic <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
+
+    ## Number of parameters
+    j <- grep('of par', b)
+    n  <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
+
+    aic_last <- dplyr::data_frame(Model = "psi_model_31", Model_num = 31, LogLik = loglike, nParam = n,
+                                  AIC = aic)
+
+    aic_table <- dplyr::bind_rows(aic_table, aic_last)
+
+
+    ## Add delta AIC column and sort by delta AIC
+    aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC, na.rm = TRUE))
+    aic_table <- dplyr::arrange(aic_table, delta_AIC)
+
+    ## Write AIC table
+    write.csv(aic_table, file = paste0("inst/output/", alpha, "/psi_aic.csv"), row.names = FALSE)
 }
 
 #' top_covs
@@ -294,31 +309,16 @@ RunGamMods <- function(alpha, pao, mods = gam_mods){
     }
   }
 
-
-  b <- scan(paste0("inst/output/", alpha, "/pres/gam_model_961.out"), what='c',sep='\n',quiet=TRUE)
-
-  j <- grep('-2log', b)
-  loglike <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
-
-  ## Extract AIC
-  j <- grep('AIC', b)
-  aic <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
-
-  ## Number of parameters
-  j <- grep('of par', b)
-  n  <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
-
-  aic_last <- dplyr::data_frame(Model = "gam_model_961", Model_num = 961, LogLik = loglike, nParam = n,
-                                AIC = aic)
-
-  aic_table <- dplyr::bind_rows(aic_table, aic_last)
-
-
   ## Add delta AIC column and sort by delta AIC
   aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC, na.rm = TRUE))
   aic_table <- dplyr::arrange(aic_table, delta_AIC)
 
   ## Write AIC table
   write.csv(aic_table, file = paste0("inst/output/", alpha, "/gam_aic.csv"), row.names = FALSE)
+
+  ## Top gamma/epsilon model == last psi model, so rename and save (to avoid running again)
+  file.rename(from = paste0("inst/output/", alpha, "/pres/", aic_table$Model[1], ".out"),
+              to = paste0("inst/output/", alpha, "/pres/", "psi_model_31.out"))
+
 }
 
