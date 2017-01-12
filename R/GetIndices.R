@@ -23,13 +23,21 @@ GetIndices <- function(alpha){
   avg.psi$sd.err <- delta(index = "avg.psi", est = avg.psi$value, alpha, years, buff = spp_buff)
   avg.psi$ind <- "avg.psi"
 
-  s.lat <- dplyr::summarise(prob_grp, value = range.limit(prob = Prob, coord = lat, limit = "south"))
+  s.lat <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.99, coord = lat, limit = "south"))
   s.lat$sd.err <- delta(index = "s.lat", est = s.lat$value, alpha, years, buff = spp_buff)
   s.lat$ind <- "s.lat"
 
-  n.lat <- dplyr::summarise(prob_grp, value = range.limit(prob = Prob, coord = lat, limit = "north"))
+  s.core <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.75, coord = lat, limit = "south"))
+  s.core$sd.err <- delta(index = "s.core", est = s.core$value, alpha, years, buff = spp_buff)
+  s.core$ind <- "s.core"
+
+  n.lat <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.99, coord = lat, limit = "north"))
   n.lat$sd.err <- delta(index = "n.lat", est = n.lat$value, alpha, years, buff = spp_buff)
   n.lat$ind <- "n.lat"
+
+  n.core <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.75, coord = lat, limit = "north"))
+  n.core$sd.err <- delta(index = "n.core", est = n.core$value, alpha, years, buff = spp_buff)
+  n.core$ind <- "n.core"
 
   avg.lat <- dplyr::summarise(prob_grp, value = sum(lat * Prob)/sum(Prob))
   avg.lat$sd.err <- delta(index = "avg.lat", est = avg.lat$value, alpha, years, buff = spp_buff)
@@ -40,7 +48,9 @@ GetIndices <- function(alpha){
   avg.lon$ind <- "avg.lon"
 
   indices <- dplyr::bind_rows(avg.psi, s.lat)
+  indices <- dplyr::bind_rows(indices, s.core)
   indices <- dplyr::bind_rows(indices, n.lat)
+  indices <- dplyr::bind_rows(indices, n.core)
   indices <- dplyr::bind_rows(indices, avg.lat)
   indices <- dplyr::bind_rows(indices, avg.lon)
 
@@ -74,11 +84,19 @@ delta <- function(index, est, alpha, years, buff, epslon = 0.1e-10) {
         }
 
         if(index == "s.lat"){
-          est2 <- dplyr::summarise(prob_grp2, s.lat = range.limit(prob = Prob, coord = lat, limit = "south"))$s.lat
+          est2 <- dplyr::summarise(prob_grp2, s.lat = range.limit(cell.probs = Prob, prob = 0.99, coord = lat, limit = "south"))$s.lat
+        }
+
+        if(index == "s.core"){
+          est2 <- dplyr::summarise(prob_grp2, s.core = range.limit(cell.probs = Prob, prob = 0.75, coord = lat, limit = "south"))$s.core
         }
 
         if(index == "n.lat"){
-          est2 <- dplyr::summarise(prob_grp2, n.lat = range.limit(prob = Prob, coord = lat, limit = "north"))$n.lat
+          est2 <- dplyr::summarise(prob_grp2, n.lat = range.limit(cell.probs = Prob, prob = 0.99, coord = lat, limit = "north"))$n.lat
+        }
+
+        if(index == "n.core"){
+          est2 <- dplyr::summarise(prob_grp2, n.core = range.limit(cell.probs = Prob, prob = 0.75, coord = lat, limit = "north"))$n.core
         }
 
         if(index == "avg.lat"){
@@ -90,7 +108,7 @@ delta <- function(index, est, alpha, years, buff, epslon = 0.1e-10) {
         }
 
         grad[, jj] <- (est2 - est)/epslon  #  partial derivative = change in real parm / change in betas
-        all.betas[[jj]] <- all.betas[[jj]] - epslon  #  increment one of the beta's
+        all.betas[[jj]] <- all.betas[[jj]] - epslon  #  change beta[jj] back to original
       }
 
     r.vc <- grad %*% betas$vc.mat %*% t(grad) #  real vc matrix (r.vc) = grad * betaVC * grad'
@@ -102,17 +120,17 @@ delta <- function(index, est, alpha, years, buff, epslon = 0.1e-10) {
 #'
 #' Estimate range limit using cumulative probability method
 
-range.limit <- function(prob, coord, limit){
-  xy <- data.frame(x = prob, y = coord)
+range.limit <- function(cell.probs, prob, coord, limit){
+  xy <- data.frame(x = cell.probs, y = coord)
   x <- dplyr::arrange(xy, y)$x/sum(xy$x)
   y <- dplyr::arrange(xy, y)$y
 
     if(limit == "south"){
-      lim <- predict(smooth.spline(cumsum(x), y, spar=0.1), 0.01)$y
+      lim <- predict(smooth.spline(cumsum(x), y, spar=0.1), (1 - prob))$y
     }
 
     if(limit == "north"){
-      lim <- predict(smooth.spline(cumsum(x), y, spar=0.1), 0.99)$y
+      lim <- predict(smooth.spline(cumsum(x), y, spar=0.1), prob)$y
     }
   lim
   }

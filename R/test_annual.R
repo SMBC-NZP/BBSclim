@@ -5,8 +5,9 @@
 #' @return TRUE if p should vary annual; otherwise FALSE
 #' @export
 
-test_annual <- function(alpha, pao, mod = psi_mods[[31]]){
+test_annual <- function(alpha, pao){
     opts <- read.csv("inst/model_opts.csv")
+    mod <- GetGamMods()[[961]]
 
     if(opts$Parallel){
       cores <- 2
@@ -21,7 +22,7 @@ test_annual <- function(alpha, pao, mod = psi_mods[[31]]){
                                         modname <- "annual"
                                         spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mod, is.annual = TRUE, is.het = opts$het)
                                       }else{
-                                        modname <- "no annual"
+                                        modname <- "constant"
                                         spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mod, is.annual = FALSE, is.het = opts$het)
                                       }
 
@@ -58,7 +59,7 @@ test_annual <- function(alpha, pao, mod = psi_mods[[31]]){
           modname <- "annual"
           spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mod, is.annual = TRUE, is.het = opts$het)
         }else{
-          modname <- "no annual"
+          modname <- "constant"
           spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mod, is.annual = FALSE, is.het = opts$het)
         }
 

@@ -53,26 +53,20 @@ spp_pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/pres/pres_in.pao"
 
 spp_annual <- test_annual(alpha = alpha, pao = spp_pao)
 
-### Run psi models
+### Run gamma/epsilon models
+
+RunGamMods(alpha, pao = spp_pao, mods = gam_mods)
 
 
+### Run psi models with top covariates from gamma/epsilon models
+spp_gam_covs <- top_covs(alpha, mods = gam_mods)
 
-spp_psi_aic <- RunPsiMods(pao = spp_pao, mods = psi_mods, alpha = alpha, is.test = test,
-                          is.annual = annual, is.het = het, del = FALSE)
+spp_psi_mods <- GetPsiMods(covs = spp_gam_covs)
 
-# spp_psi_aic <- read.csv("inst/output/aic/psi/lowa.csv")
+RunPsiMods(alpha, pao = spp_pao, mods = spp_psi_mods)
 
-### Run gam/eps models with top covariates from psi models
-spp_psi_covs <- top_covs(aic_tab = spp_psi_aic, mods = psi_mods)
 
-gam_mods <- GetGamMods(psi_covs = spp_psi_covs)[1:150]
-
-spp_gam_aic <- RunGamMods(pao = spp_pao, mods = gam_mods, alpha = alpha,
-                          time = annual, het = het_det, del = FALSE)
-
-# spp_gam_aic <- read.csv("inst/output/aic/gam/lowa.csv")
-
-# ### Goodness-of-fit of top model
+### Goodness-of-fit of top model
 spp_top_mod <- top_covs(aic_tab = spp_gam_aic, mods = gam_mods, psi = FALSE)
 
 

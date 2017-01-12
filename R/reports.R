@@ -6,9 +6,9 @@
 #' @export
 
 PlotRoutes <- function(alpha){
-  buff_routes <- read.csv(here::here(paste0('output/', alpha, '/count_buff.csv')))
-  raw_routes <- read.csv(here::here(paste0('output/', alpha, '/raw_counts.csv')))
-  used_routes <- read.csv(here::here(paste0('output/', alpha, '/no_outlier_counts.csv')))
+  buff_routes <- read.csv(here::here(paste0('inst/output/', alpha, '/count_buff.csv')))
+  raw_routes <- read.csv(here::here(paste0('inst/output/', alpha, '/raw_counts.csv')))
+  used_routes <- read.csv(here::here(paste0('inst/output/', alpha, '/no_outlier_counts.csv')))
 
   usa <- ggplot2::map_data("state")
   canada <- ggplot2::map_data("worldHires", "Canada")
@@ -50,18 +50,19 @@ PlotRoutes <- function(alpha){
 #' @export
 
 PlotLat <- function(alpha){
-  indices <- read.csv(here::here(paste0('output/', alpha, '/indices.csv')))
-  lat.indices <- dplyr::filter(indices, ind == "n.lat" | ind == "s.lat" | ind == "avg.lat")
+  indices <- read.csv(here::here(paste0('inst/output/', alpha, '/indices.csv')))
+  lat.indices <- dplyr::filter(indices, ind == "n.lat" | ind == "s.lat" |
+                               ind == "n.core" | ind == "s.core" | ind == "avg.lat")
 
   p <- ggplot(lat.indices, aes(x = Year, y = value, group = ind))
   p <- p + geom_point()
   p <- p + geom_line()
   p <- p + geom_point(color = "white", size = 6)
   p <- p + geom_point(size = 4)
-  p <- p + geom_ribbon(aes(ymin = (value - 1.96 * sd.err), ymax = (value + 1.96 * sd.err)), alpha = 0.2)
+  #p <- p + geom_ribbon(aes(ymin = (value - 1.96 * sd.err), ymax = (value + 1.96 * sd.err)), alpha = 0.2)
   p <- p + scale_y_continuous("Latitude")
-  p <- p + scale_x_continuous(breaks = seq(from = min(psi.indices$Year),
-                                           to = max(psi.indices$Year),
+  p <- p + scale_x_continuous(breaks = seq(from = min(lat.indices$Year),
+                                           to = max(lat.indices$Year),
                                            by = 2))
   p
 }
@@ -73,7 +74,7 @@ PlotLat <- function(alpha){
 #' @export
 
 PlotLon <- function(alpha){
-  indices <- read.csv(here::here(paste0('output/', alpha, '/indices.csv')))
+  indices <- read.csv(here::here(paste0('inst/output/', alpha, '/indices.csv')))
   lon.indices <- dplyr::filter(indices, ind == "avg.lon")
 
   p <- ggplot(lon.indices, aes(x = Year, y = value, group = ind))
@@ -96,7 +97,7 @@ PlotLon <- function(alpha){
 #' @export
 
 PlotPsi <- function(alpha){
-  indices <- read.csv(here::here(paste0('output/', alpha, '/indices.csv')))
+  indices <- read.csv(here::here(paste0('inst/output/', alpha, '/indices.csv')))
   psi.indices <- dplyr::filter(indices, ind == "avg.psi")
   y.min <- 0
   y.max <- plyr::round_any(max(psi.indices$value + 1.96 * psi.indices$sd.err), 0.1, f = ceiling)
@@ -122,9 +123,11 @@ PlotPsi <- function(alpha){
 #' @export
 
 MapPsi <- function(alpha, proj = FALSE){
-  psi <- read.csv(here::here(paste0('output/', alpha, '/occ.csv')))
-  indices <- read.csv(here::here(paste0('output/', alpha, '/indices.csv')))
-  indices <- dplyr::filter(indices, ind %in% c("s.lat", "n.lat", "avg.lat"))
+  psi <- read.csv(here::here(paste0('inst/output/', alpha, '/occ.csv')))
+  indices <- read.csv(here::here(paste0('inst/output/', alpha, '/indices.csv')))
+  limits <- dplyr::filter(indices, ind %in% c("s.lat", "n.lat"))
+  core <- dplyr::filter(indices, ind %in% c("s.core", "n.core"))
+  center <- dplyr::filter(indices, ind %in% c("avg.lat"))
 
   xmin <- min(psi$lon) - 3
   xmax <- max(psi$lon) + 3
@@ -135,16 +138,18 @@ MapPsi <- function(alpha, proj = FALSE){
   if(proj){
     p <- ggplot() + geom_tile(psi, aes(x = lon, y = lat, fill = Prob)) + facet_wrap(~Year)
     p <- p + coord_map(projection = "lambert", lat0 = 25, lat1 = 50, xlim = c(xmin, xmax), ylim = c(ymin, ymax))
-    p <- p + geom_hline(data = indices, aes(yintercept = value, linetype = ind), color = "grey70")
-    p <- p + scale_linetype_manual(values = c("solid", "longdash", "longdash"), guide = FALSE)
+    p <- p + geom_hline(data = limits, aes(yintercept = value, group = ind), linetype = "dashed", color = "grey70")
+    p <- p + geom_hline(data = core, aes(yintercept = value, group = ind), linetype = "longdash", color = "grey70")
+    p <- p + geom_hline(data = center, aes(yintercept = value), color = "grey70")
     p <- p + scale_fill_continuous(low = "black", high = "#ef6e0b")
     p <- p + scale_y_continuous("Latitude")
     p <- p + scale_x_continuous("Longitude")
     p
   }else{
     p <- ggplot() + geom_raster(data = psi, aes(x = lon, y = lat, fill = Prob)) + facet_wrap(~Year)
-    p <- p + geom_hline(data = indices, aes(yintercept = value, linetype = ind), color = "grey75")
-    p <- p + scale_linetype_manual(values = c("solid", "longdash", "longdash"), guide = FALSE)
+    p <- p + geom_hline(data = limits, aes(yintercept = value, group = ind), linetype = "dashed", color = "grey70")
+    p <- p + geom_hline(data = core, aes(yintercept = value, group = ind), linetype = "longdash", color = "grey70")
+    p <- p + geom_hline(data = center, aes(yintercept = value), color = "grey70")
     p <- p + scale_fill_continuous(low = "black", high = "#ef6e0b")
     p <- p + scale_y_continuous("Latitude")
     p <- p + scale_x_continuous("Longitude")
@@ -159,8 +164,8 @@ MapPsi <- function(alpha, proj = FALSE){
 #' Function to covert .md file to html (ht https://github.com/richfitz/modeladequacy)
 #' @export
 
-md2html <- function(filename) {
-  dest <- paste0(tools::file_path_sans_ext(filename), ".html")
+md2html <- function(filename, dest = NULL) {
+  if(is.null(dest)){ dest <- paste0(tools::file_path_sans_ext(filename), ".html")}
   opts <- setdiff(markdownHTMLOptions(TRUE), 'base64_images')
   markdownToHTML(filename, dest, options = opts)
 }

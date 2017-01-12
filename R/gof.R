@@ -8,11 +8,19 @@
 #' @export
 #'
 
-gof <- function(alpha, mods, pao){
+gof <- function(alpha, pao){
   mod_opts <- read.csv("inst/model_opts.csv")
   glob_opts <- read.csv("inst/global_opts.csv")
 
   annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
+
+  mods1 <- GetGamMods()
+  aic_gam <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
+  top <- aic_gam$Model_num[1]
+  covs <- mods1[[top]]
+  covs.ll <- list(gam_covs = covs$gam.cov, eps_covs = covs$eps.cov)
+
+  mods <- GetPsiMods(covs = covs.ll)
 
   if(annual_aic$Model[1] == "annual"){
     annual <- TRUE
@@ -22,7 +30,7 @@ gof <- function(alpha, mods, pao){
 
   year_seq <- seq(from = glob_opts$start_yr, to = glob_opts$end_yr)
 
-  aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
+  aic_tab <- read.csv(paste0("inst/output/", alpha, "/psi_aic.csv"))
 
   clim_data <- pao$unitcov
 

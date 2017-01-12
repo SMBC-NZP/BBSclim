@@ -13,7 +13,7 @@ targets:
   all:
     depends:
 {{#spp_names}}
-      - inst/output/{{spp_name}}/report.html
+      - inst/reports/{{spp_name}}.html
 {{/spp_names}}
 
 
@@ -30,8 +30,6 @@ targets:
   NA_biovars:
     command: data(target_name)
 
-  gam_mods:
-    command: GetGamMods()
 
 
 ## Data processing steps
@@ -94,23 +92,25 @@ targets:
       - inst/model_opts.csv
       - inst/output/{{spp_name}}/annual_aic.csv
 
-  {{spp_name}}_gam_covs:
-    command: top_covs(I(alpha = "{{spp_name}}"), mods = gam_mods)
-    depends:
-      - inst/output/{{spp_name}}/gam_aic.csv
+#  {{spp_name}}_gam_covs:
+#    command: top_covs(I(alpha = "{{spp_name}}"))
+#    depends:
+#      - inst/output/{{spp_name}}/gam_aic.csv
 
-  {{spp_name}}_psi_mods:
-    command: GetPsiMods(covs = {{spp_name}}_gam_covs)
+#  {{spp_name}}_psi_mods:
+#    command: GetPsiMods(covs = {{spp_name}}_gam_covs)
 
   inst/output/{{spp_name}}/psi_aic.csv:
-    command: RunPsiMods(I(alpha = "{{spp_name}}"), pao = {{spp_name}}_pao, mods = {{spp_name}}_psi_mods)
+    command: RunPsiMods(I(alpha = "{{spp_name}}"), pao = {{spp_name}}_pao)
     depends:
       - inst/model_opts.csv
       - inst/output/{{spp_name}}/annual_aic.csv
+      - inst/output/{{spp_name}}/gam_aic.csv
 
   inst/output/{{spp_name}}/top_mod.out:
-    command: gof(I(alpha = "{{spp_name}}"), mods = {{spp_name}}_psi_mods, pao = {{spp_name}}_pao)
+    command: gof(I(alpha = "{{spp_name}}"), pao = {{spp_name}}_pao)
     depends:
+      - inst/output/{{spp_name}}/gam_aic.csv
       - inst/output/{{spp_name}}/psi_aic.csv
       - inst/model_opts.csv
       - inst/global_opts.csv
@@ -158,14 +158,15 @@ targets:
   inst/output/{{spp_name}}/report.md:
     knitr:
       input: inst/report.Rmd
+      auto_figure_prefix: true
     depends:
       - spp_summ: {{spp_name}}
       - R/reports.R
       - inst/output/{{spp_name}}/occ.csv
       - inst/output/{{spp_name}}/indices.csv
     cleanup_level: purge
-  inst/output/{{spp_name}}/report.html:
-    command: md2html("inst/output/{{spp_name}}/report.md")
+  inst/reports/{{spp_name}}.html:
+    command: md2html(filename = "inst/output/{{spp_name}}/report.md", dest = target_name)
     cleanup_level: purge
 
 {{/spp_names}}

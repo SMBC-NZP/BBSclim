@@ -117,7 +117,7 @@ GetBetas <- function(alpha) {
 
   psi.betas <- betas[grep('psi', betas)]
   loc.per <- regexpr("psi", psi.betas)
-  psi.names <- substr(psi.betas, loc.per + 4, loc.per + 10)
+  psi.names <- substr(psi.betas, loc.per + 4, loc.per + 11)
   psi.names <- gsub("[0-9]", "", psi.names)[-1]
   psi.names <- gsub("_$", "", psi.names)
   psi.betas <- as.numeric(substr(psi.betas, 41, 50))

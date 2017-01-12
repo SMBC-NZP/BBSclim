@@ -6,10 +6,18 @@
 #' @param psi_mods list containing the parameters for each model to evaluate
 #' @export
 
-RunPsiMods <- function(alpha, pao, mods = psi_mods){
+RunPsiMods <- function(alpha, pao){
     opts <- read.csv("inst/model_opts.csv")
 
     annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
+
+    mods1 <- GetGamMods()
+    aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
+    top <- aic_tab$Model_num[1]
+    covs <- mods[[top]]
+    covs.ll <- list(gam_covs = covs$gam.cov, eps_covs = covs$eps.cov)
+
+    mods <- GetPsiMods(covs = covs.ll)
 
     if(annual_aic$Model[1] == "annual"){
       annual <- TRUE
@@ -30,7 +38,7 @@ RunPsiMods <- function(alpha, pao, mods = psi_mods){
         mods <- mods[1:cores]
       }
 
-      aic_table <- foreach::foreach(i=1:length(mods), .combine = rbind,
+      aic_table <- foreach::foreach(i = 1:length(mods), .combine = rbind,
                                     .packages = c("dplyr", "BBSclim")) %dopar%{
                                       modname <- paste0('psi_model_', i)
 
@@ -164,19 +172,13 @@ RunPsiMods <- function(alpha, pao, mods = psi_mods){
 #' @export
 #'
 
-top_covs <- function(alpha, mods, psi = TRUE){
-    if(psi){
-      aic_tab <- read.csv(paste0("inst/output/", alpha, "/psi_aic.csv"))
-      top <- aic_tab$Model_num[1]
-      covs <- mods[[top]]
-      covs
-    }else{
+top_covs <- function(alpha){
+      mods <- GetGamMods()
       aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
       top <- aic_tab$Model_num[1]
       covs <- mods[[top]]
-      covs.df <- data.frame(gam_covs = covs$gam.cov, eps_covs = covs$eps.cov)
-      covs.df
-    }
+      covs.ll <- list(gam_covs = covs$gam.cov, eps_covs = covs$eps.cov)
+      covs.ll
 }
 
 #' RunGamMods
@@ -187,10 +189,12 @@ top_covs <- function(alpha, mods, psi = TRUE){
 #' @export
 
 
-RunGamMods <- function(alpha, pao, mods = gam_mods){
+RunGamMods <- function(alpha, pao){
   opts <- read.csv("inst/model_opts.csv")
 
   annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
+
+  mods <- GetGamMods()
 
   if(annual_aic$Model[1] == "annual"){
     annual <- TRUE
