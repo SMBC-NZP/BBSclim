@@ -107,6 +107,7 @@ targets:
       - inst/output/{{spp_name}}/annual_aic.csv
       - inst/output/{{spp_name}}/gam_aic.csv
 
+
   inst/output/{{spp_name}}/top_mod.out:
     command: gof(I(alpha = "{{spp_name}}"), pao = {{spp_name}}_pao)
     depends:
