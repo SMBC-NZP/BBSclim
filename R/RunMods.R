@@ -19,6 +19,7 @@ RunPsiMods <- function(alpha, pao){
 
     mods <- GetPsiMods(covs = covs.ll)
 
+
     if(annual_aic$Model[1] == "annual"){
       annual <- TRUE
     }else{
@@ -194,7 +195,9 @@ RunGamMods <- function(alpha, pao){
 
   annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
 
+
   mods <- GetGamMods()
+
 
   if(annual_aic$Model[1] == "annual"){
     annual <- TRUE
