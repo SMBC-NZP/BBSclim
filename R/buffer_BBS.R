@@ -46,11 +46,12 @@ buffer_BBS	<- function(alpha, bbs, buffer = 2, method = "rec", raw = FALSE) {
 
     ### Create data frame with 0 counts for buffered routes
     col_counts <- grep("count|stop", names(spp_count), value = TRUE)
-    count_buff <- dplyr::as_data_frame(matrix(0, nrow = nrow(buff_routes), ncol = length(col_counts)))
+    count_buff <- dplyr::as_data_frame(matrix(0, nrow = nrow(buff_routes) * length(seq(start_year, end_year)),
+                                              ncol = length(col_counts)))
     names(count_buff) <- col_counts
     count_buff$aou <- unique(spp_count$aou)
     count_buff$Year <- rep(seq(start_year, end_year), length(unique(buff_routes$routeID)))
-    count_buff <- dplyr::bind_cols(buff_routes, count_buff)
+    count_buff$routeID <- rep(unique(buff_routes$routeID), each = length(seq(start_year, end_year)))
 
     spp_count_buff <- dplyr::bind_rows(spp_count, count_buff)
 
