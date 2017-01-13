@@ -17,7 +17,7 @@ GetOccProb <- function(alpha, betas, buff_method = "rec", Write = TRUE){
     r.psi <- matrix(0, dim(climate)[1], length(years))
 
     # Initial occupancy prob
-    psi.mat <- matrix(betas$psi.betas, nrow = dim(climate)[1], ncol = length(betas$psi.betas), byrow=T)
+    psi.mat <- matrix(betas$psi.betas, nrow = dim(climate)[1], ncol = length(betas$psi.betas), byrow = TRUE)
     psi.cov <- names(betas$psi.betas)
     r.psi[, 1] <- plogis(rowSums(psi.mat * climate[, psi.cov, 1]))
 
@@ -30,7 +30,7 @@ GetOccProb <- function(alpha, betas, buff_method = "rec", Write = TRUE){
       r.gam <- matrix(plogis(rowSums(gam.mat * climate[, gam.cov, yy])), dim(climate)[1], 1)  #  real colonization for each site
       r.eps <- matrix(plogis(rowSums(eps.mat * climate[, eps.cov, yy])), dim(climate)[1], 1)  #  real extinction for each site
       #   compute psi for years 2 ... years
-      r.psi[,yy]<- r.psi[, yy - 1] * (1 - r.eps) + (1 - r.psi[, yy - 1]) * r.gam
+      r.psi[, yy]<- r.psi[, yy - 1] * (1 - r.eps) + (1 - r.psi[, yy - 1]) * r.gam
     }
 
     all.values <- raster::getValues(NA_biovars$biovars1997[[1]])   # extract climate values

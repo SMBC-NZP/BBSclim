@@ -110,9 +110,8 @@ write_dm_and_run2 <- function(pao, cov_list, is.het,
     fixedpars = NULL
   }
 
-  outname=paste('inst/output/', alpha, "/pres/", modname,'.out',sep='')
-  outname=gsub('*','X',outname, fixed=TRUE);  #  change '*' to 'X' in filename
-  outname=gsub(':','_',outname, fixed=TRUE);  #  change ':' to '_' in filename
+  outname <- paste('inst/output/', alpha, "/pres/", modname,'.out',sep='')
+
   if (file.exists(outname)) cat('\n**** output file exists - model not run\n***********\n') else {
    dmname = paste0('inst/output/', alpha,"/pres/", modname, '_dm.dm')
     if (!is.null(dm_list$dm1)) {

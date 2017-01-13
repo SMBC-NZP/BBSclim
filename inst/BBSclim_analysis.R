@@ -1,4 +1,5 @@
-# httr::set_config(config(ssl_verifypeer = 0L))
+# library(httr)
+# set_config(config(ssl_verifypeer = 0L))
 # devtools::install_github('crushing05/rBBS')
 # devtools::install_github('crushing05/BBS.tenstop')
 # devtools::install_github('crushing05/BBS.fiftystop')
@@ -6,10 +7,12 @@ library(rBBS)
 library(BBSclim)
 
 # Set global options
-source("R/glob_opts.R")
+global_opts(tenstops = FALSE)
+
+model_opts(psi.test = TRUE, gam.test = TRUE)
 
 ### Import raw 10-stop BBS data
-bbs <- GetBBS(is.tenstops = tenstops)
+bbs <- GetBBS(is.tenstops = FALSE)
 
 
 ### Get count data for species
@@ -18,20 +21,20 @@ CreateSpp(alpha)
 
 spp_AOU <- GetAOU(alpha)
 
-spp_counts <- GetSppCounts(AOU = spp_AOU, Write = TRUE, path = paste0('inst/output/', alpha))
+GetSppCounts(AOU = spp_AOU, Write = TRUE, path = paste0('inst/output/', alpha))
 
 ### Remove outliers
 
-spp_counts2 <- RemoveOutliers(counts = spp_counts)
+RemoveOutliers(path = paste0('inst/output/', alpha))
 
 # need to save output in a way that # outliers can be added to report
 
 ### Add buffer around routes with counts > 0
-spp_buff <- buffer_BBS(bbs = bbs, alpha = alpha)
+buffer_BBS(bbs = bbs, alpha = alpha)
 
 
 ### Make map of routes
-make_route_plot(spp_buff, spp_counts2, spp_counts, alpha)
+make_route_plot(alpha)
 
 
 ### Load rasters containing bioclim estimates
@@ -47,7 +50,7 @@ spp_clim <- GetBioVars(alpha = alpha)
 write_pao(alpha = alpha)
 
 ### Test for annual variation in p
-psi_mods <- GetPsiMods()
+gam_mods <- GetGamMods()
 
 spp_pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/pres/pres_in.pao"))
 
@@ -59,11 +62,11 @@ RunGamMods(alpha, pao = spp_pao, mods = gam_mods)
 
 
 ### Run psi models with top covariates from gamma/epsilon models
-spp_gam_covs <- top_covs(alpha, mods = gam_mods)
+spp_gam_covs <- top_covs(alpha)
 
 spp_psi_mods <- GetPsiMods(covs = spp_gam_covs)
 
-RunPsiMods(alpha, pao = spp_pao, mods = spp_psi_mods)
+RunPsiMods(alpha, pao = spp_pao)
 
 
 ### Goodness-of-fit of top model

@@ -59,7 +59,7 @@ PlotLat <- function(alpha){
   p <- p + geom_line()
   p <- p + geom_point(color = "white", size = 6)
   p <- p + geom_point(size = 4)
-  #p <- p + geom_ribbon(aes(ymin = (value - 1.96 * sd.err), ymax = (value + 1.96 * sd.err)), alpha = 0.2)
+  p <- p + geom_ribbon(aes(ymin = (value - 1.96 * sd.err), ymax = (value + 1.96 * sd.err)), alpha = 0.2)
   p <- p + scale_y_continuous("Latitude")
   p <- p + scale_x_continuous(breaks = seq(from = min(lat.indices$Year),
                                            to = max(lat.indices$Year),

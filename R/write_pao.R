@@ -10,7 +10,7 @@
 write_pao <- function(alpha, sim = FALSE){
   opts <- read.csv("inst/global_opts.csv")
   covs <- read.csv(paste0("inst/output/", alpha, "/route_clim.csv"))
-  
+
   common <- code_lookup$common[code_lookup$alpha == toupper(alpha)]
   if(opts$tenstop) {tot_stops <- 5}else{tot_stops <- 50}
 
@@ -20,7 +20,7 @@ write_pao <- function(alpha, sim = FALSE){
 
 
     ### Covert count data to long format
-    counts <- dplyr::select(counts, routeID, Year, grep("count", names(counts)))
+    counts <- dplyr::select(counts, routeID, Year, grep("count|stop", names(counts)))
     counts <- tidyr::gather(counts, key = "stop", value = "n", -routeID, -Year)
 
 
@@ -65,7 +65,7 @@ write_pao <- function(alpha, sim = FALSE){
     spp_clim2 <- dplyr::mutate(spp_clim2, Lat = (Lat - mean(Lat))/sd(Lat),
                                Lon = (Lon - mean(Lon))/sd(Lon))
     spp_clim3 <- dplyr::mutate(spp_clim2, sq_Lat = Lat ^ 2, sq_Lon = Lon ^ 2)
-    
+
     for(ss in 1:tot_stops) {
       sc <- scale(1:tot_stops)[ss];        #names(sc)  <- paste0('Stop',ss)
       sc2 <- (scale(1:tot_stops)[ss])^2;   #names(sc2) <- paste0('sqStop',ss)
@@ -73,7 +73,7 @@ write_pao <- function(alpha, sim = FALSE){
       colnames(spp_clim3)[ncol(spp_clim3)-1] <- paste0('Stop',ss)
       colnames(spp_clim3)[ncol(spp_clim3)] <- paste0('sq_Stop',ss)
     }
-    
+
     sitecovs	<- dplyr::select(spp_clim3, -routeID)
 
     n_seasons <- dim(det_hist)[2] / tot_stops

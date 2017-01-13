@@ -19,7 +19,7 @@ targets:
     command: global_opts()
 
   inst/model_opts.csv:
-    command: model_opts(I(psi.test = TRUE), I(gam.test = TRUE))
+    command: model_opts(I(psi.test = FALSE), I(gam.test = TRUE))
 
   bbs:
     command: GetBBS()
