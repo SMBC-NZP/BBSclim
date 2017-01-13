@@ -22,9 +22,9 @@ buffer_BBS	<- function(alpha, bbs, buffer = 2, method = "rec", raw = FALSE) {
   }else{
     spp_count <- read.csv(paste0("inst/output/", alpha, "/no_outlier_counts.csv"))
   }
-  
+
   route_atrb <- bbs$routes
-  
+
   if(method == "rec"){
     start_year <- min(spp_count$Year)
     end_year <- max(spp_count$Year)
@@ -45,7 +45,7 @@ buffer_BBS	<- function(alpha, bbs, buffer = 2, method = "rec", raw = FALSE) {
     buff_routes <- buff_routes[rep(seq_len(nrow(buff_routes)), each = n_yr),]
 
     ### Create data frame with 0 counts for buffered routes
-    col_counts <- grep("count", names(spp_count), value = TRUE)
+    col_counts <- grep("count|stop", names(spp_count), value = TRUE)
     count_buff <- dplyr::as_data_frame(matrix(0, nrow = nrow(buff_routes), ncol = length(col_counts)))
     names(count_buff) <- col_counts
     count_buff$aou <- unique(spp_count$aou)
