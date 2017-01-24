@@ -4,16 +4,34 @@
 #' @param pao .pao file for species of interest
 #' @param alpha alpha code for species of interest
 #' @param psi_mods list containing the parameters for each model to evaluate
-#' @param del Should .out files be deleted after model output in evaluated?
-#' @param is.annual Does p vary annually?
-#' @param is.het Heterogeneous detection?
 #' @export
 
-RunPsiMods <- function(alpha, pao, mods = psi_mods){
+RunPsiMods <- function(alpha, pao){
     opts <- read.csv("inst/model_opts.csv")
-    
+
+    annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
+
+    mods1 <- GetGamMods()
+    aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
+    top <- aic_tab$Model_num[1]
+    covs <- mods[[top]]
+    covs.ll <- list(gam_covs = covs$gam.cov, eps_covs = covs$eps.cov)
+
+    mods <- GetPsiMods(covs = covs.ll)
+
+
+    if(annual_aic$Model[1] == "annual"){
+      annual <- TRUE
+    }else{
+      annual <- FALSE
+    }
+
     if(opts$Parallel){
       cores <- parallel::detectCores()
+      if(!is.null(opts$limit.cores)){
+        cores <- min(cores, opts$limit.cores)
+      }
+
       cl <- parallel::makeCluster(cores)
       doParallel::registerDoParallel(cl)
 
@@ -21,25 +39,25 @@ RunPsiMods <- function(alpha, pao, mods = psi_mods){
         mods <- mods[1:cores]
       }
 
-      aic_table <- foreach::foreach(i=1:length(mods), .combine = rbind,
+      aic_table <- foreach::foreach(i = 1:length(mods), .combine = rbind,
                                     .packages = c("dplyr", "BBSclim")) %dopar%{
                                       modname <- paste0('psi_model_', i)
 
                                       ## Create design matrices for model i
-                                      spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = opts$annual, is.het = opts$het)
+                                      spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
                                       ## Run model
-                                      BBSclim::write_dm_and_run2(pao = pao, cov_list = mods[[i]], 
-                                                                 is.het = opts$het, 
+                                      BBSclim::write_dm_and_run2(pao = pao, cov_list = mods[[i]],
+                                                                 is.het = opts$het,
                                                                  dm_list = spp_dm,
-                                                                 modname = modname, fixed = TRUE, 
+                                                                 modname = modname, fixed = TRUE,
                                                                  inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
 
                                       ## Read output file
                                       a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
                                       ## Evaluate model (if model converges, will equal TRUE)
-                                      check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = FALSE, is.annual = opts$annual, is.het = opts$het)
+                                      check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = FALSE, is.annual = annual, is.het = opts$het)
 
                                       if(check == FALSE){ # If model does not converge, save NA in AIC table
                                         aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -74,7 +92,7 @@ RunPsiMods <- function(alpha, pao, mods = psi_mods){
         modname <- paste0('psi_model_', i)
 
         ## Create design matrices for model i
-        spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.annual = opts$annual, is.het = opts$het)
+        spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
         ## Run model
         write_dm_and_run2(pao = pao, cov_list = mods[[i]], is.het = opts$het, dm_list = spp_dm,
@@ -85,7 +103,7 @@ RunPsiMods <- function(alpha, pao, mods = psi_mods){
         a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c', sep='\n', quiet=TRUE)
 
       ## Evaluate model (if model converges, will equal TRUE)
-      check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = FALSE, is.annual = opts$annual, is.het = opts$het)
+      check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = FALSE, is.annual = annual, is.het = opts$het)
 
 
         if(check == FALSE){ # If model does not converge, save NA in AIC table
@@ -119,16 +137,31 @@ RunPsiMods <- function(alpha, pao, mods = psi_mods){
       }
 
 
-      ## Add delta AIC column and sort by delta AIC
-      aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC, na.rm = TRUE))
-      aic_table <- dplyr::arrange(aic_table, delta_AIC)
+    b <- scan(paste0("inst/output/", alpha, "/pres/psi_model_31.out"), what='c',sep='\n',quiet=TRUE)
 
-      ## Write AIC table
-      write.csv(aic_table, file = paste0("inst/output/", alpha, "/psi_aic.csv"), row.names = FALSE)
+    j <- grep('-2log', b)
+    loglike <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
 
-      ## Top psi model == last gam model, so rename and save (to avoid running again)
-      file.rename(from = paste0("inst/output/", alpha, "/pres/", aic_table$Model[1], ".out"),
-                  to = paste0("inst/output/", alpha, "/pres/", "gam_model_961.out"))
+    ## Extract AIC
+    j <- grep('AIC', b)
+    aic <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
+
+    ## Number of parameters
+    j <- grep('of par', b)
+    n  <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
+
+    aic_last <- dplyr::data_frame(Model = "psi_model_31", Model_num = 31, LogLik = loglike, nParam = n,
+                                  AIC = aic)
+
+    aic_table <- dplyr::bind_rows(aic_table, aic_last)
+
+
+    ## Add delta AIC column and sort by delta AIC
+    aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC, na.rm = TRUE))
+    aic_table <- dplyr::arrange(aic_table, delta_AIC)
+
+    ## Write AIC table
+    write.csv(aic_table, file = paste0("inst/output/", alpha, "/psi_aic.csv"), row.names = FALSE)
 }
 
 #' top_covs
@@ -140,31 +173,45 @@ RunPsiMods <- function(alpha, pao, mods = psi_mods){
 #' @export
 #'
 
-top_covs <- function(alpha, mods, psi = TRUE){
-    if(psi){
-      aic_tab <- read.csv(paste0("inst/output/", alpha, "/psi_aic.csv"))
-      top <- aic_tab$Model_num[1]
-      covs <- mods[[top]]$psi.cov
-      covs
-    }else{
+top_covs <- function(alpha){
+      mods <- GetGamMods()
       aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
       top <- aic_tab$Model_num[1]
       covs <- mods[[top]]
-      covs
-    }
+      covs.ll <- list(gam_covs = covs$gam.cov, eps_covs = covs$eps.cov)
+      covs.ll
 }
 
 #' RunGamMods
 #'
 #' Runs full model set for 961 gamma/epsilon models, evaluate each, write and return AIC table, delete .out files (optional)
 #' @param gam_mods list containing the covariates for each model
+#' @param limit.cores Optional limit to the # of cores used for parallel
 #' @export
 
 
-RunGamMods <- function(alpha, pao, mods = gam_mods){
+RunGamMods <- function(alpha, pao){
   opts <- read.csv("inst/model_opts.csv")
-  
+
+  annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
+
+
+  mods <- GetGamMods()
+
+
+  if(annual_aic$Model[1] == "annual"){
+    annual <- TRUE
+  }else{
+    annual <- FALSE
+  }
+
   if(opts$Parallel){
+
+    cores <- parallel::detectCores()
+    if(!is.null(opts$limit.cores)){
+      cores <- min(cores, opts$limit.cores)
+    }
+
     cores <- parallel::detectCores()
     cl <- parallel::makeCluster(cores)
     doParallel::registerDoParallel(cl)
@@ -179,19 +226,19 @@ RunGamMods <- function(alpha, pao, mods = gam_mods){
                                     modname <- paste0('gam_model_', i)
 
                                     ## Create design matrices for model i
-                                    spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = opts$annual, is.het = opts$het)
+                                    spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
                                     ## Run model
                                     BBSclim::write_dm_and_run2(pao = pao, cov_list = mods[[i]], is.het = opts$het, dm_list = spp_dm,
-                                                               modname = modname, fixed = TRUE, 
+                                                               modname = modname, fixed = TRUE,
                                                                inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
 
                                     ## Read output file
                                     a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
                                     ## Evaluate model (if model converges, will equal TRUE)
-                                    check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = TRUE, 
-                                                               is.het = opts$het, is.annual = opts$annual)
+                                    check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = TRUE,
+                                                               is.het = opts$het, is.annual = annual)
 
                                     if(check == FALSE){ # If model does not converge, save NA in AIC table
                                       aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -226,18 +273,18 @@ RunGamMods <- function(alpha, pao, mods = gam_mods){
       modname <- paste0('gam_model_', i)
 
       ## Create design matrices for model i
-      spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.het = opts$het, is.annual = opts$annual)
+      spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.het = opts$het, is.annual = annual)
 
       ## Run model
       write_dm_and_run2(pao = pao, cov_list = mods[[i]], is.het = opts$het, dm_list = spp_dm,
-                        modname = modname, fixed = TRUE, 
+                        modname = modname, fixed = TRUE,
                         inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
 
       ## Read output file
       a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
     ## Evaluate model (if model converges, will equal TRUE)
-    check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = TRUE, is.het = opts$het, is.annual = opts$annual)
+    check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = TRUE, is.het = opts$het, is.annual = annual)
 
       if(check == FALSE){ # If model does not converge, save NA in AIC table
         aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -269,31 +316,16 @@ RunGamMods <- function(alpha, pao, mods = gam_mods){
     }
   }
 
-
-  b <- scan(paste0("inst/output/", alpha, "/pres/gam_model_961.out"), what='c',sep='\n',quiet=TRUE)
-  
-  j <- grep('-2log', b)
-  loglike <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
-  
-  ## Extract AIC
-  j <- grep('AIC', b)
-  aic <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
-  
-  ## Number of parameters
-  j <- grep('of par', b)
-  n  <- as.numeric(unlist(strsplit(b[j],'=',2))[2])
-  
-  aic_last <- dplyr::data_frame(Model = "gam_model_961", Model_num = 961, LogLik = loglike, nParam = n,
-                                AIC = aic)
-  
-  aic_table <- dplyr::bind_rows(aic_table, aic_last)
-  
-
   ## Add delta AIC column and sort by delta AIC
   aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC, na.rm = TRUE))
   aic_table <- dplyr::arrange(aic_table, delta_AIC)
 
   ## Write AIC table
   write.csv(aic_table, file = paste0("inst/output/", alpha, "/gam_aic.csv"), row.names = FALSE)
+
+  ## Top gamma/epsilon model == last psi model, so rename and save (to avoid running again)
+  file.rename(from = paste0("inst/output/", alpha, "/pres/", aic_table$Model[1], ".out"),
+              to = paste0("inst/output/", alpha, "/pres/", "psi_model_31.out"))
+
 }
 

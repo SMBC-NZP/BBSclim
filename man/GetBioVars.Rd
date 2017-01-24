@@ -4,8 +4,8 @@
 \alias{GetBioVars}
 \title{GetBioVars}
 \usage{
-GetBioVars(index = c(1, 2, 8, 12, 18), ind_name = c("tmp", "dtr", "Twet",
-  "Prec", "Pwarm"), biovars = NA_biovars, alpha)
+GetBioVars(alpha, index = c(1, 2, 8, 12, 18), ind_name = c("tmp", "dtr",
+  "Twet", "Prec", "Pwarm"), biovars = NA_biovars)
 }
 \arguments{
 \item{index}{Integer vector containing the bioclim variables of interest}

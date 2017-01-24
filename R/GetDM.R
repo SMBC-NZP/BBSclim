@@ -47,41 +47,47 @@ GetDM	<- function(pao,  start_yr = 1997, cov_list,
   dm1[1, 1:num.betas[1]] <- psi.dm
 
   # th0
-  coord.ind.th0 <- grep('Lat|Lon', cov_list$th0.cov)
-  coord.mat.th0 <- matrix(rep(cov_list$th0.cov[coord.ind.th0], n_surv), nrow = n_surv, byrow = TRUE)
-  if(length(coord.ind.th0) == 0)	coord.mat.th0 <- NULL
+  if(!is.null(cov_list$th0.cov)){
+    coord.ind.th0 <- grep('Lat|Lon', cov_list$th0.cov)
+    coord.mat.th0 <- matrix(rep(cov_list$th0.cov[coord.ind.th0], n_surv), nrow = n_surv, byrow = TRUE)
+    if(length(coord.ind.th0) == 0)	coord.mat.th0 <- NULL
 
 
-  non.coord.th0 <- grep('Lat|Lon', cov_list$th0.cov, invert=T)
-  cov.mat.th0 <- matrix(rep(paste(cov_list$th0.cov[non.coord.th0], as.character(years[1]), sep = "_"), n_count), nrow = n_count, byrow = TRUE)
-  for (ii in 2:length(years)) {
-    cov.mat.th0 <- rbind(cov.mat.th0, matrix(rep(paste(cov_list$th0.cov[non.coord.th0], as.character(years[ii]), sep = "_"), n_count), nrow = n_count, byrow = TRUE))
+    non.coord.th0 <- grep('Lat|Lon', cov_list$th0.cov, invert=T)
+    cov.mat.th0 <- matrix(rep(paste(cov_list$th0.cov[non.coord.th0], as.character(years[1]), sep = "_"), n_count), nrow = n_count, byrow = TRUE)
+    for (ii in 2:length(years)) {
+      cov.mat.th0 <- rbind(cov.mat.th0, matrix(rep(paste(cov_list$th0.cov[non.coord.th0], as.character(years[ii]), sep = "_"), n_count), nrow = n_count, byrow = TRUE))
+    }
+    if(length(non.coord.th0)==0)	cov.mat.th0 <- NULL
+
+    th0.intercept <- rep(1, n_surv)
+    th0.dm <- cbind(th0.intercept, coord.mat.th0, cov.mat.th0)
+    if(length(cov_list$th0.cov) == 0) th0.dm  <- rep(1, n_surv)
+  }else{
+    th0.dm <- rep(1, n_surv)
   }
-  if(length(non.coord.th0)==0)	cov.mat.th0 <- NULL
-
-  th0.intercept <- rep(1, n_surv)
-  th0.dm <- cbind(th0.intercept, coord.mat.th0, cov.mat.th0)
-  if(length(cov_list$th0.cov) == 0) th0.dm  <- rep(1, n_surv)
-
   dm1[2:(n_surv + 1),(1 + num.betas[1]):sum(num.betas[1:2])] <- th0.dm
 
   # th1
-  coord.ind.th1 <- grep('Lat|Lon', cov_list$th1.cov)
-  coord.mat.th1 <- matrix(rep(cov_list$th1.cov[coord.ind.th1], n_surv), nrow = n_surv, byrow = TRUE)
-  if(length(coord.ind.th1) == 0)	coord.mat.th1 <- NULL
+  if(!is.null(cov_list$th1.cov)){
+    coord.ind.th1 <- grep('Lat|Lon', cov_list$th1.cov)
+    coord.mat.th1 <- matrix(rep(cov_list$th1.cov[coord.ind.th1], n_surv), nrow = n_surv, byrow = TRUE)
+    if(length(coord.ind.th1) == 0)	coord.mat.th1 <- NULL
 
 
-  non.coord.th1 <- grep('Lat|Lon', cov_list$th1.cov, invert=T)
-  cov.mat.th1 <- matrix(rep(paste(cov_list$th1.cov[non.coord.th1], as.character(years[1]), sep = "_"), n_count), nrow = n_count, byrow = TRUE)
-  for (ii in 2:length(years)) {
-    cov.mat.th1 <- rbind(cov.mat.th1, matrix(rep(paste(cov_list$th1.cov[non.coord.th1], as.character(years[ii]), sep = "_"), n_count), nrow = n_count, byrow = TRUE))
+    non.coord.th1 <- grep('Lat|Lon', cov_list$th1.cov, invert=T)
+    cov.mat.th1 <- matrix(rep(paste(cov_list$th1.cov[non.coord.th1], as.character(years[1]), sep = "_"), n_count), nrow = n_count, byrow = TRUE)
+    for (ii in 2:length(years)) {
+      cov.mat.th1 <- rbind(cov.mat.th1, matrix(rep(paste(cov_list$th1.cov[non.coord.th1], as.character(years[ii]), sep = "_"), n_count), nrow = n_count, byrow = TRUE))
+    }
+    if(length(non.coord.th1)==0)	cov.mat.th1 <- NULL
+
+    th1.intercept <- rep(1, n_surv)
+    th1.dm <- cbind(th1.intercept, coord.mat.th1, cov.mat.th1)
+    if(length(cov_list$th1.cov) == 0) th1.dm  <- rep(1, n_surv)
+  }else{
+    th1.dm  <- rep(1, n_surv)
   }
-  if(length(non.coord.th1)==0)	cov.mat.th1 <- NULL
-
-  th1.intercept <- rep(1, n_surv)
-  th1.dm <- cbind(th1.intercept, coord.mat.th1, cov.mat.th1)
-  if(length(cov_list$th1.cov) == 0) th1.dm  <- rep(1, n_surv)
-
   dm1[(n_surv + 2):(2 * n_surv + 1), (1 + sum(num.betas[1:2])):sum(num.betas[1:3])] <- th1.dm
 
   rownames(dm1) <- c('psi', paste0('th0(',1:n_surv,')'), paste0('th1(',1:n_surv,')'))
@@ -128,7 +134,7 @@ GetDM	<- function(pao,  start_yr = 1997, cov_list,
   non.stop.p <- grep('Stop|Lat|Lon', cov_list$p1.cov, invert=T)
   for (ii in 1:length(years)) {
     for (jj in 1:(n_surv/n_seas)) {
-      cov.mat.p <- rbind(cov.mat.p, paste0(cov_list$p1.cov[non.stop.p], as.character(years[ii])))
+      cov.mat.p <- rbind(cov.mat.p, paste0(cov_list$p1.cov[non.stop.p], "_", as.character(years[ii])))
     }
   }
   if(length(non.stop.p) == 0)	cov.mat.p <- NULL

@@ -7,10 +7,12 @@ library(rBBS)
 library(BBSclim)
 
 # Set global options
-source("R/glob_opts.R")
+global_opts(tenstops = FALSE)
+
+model_opts(psi.test = TRUE, gam.test = TRUE)
 
 ### Import raw 10-stop BBS data
-bbs <- GetBBS(is.tenstops = tenstops)
+bbs <- GetBBS(is.tenstops = FALSE)
 
 
 ### Get count data for species
@@ -19,20 +21,20 @@ CreateSpp(alpha)
 
 spp_AOU <- GetAOU(alpha)
 
-spp_counts <- GetSppCounts(AOU = spp_AOU, Write = TRUE, path = paste0('inst/output/', alpha))
+GetSppCounts(AOU = spp_AOU, Write = TRUE, path = paste0('inst/output/', alpha))
 
 ### Remove outliers
 
-spp_counts2 <- RemoveOutliers(counts = spp_counts)
+RemoveOutliers(path = paste0('inst/output/', alpha))
 
 # need to save output in a way that # outliers can be added to report
 
 ### Add buffer around routes with counts > 0
-spp_buff <- buffer_BBS(spp_count = spp_counts2, bbs = bbs, alpha = alpha)
+buffer_BBS(bbs = bbs, alpha = alpha)
 
 
 ### Make map of routes
-make_route_plot(spp_buff, spp_counts2, spp_counts, alpha)
+make_route_plot(alpha)
 
 
 ### Load rasters containing bioclim estimates
@@ -40,36 +42,34 @@ data("NA_biovars")
 
 
 ### Extract annual bioclim estimates for Wood Thrush BBS routes
-spp_clim <- GetBioVars(counts = spp_buff, alpha = alpha)
+spp_clim <- GetBioVars(alpha = alpha)
 
 
 ### Save occupancy and climate data as .pao file for input into Presence
 
-write_pao(counts = spp_buff, covs = spp_clim, alpha = alpha, is.tenstops = tenstops)
+write_pao(alpha = alpha)
 
-
-### Run psi models
-psi_mods <- GetPsiMods()
+### Test for annual variation in p
+gam_mods <- GetGamMods()
 
 spp_pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/pres/pres_in.pao"))
 
+spp_annual <- test_annual(alpha = alpha, pao = spp_pao)
 
-spp_psi_aic <- RunPsiMods(pao = spp_pao, mods = psi_mods, alpha = alpha, is.test = test,
-                          is.annual = annual, is.het = het, del = FALSE)
+### Run gamma/epsilon models
 
-# spp_psi_aic <- read.csv("inst/output/aic/psi/lowa.csv")
+RunGamMods(alpha, pao = spp_pao, mods = gam_mods)
 
-### Run gam/eps models with top covariates from psi models
-spp_psi_covs <- top_covs(aic_tab = spp_psi_aic, mods = psi_mods)
 
-gam_mods <- GetGamMods(psi_covs = spp_psi_covs)[1:150]
+### Run psi models with top covariates from gamma/epsilon models
+spp_gam_covs <- top_covs(alpha)
 
-spp_gam_aic <- RunGamMods(pao = spp_pao, mods = gam_mods, alpha = alpha,
-                          time = annual, het = het_det, del = FALSE)
+spp_psi_mods <- GetPsiMods(covs = spp_gam_covs)
 
-# spp_gam_aic <- read.csv("inst/output/aic/gam/lowa.csv")
+RunPsiMods(alpha, pao = spp_pao)
 
-# ### Goodness-of-fit of top model
+
+### Goodness-of-fit of top model
 spp_top_mod <- top_covs(aic_tab = spp_gam_aic, mods = gam_mods, psi = FALSE)
 
 
@@ -85,3 +85,7 @@ GetOccProb(alpha = alpha, betas = spp_betas)
 
 ### Estimate annual indices of range dynamics
 GetIndices(alpha)
+
+
+lowa <- GetSummary(alpha)
+lowa

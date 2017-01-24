@@ -4,7 +4,8 @@
 \alias{test.presence.gof}
 \title{test.presence.gof}
 \usage{
-test.presence.gof(modname, large = 4, pao2, mod, is.annual, is.het)
+test.presence.gof(modname, large = 4, pao2, mod, is.annual, is.het, Psi.coefs,
+  Gam.coefs, Eps.coefs, Psi.se, Gam.se, Eps.se)
 }
 \value{
 1 if simulated and observed estimates are similar (model not overfit); 0 otherwise

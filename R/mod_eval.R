@@ -7,7 +7,7 @@
 #' @return TRUE if model converged; FALSE if not
 #' @export
 
-mod_eval <- function(pres_out, mod, pao2 , dig = 3, large = 8, is.annual, is.het, strict = FALSE){
+mod_eval <- function(pres_out, mod, pao2 , dig = 2, large = 8, is.annual, is.het, strict = FALSE){
   jj <- grep('std.error', pres_out)
   jj2 <- grep('Variance-Covariance Matrix of Untransformed', pres_out)
 

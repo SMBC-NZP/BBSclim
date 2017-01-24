@@ -4,14 +4,14 @@
 \alias{GetOccProb}
 \title{GetOccProb}
 \usage{
-GetOccProb(betas, alpha, years, buff_method = "rec", buffer)
+GetOccProb(alpha, betas, buff_method = "rec", Write = TRUE)
 }
 \arguments{
 \item{alpha}{Four letter alpha code for species of interest}
 
-\item{years}{Sequence of years included in analysis}
-
 \item{buff_method}{Optional: Which buffer method to use? Options include: "rec", "bcr"}
+
+\item{years}{Sequence of years included in analysis}
 
 \item{buffer}{Dataframe containing the buffered spp count data}
 }

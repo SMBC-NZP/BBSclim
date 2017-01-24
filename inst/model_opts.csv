@@ -1,2 +1,2 @@
-"het","annual","psi.test","gam.test","Parallel"
-TRUE,TRUE,FALSE,FALSE,TRUE
+het,psi.test,gam.test,Parallel,limit.cores
+TRUE,FALSE,TRUE,TRUE,50

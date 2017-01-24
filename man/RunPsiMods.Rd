@@ -4,21 +4,14 @@
 \alias{RunPsiMods}
 \title{RunPsiMods}
 \usage{
-RunPsiMods(pao, alpha, mods = psi_mods, del = TRUE, ..., is.test = FALSE,
-  Parallel = TRUE)
+RunPsiMods(alpha, pao, mods = psi_mods)
 }
 \arguments{
-\item{pao}{.pao file for species of interest}
-
 \item{alpha}{alpha code for species of interest}
 
-\item{del}{Should .out files be deleted after model output in evaluated?}
+\item{pao}{.pao file for species of interest}
 
 \item{psi_mods}{list containing the parameters for each model to evaluate}
-
-\item{is.annual}{Does p vary annually?}
-
-\item{is.het}{Heterogeneous detection?}
 }
 \description{
 Runs full model set for 31 psi models, evalute each, write and return AIC table, delete output file (optional)

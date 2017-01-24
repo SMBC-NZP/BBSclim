@@ -4,12 +4,12 @@
 \alias{write_pao}
 \title{write_pao}
 \usage{
-write_pao(counts, covs, alpha, sim = FALSE, is.tenstops)
+write_pao(alpha, sim = FALSE)
 }
 \arguments{
-\item{counts}{Data frame containing the buffered BBS counts obtained from the function `buffer_BBS()`}
-
 \item{alpha}{Four letter alpha code for the species of interest}
+
+\item{counts}{Data frame containing the buffered BBS counts obtained from the function `buffer_BBS()`}
 
 \item{clim}{Data frame containing the annual bioclim values obtained from the function 'GetBioVars()`}
 }

@@ -4,16 +4,16 @@
 \alias{gof}
 \title{gof}
 \usage{
-gof(aic_tab, mods, covs, year_seq, is.tenstops, alpha, ..., det_hist)
+gof(alpha, mods, pao)
 }
 \arguments{
-\item{aic_tab}{AIC table from RunGamMods}
-
 \item{mods}{List of models}
 
-\item{year_seq}{Vector containing the years included in the analysis}
+\item{aic_tab}{AIC table from RunGamMods}
 
 \item{cov_data}{Data frame containing the covariates used to fit the full model}
+
+\item{year_seq}{Vector containing the years included in the analysis}
 }
 \description{
 Identify top model, test GOF, save output, and delete output files of all other models
