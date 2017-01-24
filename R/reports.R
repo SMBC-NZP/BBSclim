@@ -124,6 +124,8 @@ PlotPsi <- function(alpha){
 
 MapPsi <- function(alpha, proj = TRUE){
   psi <- read.csv(paste0('inst/output/', alpha, '/occ.csv'))
+  indices <- read.csv(paste0('inst/output/', alpha, '/indices.csv'))
+  indices <- dplyr::filter(indices, ind %in% c("s.lat", "n.lat", "avg.lat"))
   
   xmin <- min(psi$lon) - 3
   xmax <- max(psi$lon) + 3
@@ -132,15 +134,21 @@ MapPsi <- function(alpha, proj = TRUE){
   ymax <- max(psi$lat) + 3
   
   if(proj){
-    p <- ggplot(spp_occ, aes(x = lon, y = lat, fill = Prob)) + geom_tile() + facet_wrap(~Year)
+    p <- ggplot() + geom_tile(data = spp_occ, aes(x = lon, y = lat, fill = Prob)) + facet_wrap(~Year)
     p <- p + theme_minimal()
+    p <- p + geom_hline(data = indices, aes(yintercept = value, linetype = ind), color = "grey70")
+    p <- p + scale_linetype_manual(values = c("solid", "longdash", "longdash"), guide = FALSE)
+    p <- p + scale_fill_continuous(low = "black", high = "#ef6e0b")
     p <- p + coord_map(projection = "lambert", lat0 = 25, lat1 = 50, xlim = c(xmin, xmax), ylim = c(ymin, ymax))
     p <- p + scale_y_continuous("Latitude")
     p <- p + scale_x_continuous("Longitude")
     p
   }else{
-    p <- ggplot(spp_occ, aes(x = lon, y = lat, fill = Prob)) + geom_raster() + facet_wrap(~Year)
+    p <- ggplot() + geom_raster(data = spp_occ, aes(x = lon, y = lat, fill = Prob)) + facet_wrap(~Year)
     p <- p + theme_minimal()
+    p <- p + geom_hline(data = indices, aes(yintercept = value, linetype = ind), color = "grey70")
+    p <- p + scale_linetype_manual(values = c("solid", "longdash", "longdash"), guide = FALSE)
+    p <- p + scale_fill_continuous(low = "black", high = "#ef6e0b")
     p <- p + scale_y_continuous("Latitude")
     p <- p + scale_x_continuous("Longitude")
     p

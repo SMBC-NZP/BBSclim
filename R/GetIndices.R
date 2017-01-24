@@ -104,8 +104,8 @@ delta <- function(index, est, alpha, years, buff, epslon = 0.1e-10) {
 
 range.limit <- function(prob, coord, limit){
   xy <- data.frame(x = prob, y = coord)
-  x <- arrange(xy, y)$x/sum(xy$x)
-  y <- arrange(xy, y)$y
+  x <- dplyr::arrange(xy, y)$x/sum(xy$x)
+  y <- dplyr::arrange(xy, y)$y
 
     if(limit == "south"){
       lim <- predict(smooth.spline(cumsum(x), y, spar=0.1), 0.01)$y
