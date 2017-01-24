@@ -77,7 +77,7 @@ raster.to.array <- function(alpha, years) {
       # get climate data within masked area
       for (jj in seq_along(index)) {
         assign(paste0("bio.",index[jj]), NA_biovars[[paste0("biovars",as.character(years[ii]))]][[index[jj]]])    # mask the climate data
-        assign(paste0("all.values.",index[jj]), getValues(get(paste0("bio.",index[jj]))))                                                 # extract climate values
+        assign(paste0("all.values.",index[jj]), raster::getValues(get(paste0("bio.",index[jj]))))                                                 # extract climate values
         assign(paste0("values.",index[jj]), get(paste0("all.values.",index[jj]))[!is.na(get(paste0("all.values.",index[jj])))])                   # remove NAs
         assign(paste0("center.values.",index[jj]), (get(paste0("values.",index[jj])) - scale.values[jj,"mean"])/scale.values[jj,"sd"])     # center and scale
         if (ii+jj==2)  climate <- array(1, dim=c(length(get(paste0("values.",index[jj]))), 11, length(years)))  # first dim is num of sites, 11 is for intercept + 10 covariates

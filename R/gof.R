@@ -85,7 +85,7 @@ gof <- function(alpha, pao){
     eps.se <- std.er[grep('eps', betas)]
 
     ## Simulate new detection history from top model
-    sim.data	<- sim.bbs.ms(covs = covs_use, cov_data = clim_data,
+    sim.data	<- sim.bbs.ms(alpha = alpha, covs = covs_use, cov_data = clim_data,
                             psi.coefs=psi.coefs, th0.coefs=th0.coefs,
                             th1.coefs=th1.coefs, gam.coefs=gam.coefs,
                             eps.coefs=eps.coefs, p1.coefs=p1.coefs,
@@ -141,7 +141,7 @@ gof <- function(alpha, pao){
 #'
 #' Simulate BBS data using covariates and coefficients from top model
 
-sim.bbs.ms <-  function(covs, psi.coefs, th0.coefs, th1.coefs,
+sim.bbs.ms <-  function(alpha, covs, psi.coefs, th0.coefs, th1.coefs,
                         gam.coefs, eps.coefs, p1.coefs, p2.coefs,
                         pi.coefs, years, cov_data, is.annual, is.het, det_hist, opts) {
 

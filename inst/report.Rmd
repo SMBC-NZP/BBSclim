@@ -21,7 +21,7 @@ Number of outliers: `r spp_summ$n.outliers`
 Number of buffered routes: `r spp_summ$n.buffer`
 
 ```{r route_map, echo = FALSE, message = FALSE, fig.width = 12, fig.height = 10}
-BBSclim::PlotRoutes("lowa")
+BBSclim::PlotRoutes(spp_summ$spp_alpha)
 
 ```
 

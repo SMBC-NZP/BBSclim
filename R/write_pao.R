@@ -21,6 +21,7 @@ write_pao <- function(alpha, sim = FALSE){
 
     ### Covert count data to long format
     counts <- dplyr::select(counts, routeID, Year, grep("count|stop", names(counts)))
+    counts <- dplyr::select(counts, -grep("stoptotal", names(counts)))
     counts <- tidyr::gather(counts, key = "stop", value = "n", -routeID, -Year)
 
 
