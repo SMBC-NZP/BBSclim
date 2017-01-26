@@ -1,5 +1,15 @@
 library(raster)
 
+# BCR shapefile
+if (!require(gpclib)) install.packages("gpclib", type="source")
+maptools::gpclibPermit()
+new.crs <- sp::CRS("+proj=longlat +datum=WGS84")
+bcr.shapefile <- maptools::readShapePoly("data-raw/bcr/BCR", verbose=TRUE, proj4string=new.crs)
+bcr.shapefile@data$id <- rownames(bcr.shapefile@data)
+bcr.points <- ggplot2::fortify(bcr.shapefile, region = "id")
+bcr <- merge(bcr.points, bcr.shapefile@data, by = "id")
+
+
 # Read in data and create annual summaries
 ## Precipitation
   prec_files <- list.files("data-raw/prec/")[!grepl("gz", list.files("data-raw/prec/"))]
@@ -41,13 +51,10 @@ library(raster)
   }
 
 
-# Set lat/long boundaries
-  n.amer		<- extent(-180, -50, 20, 85) # only analyze this area
-
 # crop to North America only
-  prec <- crop(prec, n.amer)
-  tmn <- crop(tmn, n.amer)
-  tmx <- crop(tmx, n.amer)	# cut down data to just N Amer
+  prec <- raster::mask(prec, bcr.shapefile)
+  tmn <- raster::mask(tmn, bcr.shapefile)
+  tmx <- raster::mask(tmx, bcr.shapefile)
 
   start.yr	<- 1991
   start.mo	<- 6		  # 6 is June, etc. Start of 12 mo. year. If 6, then year is June-May.
@@ -83,14 +90,6 @@ library(dismo)
   NA_biovars <- lapply(biovar_files, get)
   names(NA_biovars) <- biovar_files
 
-# BCR shapefile
-  if (!require(gpclib)) install.packages("gpclib", type="source")
-  maptools::gpclibPermit()
-  new.crs <- maptools::CRS("+proj=longlat +datum=WGS84")
-  bcr.shapefile <- rgdal::readShapePoly("data-raw/bcr/BCR", verbose=TRUE, proj4string=new.crs)
-  bcr.shapefile@data$id <- rownames(bcr.shapefile@data)
-  bcr.points <- ggplot2::fortify(bcr.shapefile, region = "id")
-  bcr <- merge(bcr.points, bcr.shapefile@data, by = "id")code_lookup <- read.csv("data-raw/code_lookup.csv")
 
 # Alpha code look-up table
   code_lookup <- read.csv("data-raw/code_lookup.csv")
