@@ -20,31 +20,31 @@ GetIndices <- function(alpha){
   prob_grp <- dplyr::group_by(prob_df, Year)
 
   avg.psi <- dplyr::summarise(prob_grp, value = mean(Prob))
-  avg.psi$sd.err <- delta(index = "avg.psi", est = avg.psi$value, alpha, nSites = dim(prob_df)[1], years, buff = spp_buff)
+  avg.psi$sd.err <- delta(index = "avg.psi", est = avg.psi$value, alpha)
   avg.psi$ind <- "avg.psi"
 
   s.lat <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.99, coord = lat, limit = "south"))
-  s.lat$sd.err <- delta(index = "s.lat", est = s.lat$value, alpha, nSites = dim(prob_df)[1], years, buff = spp_buff)
+  s.lat$sd.err <- delta(index = "s.lat", est = s.lat$value, alpha)
   s.lat$ind <- "s.lat"
 
   s.core <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.75, coord = lat, limit = "south"))
-  s.core$sd.err <- delta(index = "s.core", est = s.core$value, alpha, nSites = dim(prob_df)[1], years, buff = spp_buff)
+  s.core$sd.err <- delta(index = "s.core", est = s.core$value, alpha)
   s.core$ind <- "s.core"
 
   n.lat <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.99, coord = lat, limit = "north"))
-  n.lat$sd.err <- delta(index = "n.lat", est = n.lat$value, alpha,nSites = dim(prob_df)[1], years, buff = spp_buff)
+  n.lat$sd.err <- delta(index = "n.lat", est = n.lat$value, alpha)
   n.lat$ind <- "n.lat"
 
   n.core <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.75, coord = lat, limit = "north"))
-  n.core$sd.err <- delta(index = "n.core", est = n.core$value, alpha, nSites = dim(prob_df)[1], years, buff = spp_buff)
+  n.core$sd.err <- delta(index = "n.core", est = n.core$value, alpha)
   n.core$ind <- "n.core"
 
   avg.lat <- dplyr::summarise(prob_grp, value = sum(lat * Prob)/sum(Prob))
-  avg.lat$sd.err <- delta(index = "avg.lat", est = avg.lat$value, alpha, nSites = dim(prob_df)[1], years, buff = spp_buff)
+  avg.lat$sd.err <- delta(index = "avg.lat", est = avg.lat$value, alpha)
   avg.lat$ind <- "avg.lat"
 
   avg.lon <- dplyr::summarise(prob_grp, value = sum(lon * Prob)/sum(Prob))
-  avg.lon$sd.err <- delta(index = "avg.lon", est = avg.lon$value, alpha, nSites = dim(prob_df)[1], years, buff = spp_buff)
+  avg.lon$sd.err <- delta(index = "avg.lon", est = avg.lon$value, alpha)
   avg.lon$ind <- "avg.lon"
 
   indices <- dplyr::bind_rows(avg.psi, s.lat)
@@ -61,7 +61,7 @@ GetIndices <- function(alpha){
 #'
 #' Estimate se of indices using delta method
 
-delta <- function(index, est, alpha, years, nSites, buff, epslon = 0.1e-10) {
+delta <- function(index, est, alpha, epslon = 0.1e-10) {
     betas <- GetBetas(alpha)
 
     len.psi <- length(betas$psi.betas)
@@ -107,12 +107,12 @@ delta <- function(index, est, alpha, years, nSites, buff, epslon = 0.1e-10) {
           est2 <- dplyr::summarise(prob_grp2, avg.lon = sum(lon * Prob)/sum(Prob))$avg.lon
         }
 
-        grad[, jj] <- (est2 - est) / epslon  # partial derivative = change in real parm / change in betas
+        grad[, jj] <- (est2 - est) / epslon
         all.betas[jj] <- all.betas[jj] - epslon  #  change beta[jj] back to original
       }
 
-    r.vc <- grad %*% betas$vc.mat %*% t(grad) #  real vc matrix (r.vc) = grad * betaVC/n * grad'
-    se <- sqrt(diag(r.vc))/sqrt(nSites)
+    r.vc <- grad %*% betas$vc.mat %*% t(grad)#  real vc matrix (r.vc) = grad * betaVC * grad'
+    se <- sqrt(diag(r.vc))
     se
   }
 

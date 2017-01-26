@@ -72,6 +72,7 @@ GetOccProb <- function(alpha, betas, buff_method = "rec", Write = TRUE){
 raster.to.array <- function(alpha, years) {
     index <- c(1,2,8,12,18)
     scale.values <- read.csv(paste0("inst/output/", alpha, "/clim_scale.csv"))
+
     for (ii in seq_along(years)) {
 
       # get climate data within masked area
@@ -84,12 +85,6 @@ raster.to.array <- function(alpha, years) {
         # here, we alternate linear and quadratic terms, i.e., tmp, sqtmp, dtr, sqdtr, etc
         climate[,jj*2,ii] <- get(paste0("center.values.",index[jj]))     # must be same order as params, need intercept!
         climate[,jj*2+1,ii] <- get(paste0("center.values.",index[jj]))^2     # must be same order as params, need intercept!
-        climate[1:10,,ii]
-
-        # this would work if all quadratic terms were at the end
-        #climate[,jj+1,ii] <- get(paste0("center.values.",index[jj]))     # must be same order as params, need intercept!
-        #climate[,jj+6,ii] <- get(paste0("center.values.",index[jj]))^2     # must be same order as params, need intercept!
-
       }  # end jj loop
 
     } # end ii loop
