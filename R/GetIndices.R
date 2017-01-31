@@ -10,7 +10,7 @@
 #' @return    avg.lon = occupancy-weighted mean breeding longitude
 #' @export
 
-GetIndices <- function(alpha){
+GetIndices <- function(alpha, betas){
   prob_df <- read.csv(paste0('inst/output/', alpha, '/occ.csv'))
   spp_buff <- read.csv(paste0('inst/output/', alpha, '/count_buff.csv'))
 
@@ -20,31 +20,31 @@ GetIndices <- function(alpha){
   prob_grp <- dplyr::group_by(prob_df, Year)
 
   avg.psi <- dplyr::summarise(prob_grp, value = mean(Prob))
-  avg.psi$sd.err <- delta(index = "avg.psi", est = avg.psi$value, alpha)
+  avg.psi$sd.err <- delta(index = "avg.psi", betas = betas, est = avg.psi$value, alpha)
   avg.psi$ind <- "avg.psi"
 
   s.lat <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.99, coord = lat, limit = "south"))
-  s.lat$sd.err <- delta(index = "s.lat", est = s.lat$value, alpha)
+  s.lat$sd.err <- delta(index = "s.lat", betas = betas, est = s.lat$value, alpha)
   s.lat$ind <- "s.lat"
 
   s.core <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.75, coord = lat, limit = "south"))
-  s.core$sd.err <- delta(index = "s.core", est = s.core$value, alpha)
+  s.core$sd.err <- delta(index = "s.core", betas = betas, est = s.core$value, alpha)
   s.core$ind <- "s.core"
 
   n.lat <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.99, coord = lat, limit = "north"))
-  n.lat$sd.err <- delta(index = "n.lat", est = n.lat$value, alpha)
+  n.lat$sd.err <- delta(index = "n.lat", betas = betas, est = n.lat$value, alpha)
   n.lat$ind <- "n.lat"
 
   n.core <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.75, coord = lat, limit = "north"))
-  n.core$sd.err <- delta(index = "n.core", est = n.core$value, alpha)
+  n.core$sd.err <- delta(index = "n.core", betas = betas, est = n.core$value, alpha)
   n.core$ind <- "n.core"
 
   avg.lat <- dplyr::summarise(prob_grp, value = sum(lat * Prob)/sum(Prob))
-  avg.lat$sd.err <- delta(index = "avg.lat", est = avg.lat$value, alpha)
+  avg.lat$sd.err <- delta(index = "avg.lat", betas = betas, est = avg.lat$value, alpha)
   avg.lat$ind <- "avg.lat"
 
   avg.lon <- dplyr::summarise(prob_grp, value = sum(lon * Prob)/sum(Prob))
-  avg.lon$sd.err <- delta(index = "avg.lon", est = avg.lon$value, alpha)
+  avg.lon$sd.err <- delta(index = "avg.lon", betas = betas, est = avg.lon$value, alpha)
   avg.lon$ind <- "avg.lon"
 
   indices <- dplyr::bind_rows(avg.psi, s.lat)
@@ -61,8 +61,8 @@ GetIndices <- function(alpha){
 #'
 #' Estimate se of indices using delta method
 
-delta <- function(index, est, alpha, epslon = 0.1e-10) {
-    betas <- GetBetas(alpha)
+delta <- function(index, est, betas, alpha, epslon = 0.1e-10) {
+    #betas <- lowa_betas# GetBetas(alpha)
 
     len.psi <- length(betas$psi.betas)
     len.gam <- length(betas$gam.betas)

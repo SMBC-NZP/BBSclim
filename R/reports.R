@@ -6,9 +6,9 @@
 #' @export
 
 PlotRoutes <- function(alpha){
-  buff_routes <- read.csv(here::here(paste0('output/', alpha, '/count_buff.csv')))
-  raw_routes <- read.csv(here::here(paste0('output/', alpha, '/raw_counts.csv')))
-  used_routes <- read.csv(here::here(paste0('output/', alpha, '/no_outlier_counts.csv')))
+  buff_routes <- read.csv(here::here(paste0('inst/output/', alpha, '/count_buff.csv')))
+  raw_routes <- read.csv(here::here(paste0('inst/output/', alpha, '/raw_counts.csv')))
+  used_routes <- read.csv(here::here(paste0('inst/output/', alpha, '/no_outlier_counts.csv')))
 
   usa <- ggplot2::map_data("state")
   canada <- ggplot2::map_data("worldHires", "Canada")
@@ -49,22 +49,28 @@ PlotRoutes <- function(alpha){
 #' @param alpha 4-letter alpha code for species of interest
 #' @export
 
-PlotLat <- function(alpha){
-  indices <- read.csv(here::here(paste0('output/', alpha, '/indices.csv')))
+PlotLat <- function(alpha, ci = FALSE){
+  indices <- read.csv(here::here(paste0('inst/output/', alpha, '/indices.csv')))
   lat.indices <- dplyr::filter(indices, ind == "n.lat" | ind == "s.lat" |
                                ind == "n.core" | ind == "s.core" | ind == "avg.lat")
 
-  p <- ggplot(lat.indices, aes(x = Year, y = value, group = ind))
-  p <- p + geom_point()
-  p <- p + geom_line()
-  p <- p + geom_point(color = "white", size = 6)
-  p <- p + geom_point(size = 4)
-  p <- p + geom_ribbon(aes(ymin = (value - 1.96 * sd.err), ymax = (value + 1.96 * sd.err)), alpha = 0.2)
+  
+  p <- ggplot(lat.indices, aes(x = Year, y = value, group = ind, color = ind))
+  p <- p + geom_line(aes(linetype = ind))
   p <- p + scale_y_continuous("Latitude")
+  p <- p + scale_linetype_manual(values = c("solid", "dashed", "longdash", "dashed", "longdash"))
+  p <- p + scale_color_manual(values = c("black", "grey35", "grey50", "grey35", "grey50"))
   p <- p + scale_x_continuous(breaks = seq(from = min(lat.indices$Year),
                                            to = max(lat.indices$Year),
                                            by = 2))
-  p
+  p <- p + theme(legend.position = "none")
+  
+  if(ci){
+    p <- p + geom_ribbon(aes(ymin = (value - 1.96 * sd.err), ymax = (value + 1.96 * sd.err)), alpha = 0.2)
+    p
+  }else{
+    p
+  }
 }
 
 #' PlotLon
@@ -73,21 +79,26 @@ PlotLat <- function(alpha){
 #' @param alpha 4-letter alpha code for species of interest
 #' @export
 
-PlotLon <- function(alpha){
-  indices <- read.csv(here::here(paste0('output/', alpha, '/indices.csv')))
+PlotLon <- function(alpha, ci = TRUE){
+  indices <- read.csv(here::here(paste0('inst/output/', alpha, '/indices.csv')))
   lon.indices <- dplyr::filter(indices, ind == "avg.lon")
 
-  p <- ggplot(lon.indices, aes(x = Year, y = value, group = ind))
-  p <- p + geom_point()
-  p <- p + geom_line()
-  p <- p + geom_point(color = "white", size = 6)
-  p <- p + geom_point(size = 4)
-  p <- p + geom_ribbon(aes(ymin = (value - 1.96 * sd.err), ymax = (value + 1.96 * sd.err)), alpha = 0.2)
-  p <- p + scale_y_continuous("Longitude")
-  p <- p + scale_x_continuous(breaks = seq(from = min(psi.indices$Year),
-                                           to = max(psi.indices$Year),
+  p <- ggplot(lon.indices, aes(x = Year, y = value, group = ind, color = ind))
+  p <- p + geom_line(aes(linetype = ind))
+  p <- p + scale_y_continuous("(West)        Longitude        (East)")
+  p <- p + scale_linetype_manual(values = c("solid", "dashed", "longdash", "dashed", "longdash"))
+  p <- p + scale_color_manual(values = c("black", "grey35", "grey50", "grey35", "grey50"))
+  p <- p + scale_x_continuous(breaks = seq(from = min(lon.indices$Year),
+                                           to = max(lon.indices$Year),
                                            by = 2))
-  p
+  p <- p + theme(legend.position = "none")
+  
+  if(ci){
+    p <- p + geom_ribbon(aes(ymin = (value - 1.96 * sd.err), ymax = (value + 1.96 * sd.err)), alpha = 0.2)
+    p
+  }else{
+    p
+  }
 }
 
 #' PlotPsi
@@ -97,7 +108,7 @@ PlotLon <- function(alpha){
 #' @export
 
 PlotPsi <- function(alpha){
-  indices <- read.csv(here::here(paste0('output/', alpha, '/indices.csv')))
+  indices <- read.csv(here::here(paste0('inst/output/', alpha, '/indices.csv')))
   psi.indices <- dplyr::filter(indices, ind == "avg.psi")
   y.min <- 0
   y.max <- plyr::round_any(max(psi.indices$value + 1.96 * psi.indices$sd.err), 0.1, f = ceiling)
@@ -124,8 +135,8 @@ PlotPsi <- function(alpha){
 
 
 MapPsi <- function(alpha, proj = FALSE){
-  psi <- read.csv(here::here(paste0('output/', alpha, '/occ.csv')))
-  indices <- read.csv(here::here(paste0('output/', alpha, '/indices.csv')))
+  psi <- read.csv(here::here(paste0('inst/output/', alpha, '/occ.csv')))
+  indices <- read.csv(here::here(paste0('inst/output/', alpha, '/indices.csv')))
   limits <- dplyr::filter(indices, ind %in% c("s.lat", "n.lat"))
   core <- dplyr::filter(indices, ind %in% c("s.core", "n.core"))
   center <- dplyr::filter(indices, ind %in% c("avg.lat"))
