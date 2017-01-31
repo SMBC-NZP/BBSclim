@@ -18,12 +18,6 @@ targets:
 
 
 ## Load objects used for all species
-  inst/global_opts.csv:
-    command: global_opts()
-
-  inst/model_opts.csv:
-    command: model_opts(I(psi.test = FALSE), I(gam.test = TRUE))
-
   bbs:
     command: GetBBS()
 
@@ -47,18 +41,11 @@ targets:
     command: read.csv("inst/output/{{spp_name}}/raw_counts.csv")
 
   inst/output/{{spp_name}}/no_outlier_counts.csv:
-    command: RemoveOutliers(counts = {{spp_name}}_counts, Write = TRUE, path = 'inst/output/{{spp_name}}')
+    command: RemoveOutliers(raw.counts = {{spp_name}}_counts, Write = TRUE, path = 'inst/output/{{spp_name}}')
 
   inst/output/{{spp_name}}/count_buff.csv:
     command: buffer_BBS(I(alpha = "{{spp_name}}"), bbs = bbs)
     depends:
-      - inst/output/{{spp_name}}/no_outlier_counts.csv
-
-  inst/output/{{spp_name}}/route_map.pdf:
-    command: make_route_plot(I(alpha = "{{spp_name}}"))
-    depends:
-      - inst/output/{{spp_name}}/count_buff.csv
-      - inst/output/{{spp_name}}/raw_counts.csv
       - inst/output/{{spp_name}}/no_outlier_counts.csv
 
   inst/output/{{spp_name}}/route_clim.csv:
@@ -92,21 +79,12 @@ targets:
       - inst/model_opts.csv
       - inst/output/{{spp_name}}/annual_aic.csv
 
-#  {{spp_name}}_gam_covs:
-#    command: top_covs(I(alpha = "{{spp_name}}"))
-#    depends:
-#      - inst/output/{{spp_name}}/gam_aic.csv
-
-#  {{spp_name}}_psi_mods:
-#    command: GetPsiMods(covs = {{spp_name}}_gam_covs)
-
   inst/output/{{spp_name}}/psi_aic.csv:
     command: RunPsiMods(I(alpha = "{{spp_name}}"), pao = {{spp_name}}_pao)
     depends:
       - inst/model_opts.csv
       - inst/output/{{spp_name}}/annual_aic.csv
       - inst/output/{{spp_name}}/gam_aic.csv
-
 
   inst/output/{{spp_name}}/top_mod.out:
     command: gof(I(alpha = "{{spp_name}}"), pao = {{spp_name}}_pao)
