@@ -21,8 +21,6 @@ targets:
   inst/global_opts.csv:
     command: global_opts()
 
-  inst/model_opts.csv:
-    command: model_opts(I(psi.test = FALSE), I(gam.test = TRUE))
 
   bbs:
     command: GetBBS()
@@ -47,19 +45,13 @@ targets:
     command: read.csv("inst/output/{{spp_name}}/raw_counts.csv")
 
   inst/output/{{spp_name}}/no_outlier_counts.csv:
-    command: RemoveOutliers(counts = {{spp_name}}_counts, Write = TRUE, path = 'inst/output/{{spp_name}}')
+    command: RemoveOutliers(raw.counts = {{spp_name}}_counts, Write = TRUE, path = 'inst/output/{{spp_name}}')
 
   inst/output/{{spp_name}}/count_buff.csv:
     command: buffer_BBS(I(alpha = "{{spp_name}}"), bbs = bbs)
     depends:
       - inst/output/{{spp_name}}/no_outlier_counts.csv
 
-  inst/output/{{spp_name}}/route_map.pdf:
-    command: make_route_plot(I(alpha = "{{spp_name}}"))
-    depends:
-      - inst/output/{{spp_name}}/count_buff.csv
-      - inst/output/{{spp_name}}/raw_counts.csv
-      - inst/output/{{spp_name}}/no_outlier_counts.csv
 
   inst/output/{{spp_name}}/route_clim.csv:
     command: GetBioVars(I(alpha = "{{spp_name}}"))
@@ -73,11 +65,9 @@ targets:
       - inst/global_opts.csv
       - inst/output/{{spp_name}}/count_buff.csv
       - inst/output/{{spp_name}}/route_clim.csv
-{{/spp_names}}
 
 
 ## Run models
-{{#spp_names}}
   {{spp_name}}_pao:
     command: read.pao(f = "inst/output/{{spp_name}}/pres/pres_in.pao")
 
@@ -92,13 +82,6 @@ targets:
       - inst/model_opts.csv
       - inst/output/{{spp_name}}/annual_aic.csv
 
-#  {{spp_name}}_gam_covs:
-#    command: top_covs(I(alpha = "{{spp_name}}"))
-#    depends:
-#      - inst/output/{{spp_name}}/gam_aic.csv
-
-#  {{spp_name}}_psi_mods:
-#    command: GetPsiMods(covs = {{spp_name}}_gam_covs)
 
   inst/output/{{spp_name}}/psi_aic.csv:
     command: RunPsiMods(I(alpha = "{{spp_name}}"), pao = {{spp_name}}_pao)
@@ -118,24 +101,22 @@ targets:
       - inst/output/{{spp_name}}/route_clim.csv
     quiet: TRUE
 
-{{/spp_names}}
 
 
 ## Generate indices
-{{#spp_names}}
-  spp_betas:
+  {{spp_name}}_betas:
     command: GetBetas(I(alpha = "{{spp_name}}"))
     depends:
       - inst/output/{{spp_name}}/top_mod.out
 
   inst/output/{{spp_name}}/occ.csv:
-    command: GetOccProb(I(alpha = "{{spp_name}}"), betas = spp_betas)
+    command: GetOccProb(I(alpha = "{{spp_name}}"), betas = {{spp_name}}_betas)
     depends:
       - inst/global_opts.csv
       - inst/output/{{spp_name}}/count_buff.csv
 
   inst/output/{{spp_name}}/indices.csv:
-    command: GetIndices(I(alpha = "{{spp_name}}"))
+    command: GetIndices(I(alpha = "{{spp_name}}"), betas = {{spp_name}}_betas)
     depends:
       - inst/output/{{spp_name}}/occ.csv
       - inst/output/{{spp_name}}/count_buff.csv
@@ -151,11 +132,9 @@ targets:
       - inst/output/{{spp_name}}/gam_aic.csv
       - inst/output/{{spp_name}}/annual_aic.csv
       - inst/output/{{spp_name}}/top_mod.out
-{{/spp_names}}
 
 
 ## Generate reports
-{{#spp_names}}
   inst/output/{{spp_name}}/report.md:
     knitr:
       input: inst/report.Rmd
