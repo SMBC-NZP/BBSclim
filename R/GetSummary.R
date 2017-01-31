@@ -14,7 +14,7 @@ GetSummary <- function(alpha){
   mods1 <- GetGamMods()
   aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
   top <- aic_tab$Model_num[1]
-  covs <- mods[[top]]
+  covs <- mods1[[top]]
   covs.ll <- list(gam_covs = covs$gam.cov, eps_covs = covs$eps.cov)
 
   mods <- GetPsiMods(covs = covs.ll)
@@ -36,7 +36,7 @@ GetSummary <- function(alpha){
   outliers <- unique(raw_counts$routeID[!('%in%'(raw_counts$routeID, used_counts$routeID))])
 
   ### Annual variation in p AIC table
-  colnames(annual_aic) <- c("Model", "LogLik", "k", "AIC", "$\\Delta$AIC")
+  colnames(annual_aic) <- c("Model", "LogLik", "k", "AIC", "$\\Delta$ AIC")
 
 
   ### Psi models AIC table
@@ -79,8 +79,8 @@ GetSummary <- function(alpha){
   ## AIC table for th, th0, p, & omega
   p_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, alpha, covs_use = covs_use, nuisance = TRUE)
 
-  colnames(gam_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$AIC")
-  colnames(psi_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$AIC")
+  colnames(gam_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$ AIC")
+  colnames(psi_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$ AIC")
 
 
   summ <- list(spp_name = common,

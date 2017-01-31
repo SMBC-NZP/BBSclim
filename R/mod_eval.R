@@ -74,25 +74,20 @@ mod_eval <- function(pres_out, mod, pao2 , dig = 2, large = 8, is.annual, is.het
   if (mean(c(psi.check, th0.check, th1.check, gam.check, eps.check, p1.check, p2.check, 1))==1) {
     if(num.betas[1]>1) {
       quads <- grep("psi.sq", betas)
-      psi.check[quads - 1] <- coefs[quads] < 0	# '-1' is for intercept
+      if(strict){
+        psi.check[quads - 1]	<- coefs[quads] < 0
+      }else{
+        psi.check[quads - 1]	<- coefs[quads]/std.er[quads] < 1.96
+      }
     }
     if(num.betas[4]>1) {
       quads <- grep("gam1.sq", betas)
-      if(strict){
-        gam.check[quads - 4 - sum(num.betas[1:3])]	<- coefs[quads] < 0
-      }else{
-        gam.check[quads - 4 - sum(num.betas[1:3])]	<- coefs[quads]/std.er[quads] < 1.96
-      }
+      gam.check[quads - 4 - sum(num.betas[1:3])]	<- coefs[quads] < 0
     }
     if(num.betas[5]>1) {
       quads <- grep("eps1.sq",betas)
-      if(strict){
-        eps.check[quads - 5 - sum(num.betas[1:4])]	<- coefs[quads] > 0
-      }else{
-        eps.check[quads - 5 - sum(num.betas[1:4])]	<- coefs[quads]/std.er[quads]> -1.96
-      }
+      eps.check[quads - 5 - sum(num.betas[1:4])]	<- coefs[quads] > 0
     }
-
   }	# end the if statement
 
   ### if no problem, finish analysis
@@ -108,9 +103,14 @@ mod_eval <- function(pres_out, mod, pao2 , dig = 2, large = 8, is.annual, is.het
 
   # this checks for significant digits
   jj <- grep('significant digits', pres_out)
-  num.conv <- pres_out[jj]
-  sig.dig <- as.numeric(unlist(strsplit(num.conv, "\\s+"))[2])
-  wonky3 <- sig.dig < dig     # TRUE if sig.dig low
+  if(length(jj) == 0){
+    wonky3 <- 0
+  }else{
+    num.conv <- pres_out[jj]
+    sig.dig <- as.numeric(unlist(strsplit(num.conv, "\\s+"))[2])
+    wonky3 <- sig.dig < dig     # TRUE if sig.dig low
+  }
+
 
   # if wonky result, move it to discard folder
   if (coef.ok == 1 & wonky2 == 0 & wonky3 == 0) {

@@ -112,7 +112,7 @@ gof <- function(alpha, pao){
                         inits = TRUE, maxfn = '35000 vc lmt=5', alpha = alpha)
 
       ## Test whether coefs from simulated data are similar to coefs from top model
-      gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use,
+      gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use, alpha = alpha,
                                     Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs,
                                     Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
                                     is.het = mod_opts$het, is.annual = annual)
@@ -237,7 +237,7 @@ sim.bbs.ms <-  function(alpha, covs, psi.coefs, th0.coefs, th1.coefs,
 #' Bootstrap GOF test: test if parameters from top model run with simulated data are consistent with original estimates
 #' @return 1 if simulated and observed estimates are similar (model not overfit); 0 otherwise
 
-test.presence.gof	<- function(modname, large = 4, pao2, mod, is.annual, is.het,
+test.presence.gof	<- function(modname, large = 4, pao2, mod, is.annual, is.het, alpha,
                               Psi.coefs, Gam.coefs, Eps.coefs, Psi.se, Gam.se, Eps.se) {
 
   ###	read the output from simulated model
