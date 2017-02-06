@@ -36,6 +36,8 @@ Depends:
     ggplot2,
     mapdata
 Remotes: github::crushing05/rBBS,
+         github::crushing05/BBS.tenstop,
+         github::crushing05/BBS.fiftystop,
          github::richfitz/datastorr,
          github::krlmlr/here,
          github::richfitz/remake
