@@ -143,6 +143,7 @@ write_dm_and_run2 <- function(pao, cov_list, is.het,
    s = c(paste0("i=", paoname), paste0("j=", dmname), paste0("l=",
        outname), "VC", "quiet", paste0("maxfn=", maxfn), paste0("name=",
        modname))
+
     t1 = Sys.time(); cat(c(s,'\n'));
     i = i=.C("_Z8presencePiPPc",as.integer(length(s)),as.character(s))
     t2 = Sys.time(); cat(c('\nCPU time:',t2-t1,'\n'));
