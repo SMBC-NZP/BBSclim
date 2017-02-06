@@ -217,13 +217,13 @@ RunGamMods <- function(alpha, pao){
     doParallel::registerDoParallel(cl)
 
     if(opts$gam.test){
-      mods <- mods[100:(100 + cores)]
+      mods <- mods[1:cores]
     }
 
     aic_table <- foreach::foreach(i=1:length(mods), .combine = rbind,
                                   .packages = c("dplyr", "BBSclim")) %dopar%{
- 
-                                    modname <- paste0('gam_model_', (i + 99))
+
+                                    modname <- paste0('gam_model_', i)
 
                                     ## Create design matrices for model i
                                     spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
@@ -241,7 +241,7 @@ RunGamMods <- function(alpha, pao){
                                                                is.het = opts$het, is.annual = annual)
 
                                     if(check == FALSE){ # If model does not converge, save NA in AIC table
-                                      aic_temp <- dplyr::data_frame(Model = modname, Model_num = (i + 99), LogLik = NA, nParam = NA,
+                                      aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
                                                                     AIC = NA)
 
                                     }else{ # If model does converge, save results to AIC table
@@ -257,7 +257,7 @@ RunGamMods <- function(alpha, pao){
                                       j <- grep('of par', a)
                                       n  <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
 
-                                      aic_temp <- dplyr::data_frame(Model = modname, Model_num = (i + 99), LogLik = loglike, nParam = n,
+                                      aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = loglike, nParam = n,
                                                                     AIC = aic)
                                     }
                                     aic_temp
@@ -265,12 +265,12 @@ RunGamMods <- function(alpha, pao){
     aic_table
   }else{
     if(opts$gam.test){
-      mods <- mods[100:(100 + cores)]
+      mods <- mods[1:cores]
     }
 
     for(i in 1:length(mods)){
 
-      modname <- paste0('gam_model_', (i + 99))
+      modname <- paste0('gam_model_', i)
 
       ## Create design matrices for model i
       spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.het = opts$het, is.annual = annual)
@@ -287,7 +287,7 @@ RunGamMods <- function(alpha, pao){
     check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = FALSE, is.het = opts$het, is.annual = annual)
 check
       if(check == FALSE){ # If model does not converge, save NA in AIC table
-        aic_temp <- dplyr::data_frame(Model = modname, Model_num = (i + 99), LogLik = NA, nParam = NA,
+        aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
                                       AIC = NA)
 
       }else{ # If model does converge, save results to AIC table
@@ -303,7 +303,7 @@ check
         j <- grep('of par', a)
         n  <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
 
-        aic_temp <- dplyr::data_frame(Model = modname, Model_num = (i + 99), LogLik = loglike, nParam = n,
+        aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = loglike, nParam = n,
                                       AIC = aic)
       }
 

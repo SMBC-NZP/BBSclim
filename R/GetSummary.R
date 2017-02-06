@@ -131,14 +131,14 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nuisance = FALSE){
 
 
     ## Fill in intercept values
-    beta_est[1, 1] <- paste(coefs[1], " (", std.er[1], ")", sep = "")
+    beta_est[1, 1] <- paste(coefs[1], " (", sd.err[1], ")", sep = "")
     beta_est[1, 2] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                      length(covs_use$th1.cov) + 4],
-                             " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+                             " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                             length(covs_use$th1.cov) + 4], ")", sep = "")
     beta_est[1, 3] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                      length(covs_use$th1.cov) + length(covs_use$gam.cov) + 5],
-                             " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+                             " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                             length(covs_use$th1.cov) + length(covs_use$gam.cov) + 5], ")", sep = "")
 
     ## Fill in coefficients for climate covariates
@@ -146,7 +146,7 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nuisance = FALSE){
       # Psi
       if(levels(covs_use2)[i] %in% covs_use$psi.cov){
         beta.num <- which(covs_use$psi.cov == levels(covs_use2)[i])
-        beta_est[i + 1, 1] <- paste(coefs[1 + beta.num], " (", std.er[1 + beta.num], ")", sep = "")
+        beta_est[i + 1, 1] <- paste(coefs[1 + beta.num], " (", sd.err[1 + beta.num], ")", sep = "")
       }
 
       # Gamma
@@ -154,7 +154,7 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nuisance = FALSE){
         beta.num <- which(covs_use$gam.cov == levels(covs_use2)[i])
         beta_est[i + 1, 2] <-  paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                               length(covs_use$th1.cov) + 4 + beta.num],
-                                      " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+                                      " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                      length(covs_use$th1.cov) + 4 + beta.num], ")", sep = "")
       }
 
@@ -163,7 +163,7 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nuisance = FALSE){
         beta.num <- which(covs_use$eps.cov == levels(covs_use2)[i])
         beta_est[i + 1, 3] <-   paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                length(covs_use$th1.cov) + length(covs_use$gam.cov) + 5 + beta.num],
-                                       " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+                                       " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                       length(covs_use$th1.cov) + length(covs_use$gam.cov) + 5 + beta.num], ")", sep = "")
       }
     }
@@ -212,16 +212,16 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nuisance = FALSE){
 
     # Fill in intercept values (if annual == TRUE, different intercept for each year so don't include)
     beta_est[1, 1] <- paste(coefs[length(covs_use$psi.cov) + 2],
-                             " (", std.er[length(covs_use$psi.cov) + 2], ")", sep = "")
+                             " (", sd.err[length(covs_use$psi.cov) + 2], ")", sep = "")
     beta_est[1, 2] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) + 3],
-                             " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) + 3], ")", sep = "")
+                             " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) + 3], ")", sep = "")
     if(is.annual){
       beta_est[1:nYears, 3] <- paste(coefs[(length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                length(covs_use$th1.cov) + length(covs_use$gam.cov) +
                                                length(covs_use$eps.cov) + 6):(length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                                                 length(covs_use$th1.cov) + length(covs_use$gam.cov) +
                                                                                 length(covs_use$eps.cov) + 5 + nYears)],
-                                      " (", std.er[(length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+                                      " (", sd.err[(length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                       length(covs_use$th1.cov) + length(covs_use$gam.cov) +
                                                       length(covs_use$eps.cov) + 6):(length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                                                        length(covs_use$th1.cov) + length(covs_use$gam.cov) +
@@ -232,7 +232,7 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nuisance = FALSE){
                                                  length(covs_use$eps.cov) + length(covs_use$p1.cov) + nYears + 6):(length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                                                                                      length(covs_use$th1.cov) + length(covs_use$gam.cov) +
                                                                                                                      length(covs_use$eps.cov) + length(covs_use$p1.cov) + 5 + 2 * nYears)],
-                                        " (", std.er[(length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+                                        " (", sd.err[(length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                         length(covs_use$th1.cov) + length(covs_use$gam.cov) +
                                                         length(covs_use$eps.cov) + length(covs_use$p1.cov) + nYears + 6):(length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                                                                                             length(covs_use$th1.cov) + length(covs_use$gam.cov) +
@@ -242,7 +242,7 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nuisance = FALSE){
                                          length(covs_use$th1.cov) + length(covs_use$gam.cov) +
                                          length(covs_use$eps.cov) + 2 * length(covs_use$p1.cov) +
                                          2 * nYears + 6],
-                                 " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+                                 " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                 length(covs_use$th1.cov) + length(covs_use$gam.cov) +
                                                 length(covs_use$eps.cov) + 2 * length(covs_use$p1.cov) +
                                                 2 * nYears + 6], ")", sep = "")
@@ -251,21 +251,21 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nuisance = FALSE){
       beta_est[1, 3] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                        length(covs_use$th1.cov) + length(covs_use$gam.cov) +
                                        length(covs_use$eps.cov) + 6],
-                               " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+                               " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                               length(covs_use$th1.cov) + length(covs_use$gam.cov) +
                                               length(covs_use$eps.cov) + 6], ")", sep = "")
       if(mod_opts$het){
         beta_est[1, 4] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                          length(covs_use$th1.cov) + length(covs_use$gam.cov) +
                                          length(covs_use$eps.cov) + length(covs_use$p1.cov) + 7],
-                                 " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+                                 " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                 length(covs_use$th1.cov) + length(covs_use$gam.cov) +
                                                 length(covs_use$eps.cov) + length(covs_use$p1.cov) + 7], ")", sep = "")
 
         beta_est[1, 5] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                          length(covs_use$th1.cov) + length(covs_use$gam.cov) +
                                          length(covs_use$eps.cov) + 2 * length(covs_use$p1.cov) + 8],
-                                 " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+                                 " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                 length(covs_use$th1.cov) + length(covs_use$gam.cov) +
                                                 length(covs_use$eps.cov) + 2 * length(covs_use$p1.cov) + 8], ")", sep = "")
       }
@@ -278,25 +278,25 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nuisance = FALSE){
         if(levels(covs_use2)[i] %in% covs_use$th0.cov){
           beta.num <- which(covs_use$th0.cov == levels(covs_use2)[i])
           beta_est[i + nYears, 1] <- paste(coefs[length(covs_use$psi.cov) + 2 + beta.num],
-                                           " (", std.er[length(covs_use$psi.cov) + 2 + beta.num], ")", sep = "")
+                                           " (", sd.err[length(covs_use$psi.cov) + 2 + beta.num], ")", sep = "")
         }
 
         if(levels(covs_use2)[i] %in% covs_use$th1.cov){
           beta.num <- which(covs_use$th1.cov == levels(covs_use2)[i])
           beta_est[i + nYears, 2] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) + 3 + beta.num],
-                                           " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) + 3 + beta.num], ")", sep = "")
+                                           " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) + 3 + beta.num], ")", sep = "")
         }
         if(mod_opts$het){
           if(levels(covs_use2)[i] %in% covs_use$p1.cov){
             beta.num <- which(covs_use$p1.cov == levels(covs_use2)[i])
             beta_est[i + nYears, 3] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
                                                    length(covs_use$gam.cov) + length(covs_use$eps.cov) + nYears + 5 + beta.num],
-                                             " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
+                                             " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
                                                             length(covs_use$gam.cov) + length(covs_use$eps.cov) + nYears + 5 + beta.num], ")", sep = "")
 
             beta_est[i + nYears, 4] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
                                                      length(covs_use$gam.cov) + length(covs_use$eps.cov) + length(covs_use$p1.cov) + 2 * nYears + 5 + beta.num],
-                                             " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
+                                             " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
                                                             length(covs_use$gam.cov) + length(covs_use$eps.cov) + length(covs_use$p1.cov) + 2 * nYears + 5 + beta.num], ")", sep = "")
           }
         }else{
@@ -304,7 +304,7 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nuisance = FALSE){
               beta.num <- which(covs_use$p1.cov == levels(covs_use2)[i])
               beta_est[i + nYears, 3] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
                                                        length(covs_use$gam.cov) + length(covs_use$eps.cov) + nYears + 5 + beta.num],
-                                               " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
+                                               " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
                                                               length(covs_use$gam.cov) + length(covs_use$eps.cov) + nYears + 5 + beta.num], ")", sep = "")
           }
         }
@@ -313,25 +313,25 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nuisance = FALSE){
         if(levels(covs_use2)[i] %in% covs_use$th0.cov){
           beta.num <- which(covs_use$th0.cov == levels(covs_use2)[i])
           beta_est[i + 1, 1] <- paste(coefs[length(covs_use$psi.cov) + 2 + beta.num],
-                                           " (", std.er[length(covs_use$psi.cov) + 2 + beta.num], ")", sep = "")
+                                           " (", sd.err[length(covs_use$psi.cov) + 2 + beta.num], ")", sep = "")
         }
 
         if(levels(covs_use2)[i] %in% covs_use$th1.cov){
           beta.num <- which(covs_use$th1.cov == levels(covs_use2)[i])
           beta_est[i + 1, 2] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) + 3 + beta.num],
-                                           " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) + 3 + beta.num], ")", sep = "")
+                                           " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) + 3 + beta.num], ")", sep = "")
         }
         if(mod_opts$het){
           if(levels(covs_use2)[i] %in% covs_use$p1.cov){
             beta.num <- which(covs_use$p1.cov == levels(covs_use2)[i])
             beta_est[i + 1, 3] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
                                                      length(covs_use$gam.cov) + length(covs_use$eps.cov) + 6 + beta.num],
-                                             " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
+                                             " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
                                                             length(covs_use$gam.cov) + length(covs_use$eps.cov) + 6 + beta.num], ")", sep = "")
 
             beta_est[i + 1, 4] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
                                                      length(covs_use$gam.cov) + length(covs_use$eps.cov) + length(covs_use$p1.cov) + 7 + beta.num],
-                                             " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
+                                             " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
                                                             length(covs_use$gam.cov) + length(covs_use$eps.cov) + length(covs_use$p1.cov) + 7 + beta.num], ")", sep = "")
           }
         }else{
@@ -339,7 +339,7 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nuisance = FALSE){
             beta.num <- which(covs_use$p1.cov == levels(covs_use2)[i])
             beta_est[i + 1, 3] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
                                                      length(covs_use$gam.cov) + length(covs_use$eps.cov) + 6 + beta.num],
-                                             " (", std.er[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
+                                             " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) + length(covs_use$th1.cov) +
                                                             length(covs_use$gam.cov) + length(covs_use$eps.cov) + 6 + beta.num], ")", sep = "")
           }
         }
