@@ -11,7 +11,12 @@ Description: This project aims to measure the reponse of North American
     Clement et al. (2015) by applying their approach to a larger number of species.
 License: CC0
 Imports:
-    tidyverse,
+    dplyr,
+    ggplot2,
+    tidyr,
+    scales,
+    markdown,
+    knitr,
     devtools,
     plyr,
     raster,
