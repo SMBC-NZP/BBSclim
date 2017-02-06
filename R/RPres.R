@@ -140,9 +140,9 @@ write_dm_and_run2 <- function(pao, cov_list, is.het,
         PRES_FLDR = "C://Program Files/Presence"
       }
     }
-    s = paste(PRES_FLDR,'/presence.exe i="',pao$paoname,'" j="', dmname,'" l="', outname,'" novar quiet maxfn=',maxfn,' name="',modname,'"',sep='')
+    s = paste(pao$paoname,'" j="', dmname,'" l="', outname,'" novar quiet maxfn=',maxfn,' name="',modname,'"',sep='')
     t1 = Sys.time(); cat(c(s,'\n'));
-    i = system(s, show.output=T);
+    i = i=.C("_Z8presencePiPPc",as.integer(length(s)),as.character(s))
     t2 = Sys.time(); cat(c('\nCPU time:',t2-t1,'\n'));
     #if (rand.dm) unlink(dmname)
   }
