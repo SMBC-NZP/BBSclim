@@ -140,7 +140,7 @@ write_dm_and_run2 <- function(pao, cov_list, is.het,
         PRES_FLDR = "C://Program Files/Presence"
       }
     }
-   s = c(paste0("i=", paoname), paste0("j=", dmname), paste0("l=",
+   s = c(paste0("i=", pao$paoname), paste0("j=", dmname), paste0("l=",
        outname), "VC", "quiet", paste0("maxfn=", maxfn), paste0("name=",
        modname))
 
