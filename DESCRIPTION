@@ -22,7 +22,6 @@ Imports:
     dismo,
     maps,
     SDMTools,
-    rvest,
     R.utils,
     classInt,
     doParallel,
