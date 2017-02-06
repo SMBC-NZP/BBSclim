@@ -28,4 +28,4 @@ export(test_annual)
 export(top_covs)
 export(write_dm_and_run2)
 export(write_pao)
-useDynLib(RPresence)
+
