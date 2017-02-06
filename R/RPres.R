@@ -145,7 +145,9 @@ write_dm_and_run2 <- function(pao, cov_list, is.het,
        modname))
 
     t1 = Sys.time(); cat(c(s,'\n'));
+
     i = .C("_Z8presencePiPPc", as.integer(length(s)), as.character(s), PACKAGE = "RPresence")
+
     t2 = Sys.time(); cat(c('\nCPU time:',t2-t1,'\n'));
     #if (rand.dm) unlink(dmname)
   }
