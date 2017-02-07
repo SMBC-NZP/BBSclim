@@ -107,9 +107,12 @@ gof <- function(alpha, pao){
       sim_name <- paste0(alpha, "_sim")
 
       ## Run model
-      write_dm_and_run2(pao = sim_pao, cov_list = covs_use, is.het = mod_opts$het, dm_list = sim_dm,
-                        modname = sim_name, fixed = TRUE,
-                        inits = TRUE, maxfn = '35000 vc lmt=5', alpha = alpha)
+      RPresence::write_dm_and_run(paoname = sim_pao$paoname,
+                                  dms = sim_dm, model = 1,
+                                  modname = sim_name)
+
+      file.rename(from = paste0("pres_", sim_name, ".out"),
+                  to = paste0("inst/output/", alpha, "/pres/", sim_name, ".out"))
 
       ## Test whether coefs from simulated data are similar to coefs from top model
       gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use, alpha = alpha,

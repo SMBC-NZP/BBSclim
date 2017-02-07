@@ -27,12 +27,13 @@ test_annual <- function(alpha, pao){
                                       }
 
 
-                                      ## Run model
-                                      BBSclim::write_dm_and_run2(pao = pao, cov_list = mod,
-                                                                 is.het = opts$het,
-                                                                 dm_list = spp_dm,
-                                                                 modname = modname, fixed = TRUE,
-                                                                 inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
+                                       ## Run model
+                                       RPresence::write_dm_and_run(paoname = pao$paoname,
+                                                                   dms = spp_dm, model = i,
+                                                                   modname = modname)
+
+                                       file.rename(from = paste0("pres_", modname, ".out"),
+                                                   to = paste0("inst/output/", alpha, "/pres/", modname, ".out"))
 
                                       ## Read output file
                                       a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
@@ -64,9 +65,12 @@ test_annual <- function(alpha, pao){
         }
 
         ## Run model
-        write_dm_and_run2(pao = pao, cov_list = mod, is.het = opts$het, dm_list = spp_dm,
-                          modname = modname, fixed = TRUE,
-                          inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
+        RPresence::write_dm_and_run(paoname = pao$paoname,
+                                    dms = spp_dm, model = i,
+                                    modname = modname)
+
+        file.rename(from = paste0("pres_", modname, ".out"),
+                    to = paste0("inst/output/", alpha, "/pres/", modname, ".out"))
 
         ## Read output file
         a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c', sep='\n', quiet=TRUE)

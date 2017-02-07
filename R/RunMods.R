@@ -47,11 +47,12 @@ RunPsiMods <- function(alpha, pao){
                                       spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
                                       ## Run model
-                                      BBSclim::write_dm_and_run2(pao = pao, cov_list = mods[[i]],
-                                                                 is.het = opts$het,
-                                                                 dm_list = spp_dm,
-                                                                 modname = modname, fixed = TRUE,
-                                                                 inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
+                                      RPresence::write_dm_and_run(paoname = pao$paoname,
+                                                                  dms = spp_dm, model = i,
+                                                                  modname = modname)
+
+                                      file.rename(from = paste0("pres_", modname, ".out"),
+                                                  to = paste0("inst/output/", alpha, "/pres/", modname, ".out"))
 
                                       ## Read output file
                                       a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
@@ -95,9 +96,13 @@ RunPsiMods <- function(alpha, pao){
         spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
         ## Run model
-        write_dm_and_run2(pao = pao, cov_list = mods[[i]], is.het = opts$het, dm_list = spp_dm,
-                          modname = modname, fixed = TRUE,
-                          inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
+        RPresence::write_dm_and_run(paoname = pao$paoname,
+                                    dms = spp_dm, model = i,
+                                    modname = modname)
+
+        file.rename(from = paste0("pres_", modname, ".out"),
+                    to = paste0("inst/output/", alpha, "/pres/", modname, ".out"))
+
 
         ## Read output file
         a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c', sep='\n', quiet=TRUE)
@@ -229,9 +234,12 @@ RunGamMods <- function(alpha, pao){
                                     spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
                                     ## Run model
-                                    BBSclim::write_dm_and_run2(pao = pao, cov_list = mods[[i]], is.het = opts$het, dm_list = spp_dm,
-                                                               modname = modname, fixed = TRUE,
-                                                               inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
+                                    RPresence::write_dm_and_run(paoname = pao$paoname,
+                                                                dms = spp_dm, model = i,
+                                                                modname = modname)
+
+                                    file.rename(from = paste0("pres_", modname, ".out"),
+                                                to = paste0("inst/output/", alpha, "/pres/", modname, ".out"))
 
                                     ## Read output file
                                     a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
@@ -276,16 +284,19 @@ RunGamMods <- function(alpha, pao){
       spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.het = opts$het, is.annual = annual)
 
       ## Run model
-      write_dm_and_run2(pao = pao, cov_list = mods[[i]], is.het = opts$het, dm_list = spp_dm,
-                        modname = modname, fixed = TRUE,
-                        inits = TRUE, maxfn = '32000 vc lmt=5', alpha = alpha)
+      RPresence::write_dm_and_run(paoname = pao$paoname,
+                                  dms = spp_dm, model = i,
+                                  modname = modname)
+
+      file.rename(from = paste0("pres_", modname, ".out"),
+                  to = paste0("inst/output/", alpha, "/pres/", modname, ".out"))
 
       ## Read output file
       a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
     ## Evaluate model (if model converges, will equal TRUE)
     check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = FALSE, is.het = opts$het, is.annual = annual)
-check
+
       if(check == FALSE){ # If model does not converge, save NA in AIC table
         aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
                                       AIC = NA)
