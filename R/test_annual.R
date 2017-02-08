@@ -29,6 +29,7 @@ test_annual <- function(alpha, pao){
 
                                        ## Run model
                                        RPresence::write_dm_and_run(paoname = pao$paoname,
+                                                                   noderived = TRUE, limit.real = TRUE,
                                                                    dms = spp_dm, model = i,
                                                                    modname = modname)
 
@@ -67,6 +68,7 @@ test_annual <- function(alpha, pao){
         ## Run model
         RPresence::write_dm_and_run(paoname = pao$paoname,
                                     dms = spp_dm, model = i,
+                                    noderived = TRUE, limit.real = TRUE,
                                     modname = modname)
 
         file.rename(from = paste0("pres_", modname, ".out"),

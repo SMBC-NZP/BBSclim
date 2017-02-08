@@ -49,6 +49,7 @@ RunPsiMods <- function(alpha, pao){
                                       ## Run model
                                       RPresence::write_dm_and_run(paoname = pao$paoname,
                                                                   dms = spp_dm, model = i,
+                                                                  noderived = TRUE, limit.real = TRUE,
                                                                   modname = modname)
 
                                       file.rename(from = paste0("pres_", modname, ".out"),
@@ -98,6 +99,7 @@ RunPsiMods <- function(alpha, pao){
         ## Run model
         RPresence::write_dm_and_run(paoname = pao$paoname,
                                     dms = spp_dm, model = i,
+                                    noderived = TRUE, limit.real = TRUE,
                                     modname = modname)
 
         file.rename(from = paste0("pres_", modname, ".out"),
@@ -236,7 +238,8 @@ RunGamMods <- function(alpha, pao){
                                     ## Run model
                                     RPresence::write_dm_and_run(paoname = pao$paoname,
                                                                 dms = spp_dm, model = i,
-                                                                modname = modname)
+                                                                modname = modname,
+                                                                noderived = TRUE, limit.real = TRUE)
 
                                     file.rename(from = paste0("pres_", modname, ".out"),
                                                 to = paste0("inst/output/", alpha, "/pres/", modname, ".out"))
@@ -286,7 +289,8 @@ RunGamMods <- function(alpha, pao){
       ## Run model
       RPresence::write_dm_and_run(paoname = pao$paoname,
                                   dms = spp_dm, model = i,
-                                  modname = modname)
+                                  modname = modname,
+                                  noderived = TRUE, limit.real = TRUE)
 
       file.rename(from = paste0("pres_", modname, ".out"),
                   to = paste0("inst/output/", alpha, "/pres/", modname, ".out"))

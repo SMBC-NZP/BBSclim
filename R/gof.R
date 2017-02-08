@@ -109,6 +109,7 @@ gof <- function(alpha, pao){
       ## Run model
       RPresence::write_dm_and_run(paoname = sim_pao$paoname,
                                   dms = sim_dm, model = 1,
+                                  noderived = TRUE, limit.real = TRUE,
                                   modname = sim_name)
 
       file.rename(from = paste0("pres_", sim_name, ".out"),
