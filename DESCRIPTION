@@ -23,6 +23,7 @@ Imports:
     sp,
     rgdal,
     maptools,
+    mapproj,
     rgeos,
     dismo,
     maps,
