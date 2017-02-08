@@ -31,7 +31,8 @@ Imports:
     R.utils,
     classInt,
     doParallel,
-    parallel
+    parallel,
+    whisker
 Depends:
     foreach,
     ggplot2,
