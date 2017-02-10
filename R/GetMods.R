@@ -6,7 +6,7 @@
 
 GetGamMods <- function(){
   p_covs	<- c("Stop", "sq_Stop", "Lat", "sq_Lat", "Lon", "sq_Lon")
-  th_covs <- c("Lat", "sq_Lat", "Lon", "sq_Lon")
+  th_covs <- NULL
   all_covs <- c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet", "Prec", "sq_Prec", "Pwarm", "sq_Pwarm")
 
   n <- length(all_covs)/2
@@ -44,7 +44,7 @@ GetGamMods <- function(){
 GetPsiMods <- function(covs){
   all_covs <- c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet", "Prec", "sq_Prec", "Pwarm", "sq_Pwarm")
   p_covs	<- c("Stop", "sq_Stop", "Lat", "sq_Lat", "Lon", "sq_Lon")
-  th_covs <- c("Lat", "sq_Lat", "Lon", "sq_Lon")
+  th_covs <- NULL
 
   n <- length(all_covs)/2
 
