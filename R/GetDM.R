@@ -2,7 +2,6 @@
 #'
 #' Create design matrices for Presence
 #' @param pao .pao file for the species of interest
-#' @param start_yr Start year for the BBS data (default in 1997)
 #' @param cov_names Vector containing the names of all covariates
 #' @param cov_list List containing the index of covariates to include in each model
 #' @param psi_list List containing the index of covariates on psi to include in each model
@@ -20,9 +19,11 @@
 #' @return   dm6 Design matrix for p.pi
 #' @export
 
-GetDM	<- function(pao,  start_yr = 1997, cov_list,
+GetDM	<- function(pao,cov_list,
                   is.het, is.annual, coord.p = TRUE, coord.th = TRUE) {
+  opts <- read.csv("inst/global_opts.csv")
 
+  start_yr <- opts$start_yr
 
   n_surv <- pao$nsurveys  # total num of surveys
   n_seas <- pao$nseasons	# num seasons

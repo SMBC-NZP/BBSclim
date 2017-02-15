@@ -4,7 +4,7 @@
 \alias{GetSummary}
 \title{GetSummary}
 \usage{
-GetSummary(alpha, gam_mods)
+GetSummary(alpha)
 }
 \description{
 Generate summary information for report

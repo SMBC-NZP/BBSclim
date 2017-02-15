@@ -10,11 +10,11 @@ vignette: >
 ---
 
 ```{r echo = FALSE, include = FALSE}
-start_clim <- 1991
+start_clim <- 1971
 end_clim <- 2014
 
-start_bbs <- 1997
-end_bbs <- 2015
+start_bbs <- 1972
+end_bbs <- 2014
 ```
 
 ## Presence and RPresence
@@ -25,11 +25,13 @@ The following analysis requires the program [Presence](http://www.mbr-pwrc.usgs.
 ## Climate data
 ### Download and unzip
 
-Climate data used in this analysis come from the [University of East Anglia Climate Research Unit Time Series Data]("http://badc.nerc.ac.uk/search/"). Compressed ("nc.gz") raster files containing the monthly precipitation and temperature (minimum and maximum) estimates were manually downloaded and added to the appropriate folders in the `data-raw/` folder. The current analysis includes raw climate data from `r start_clim` to `r end_clim` (only `r start_bbs - 1` to `r end_bbs` are used in the analysis but the data are downloaded in 10-year increments).
+Climate data used in this analysis come from the [University of East Anglia Climate Research Unit Time Series Data]("http://badc.nerc.ac.uk/search/"). Compressed ("nc.gz") raster files containing the monthly precipitation and temperature (minimum and maximum) estimates (cru_ts_3.23) were manually downloaded and added to the appropriate folders in the `data-raw/` folder. The current analysis includes raw climate data from `r start_clim` to `r end_clim` (only `r start_bbs - 1` to `r end_bbs` are used in the analysis but the data are downloaded in 10-year increments).
 
 We use the `gunzip` function from the `R.utils` package to unzip these files so that we can work with them in `R`. A custom function, `unzipCRU`, unzips the files and adds the decompressed files to the `data-raw/` folder:
 
 ```{r, eval = FALSE}
+library(BBSclim)
+
 ### Decompress precipitation data
 
 unzipCRU(varb = "prec")
@@ -95,14 +97,10 @@ library(raster)
 These are global data sets so next we crop them to contain only North America:
 ```{r eval = FALSE}
 
-# Set lat/long boundaries
-  n.amer		<- extent(-180, -50, 20, 85) # only analyze this area
-
-
 # crop to North America only
-  prec <- crop(prec, n.amer)	
-  tmn <- crop(tmn, n.amer)
-  tmx <- crop(tmx, n.amer)	# cut down data to just N Amer
+  prec <- raster::mask(prec, bcr.shapefile)
+  tmn <- raster::mask(tmn, bcr.shapefile)
+  tmx <- raster::mask(tmx, bcr.shapefile)
 
 
 ```
@@ -110,7 +108,7 @@ These are global data sets so next we crop them to contain only North America:
 Our analysis will use annual means from the 12 months prior to each BBS survey. BBS routes are typically run in June so we need to subset June - May of each year to obtain the relevant months for our analysis.
 
 ```{r eval = FALSE}
-  start.yr	<- 1991
+  start.yr	<- 1971
   start.mo	<- 6		  # 6 is June, etc. Start of 12 mo. year. If 6, then year is June-May.
   end.yr		<- 2014
   

@@ -4,7 +4,7 @@
 \alias{range.limit}
 \title{range.limit}
 \usage{
-\method{range}{limit}(prob, coord, limit)
+\method{range}{limit}(cell.probs, prob, coord, limit)
 }
 \description{
 Estimate range limit using cumulative probability method

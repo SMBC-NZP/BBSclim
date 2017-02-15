@@ -4,7 +4,7 @@
 \alias{PlotLon}
 \title{PlotLon}
 \usage{
-PlotLon(alpha)
+PlotLon(alpha, ci = TRUE)
 }
 \arguments{
 \item{alpha}{4-letter alpha code for species of interest}

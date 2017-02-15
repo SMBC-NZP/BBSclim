@@ -4,7 +4,7 @@
 \alias{RunGamMods}
 \title{RunGamMods}
 \usage{
-RunGamMods(alpha, pao, mods = gam_mods)
+RunGamMods(alpha, pao)
 }
 \arguments{
 \item{gam_mods}{list containing the covariates for each model}

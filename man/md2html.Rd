@@ -4,7 +4,7 @@
 \alias{md2html}
 \title{md2html}
 \usage{
-md2html(filename)
+md2html(filename, dest = NULL)
 }
 \description{
 Function to covert .md file to html (ht https://github.com/richfitz/modeladequacy)

@@ -4,7 +4,7 @@
 \alias{RunPsiMods}
 \title{RunPsiMods}
 \usage{
-RunPsiMods(alpha, pao, mods = psi_mods)
+RunPsiMods(alpha, pao)
 }
 \arguments{
 \item{alpha}{alpha code for species of interest}

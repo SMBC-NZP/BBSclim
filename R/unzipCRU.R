@@ -6,6 +6,7 @@
 #' @param varb The climate variable of interest
 #' @param in_dir The directory containing the compressed files
 #' @param out_dir The director where the uncompressed files will be stored
+#' @export
 
 
 unzipCRU <- function(varb, in_dir = "data-raw/", out_dir = "data-raw/"){

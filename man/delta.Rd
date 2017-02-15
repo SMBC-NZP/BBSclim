@@ -4,7 +4,7 @@
 \alias{delta}
 \title{delta}
 \usage{
-delta(index, est, alpha, years, buff, epslon = 1e-11)
+delta(index, est, betas, alpha, epslon = 1e-11)
 }
 \description{
 Estimate se of indices using delta method

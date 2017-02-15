@@ -4,12 +4,15 @@
 \alias{GetPsiMods}
 \title{GetPsiMods}
 \usage{
-GetPsiMods()
+GetPsiMods(covs)
+}
+\arguments{
+\item{covs}{Data.frame containing the climate covariates for gamma & epsilon from the top gamma/epsilon model}
 }
 \value{
 A list containing the model covariates for each of the 31 potential psi models
 }
 \description{
-Returns list with full model set for 31 psi models
+Returns list with full model set for 961 gamma/epsilon models
 }
 
