@@ -218,7 +218,7 @@ RunGamMods <- function(alpha, pao, limit.cores = 50){
 
     cores <- parallel::detectCores()
     if(!is.null(limit.cores)){
-      cores <- min(cores, opts$limit.cores)
+      cores <- min(cores, limit.cores)
     }
 
     cores <- parallel::detectCores()
