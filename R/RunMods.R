@@ -4,10 +4,9 @@
 #' @param pao .pao file for species of interest
 #' @param alpha alpha code for species of interest
 #' @param psi_mods list containing the parameters for each model to evaluate
-#' @param limit.cores maximum number of cores to use when running models in parallel (default = 50); if NULL, all detected cores will be used
 #' @export
 
-RunPsiMods <- function(alpha, pao, limit.cores = 50){
+RunPsiMods <- function(alpha, pao){
     opts <- read.csv("inst/model_opts.csv")
 
     annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
@@ -29,12 +28,11 @@ RunPsiMods <- function(alpha, pao, limit.cores = 50){
 
     if(opts$Parallel){
       cores <- parallel::detectCores()
-      if(!is.null(limit.cores)){
-        cores <- min(cores, limit.cores)
+      if(!is.null(opts$limit.cores)){
+        cores <- min(cores, opts$limit.cores)
       }
 
-      cl <- parallel::makeCluster(cores)
-      doParallel::registerDoParallel(cl)
+      doParallel::registerDoParallel(cores = cores)
 
       if(opts$psi.test){
         mods <- mods[1:cores]
@@ -172,34 +170,16 @@ RunPsiMods <- function(alpha, pao, limit.cores = 50){
     write.csv(aic_table, file = paste0("inst/output/", alpha, "/psi_aic.csv"), row.names = FALSE)
 }
 
-#' top_covs
-#'
-#' Get covariates of top model
-#' @param aic_tab AIC table from RunPsiMods or RunGamMods
-#' @param mods List of models
-#' @param psi Return top psi model (TRUE) or gamma/epsilon model (FALSE)
-#' @export
-#'
-
-top_covs <- function(alpha){
-      mods <- GetGamMods()
-      aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
-      top <- aic_tab$Model_num[1]
-      covs <- mods[[top]]
-      covs.ll <- list(gam_covs = covs$gam.cov, eps_covs = covs$eps.cov)
-      covs.ll
-}
 
 #' RunGamMods
 #'
 #' Runs full model set for 961 gamma/epsilon models, evaluate each, write and return AIC table, delete .out files (optional)
 #' @param alpha four letter species code
 #' @param pao pao object
-#' @param limit.cores maximum number of cores to use when running models in parallel (default = 50); if NULL, all detected cores will be used
 #' @export
 
 
-RunGamMods <- function(alpha, pao, limit.cores = 50){
+RunGamMods <- function(alpha, pao){
   opts <- read.csv("inst/model_opts.csv")
 
   annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
@@ -217,13 +197,11 @@ RunGamMods <- function(alpha, pao, limit.cores = 50){
   if(opts$Parallel){
 
     cores <- parallel::detectCores()
-    if(!is.null(limit.cores)){
-      cores <- min(cores, limit.cores)
+    if(!is.null(opts$limit.cores)){
+      cores <- min(cores, opts$limit.cores)
     }
 
-    cores <- parallel::detectCores()
-    cl <- parallel::makeCluster(cores)
-    doParallel::registerDoParallel(cl)
+    doParallel::registerDoParallel(cores = cores)
 
     if(opts$gam.test){
       mods <- mods[1:cores]
