@@ -4,9 +4,10 @@
 #' @param pao .pao file for species of interest
 #' @param alpha alpha code for species of interest
 #' @param psi_mods list containing the parameters for each model to evaluate
+#' @param limit.cores maximum number of cores to use when running models in parallel (default = 50); if NULL, all detected cores will be used
 #' @export
 
-RunPsiMods <- function(alpha, pao){
+RunPsiMods <- function(alpha, pao, limit.cores = 50){
     opts <- read.csv("inst/model_opts.csv")
 
     annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
@@ -28,7 +29,7 @@ RunPsiMods <- function(alpha, pao){
 
     if(opts$Parallel){
       cores <- parallel::detectCores()
-      if(!is.null(opts$limit.cores)){
+      if(!is.null(limit.cores)){
         cores <- min(cores, opts$limit.cores)
       }
 
@@ -192,12 +193,13 @@ top_covs <- function(alpha){
 #' RunGamMods
 #'
 #' Runs full model set for 961 gamma/epsilon models, evaluate each, write and return AIC table, delete .out files (optional)
-#' @param gam_mods list containing the covariates for each model
-#' @param limit.cores Optional limit to the # of cores used for parallel
+#' @param alpha four letter species code
+#' @param pao pao object
+#' @param limit.cores maximum number of cores to use when running models in parallel (default = 50); if NULL, all detected cores will be used
 #' @export
 
 
-RunGamMods <- function(alpha, pao){
+RunGamMods <- function(alpha, pao, limit.cores = 50){
   opts <- read.csv("inst/model_opts.csv")
 
   annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
@@ -215,7 +217,7 @@ RunGamMods <- function(alpha, pao){
   if(opts$Parallel){
 
     cores <- parallel::detectCores()
-    if(!is.null(opts$limit.cores)){
+    if(!is.null(limit.cores)){
       cores <- min(cores, opts$limit.cores)
     }
 
