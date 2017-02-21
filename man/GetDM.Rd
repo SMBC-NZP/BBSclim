@@ -4,13 +4,10 @@
 \alias{GetDM}
 \title{GetDM}
 \usage{
-GetDM(pao, start_yr = 1997, cov_list, is.het, is.annual, coord.p = TRUE,
-  coord.th = TRUE)
+GetDM(pao, cov_list, is.het, is.annual, coord.p = TRUE, coord.th = TRUE)
 }
 \arguments{
 \item{pao}{.pao file for the species of interest}
-
-\item{start_yr}{Start year for the BBS data (default in 1997)}
 
 \item{cov_list}{List containing the index of covariates to include in each model}
 
