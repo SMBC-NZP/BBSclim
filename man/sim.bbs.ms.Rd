@@ -4,7 +4,7 @@
 \alias{sim.bbs.ms}
 \title{sim.bbs.ms}
 \usage{
-sim.bbs.ms(covs, psi.coefs, th0.coefs, th1.coefs, gam.coefs, eps.coefs,
+sim.bbs.ms(alpha, covs, psi.coefs, th0.coefs, th1.coefs, gam.coefs, eps.coefs,
   p1.coefs, p2.coefs, pi.coefs, years, cov_data, is.annual, is.het, det_hist,
   opts)
 }

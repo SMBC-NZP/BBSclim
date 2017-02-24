@@ -56,7 +56,7 @@ bcr <- merge(bcr.points, bcr.shapefile@data, by = "id")
   tmn <- raster::mask(tmn, bcr.shapefile)
   tmx <- raster::mask(tmx, bcr.shapefile)
 
-  start.yr	<- 1991
+  start.yr	<- 1971
   start.mo	<- 6		  # 6 is June, etc. Start of 12 mo. year. If 6, then year is June-May.
   end.yr		<- 2014
 
@@ -74,7 +74,7 @@ bcr <- merge(bcr.points, bcr.shapefile@data, by = "id")
 
 # Run biovars function to create summary climate layers ----
 library(dismo)
-  start.bbs <- 1996 # Should be 1 year before first BBS year
+  start.bbs <- 1971 # Should be 1 year before first BBS year
 
   for (ii in 1:(end.yr - start.bbs)) {
     assign(paste("biovars", ii + start.bbs, sep=""),

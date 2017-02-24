@@ -4,7 +4,7 @@
 \alias{GetIndices}
 \title{GetIndices}
 \usage{
-GetIndices(alpha)
+GetIndices(alpha, betas)
 }
 \arguments{
 \item{prob_df}{Data frame containing the annual occupancy probabilities (from GetOcc)}
@@ -12,7 +12,7 @@ GetIndices(alpha)
 \value{
 Data frame containing annual estimates of the following indices:
 
-avg.occ = range-wide mean occupancy probability
+avg.psi = proportion of area occupied (i.e., range size)
 
 s.lat = southern range limit
 

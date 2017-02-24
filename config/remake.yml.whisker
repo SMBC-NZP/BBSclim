@@ -20,6 +20,8 @@ targets:
 ## Load objects used for all species
   bbs:
     command: GetBBS()
+    depends:
+      - inst/global_opts.csv
 
   NA_biovars:
     command: data(target_name)

@@ -5,3 +5,5 @@
 BBSclim.Rproj
 *.yml
 .remake
+*.out
+*.dm

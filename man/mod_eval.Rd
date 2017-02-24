@@ -4,7 +4,7 @@
 \alias{mod_eval}
 \title{mod_eval}
 \usage{
-mod_eval(pres_out, mod, pao2, dig = 3, large = 8, is.annual, is.het,
+mod_eval(pres_out, mod, pao2, dig = 2, large = 8, is.annual, is.het,
   strict = FALSE)
 }
 \arguments{

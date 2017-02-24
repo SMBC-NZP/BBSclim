@@ -5,7 +5,7 @@
 \title{model_opts}
 \usage{
 model_opts(psi.test = FALSE, gam.test = FALSE, het = TRUE,
-  annual = TRUE, Parallel = TRUE, limit.cores = 50)
+  Parallel = TRUE, limit.cores = 50)
 }
 \description{
 Set model options for running presence

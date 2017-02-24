@@ -4,7 +4,7 @@
 \alias{test_annual}
 \title{test_annual}
 \usage{
-test_annual(alpha, pao, mod = psi_mods[[31]])
+test_annual(alpha, pao)
 }
 \arguments{
 \item{alpha}{Alpha code for species of interest}

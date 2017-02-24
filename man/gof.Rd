@@ -4,12 +4,12 @@
 \alias{gof}
 \title{gof}
 \usage{
-gof(alpha, mods, pao)
+gof(alpha, pao)
 }
 \arguments{
-\item{mods}{List of models}
-
 \item{aic_tab}{AIC table from RunGamMods}
+
+\item{mods}{List of models}
 
 \item{cov_data}{Data frame containing the covariates used to fit the full model}
 

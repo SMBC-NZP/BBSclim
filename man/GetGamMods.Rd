@@ -4,13 +4,10 @@
 \alias{GetGamMods}
 \title{GetGamMods}
 \usage{
-GetGamMods(psi_covs)
-}
-\arguments{
-\item{psi_cov}{Vector containing the climate covariates from the top psi model}
+GetGamMods()
 }
 \value{
-A list containing the model covariates for each of the 961 potential psi models
+A list containing the model covariates for each of the 961 potential gamma/epsilon models
 }
 \description{
 Returns list with full model set for 961 gamma/epsilon models

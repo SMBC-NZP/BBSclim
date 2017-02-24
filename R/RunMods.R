@@ -32,8 +32,7 @@ RunPsiMods <- function(alpha, pao){
         cores <- min(cores, opts$limit.cores)
       }
 
-      cl <- parallel::makeCluster(cores)
-      doParallel::registerDoParallel(cl)
+      doParallel::registerDoParallel(cores = cores)
 
       if(opts$psi.test){
         mods <- mods[1:cores]
@@ -171,29 +170,12 @@ RunPsiMods <- function(alpha, pao){
     write.csv(aic_table, file = paste0("inst/output/", alpha, "/psi_aic.csv"), row.names = FALSE)
 }
 
-#' top_covs
-#'
-#' Get covariates of top model
-#' @param aic_tab AIC table from RunPsiMods or RunGamMods
-#' @param mods List of models
-#' @param psi Return top psi model (TRUE) or gamma/epsilon model (FALSE)
-#' @export
-#'
-
-top_covs <- function(alpha){
-      mods <- GetGamMods()
-      aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
-      top <- aic_tab$Model_num[1]
-      covs <- mods[[top]]
-      covs.ll <- list(gam_covs = covs$gam.cov, eps_covs = covs$eps.cov)
-      covs.ll
-}
 
 #' RunGamMods
 #'
 #' Runs full model set for 961 gamma/epsilon models, evaluate each, write and return AIC table, delete .out files (optional)
-#' @param gam_mods list containing the covariates for each model
-#' @param limit.cores Optional limit to the # of cores used for parallel
+#' @param alpha four letter species code
+#' @param pao pao object
 #' @export
 
 
@@ -219,9 +201,7 @@ RunGamMods <- function(alpha, pao){
       cores <- min(cores, opts$limit.cores)
     }
 
-    cores <- parallel::detectCores()
-    cl <- parallel::makeCluster(cores)
-    doParallel::registerDoParallel(cl)
+    doParallel::registerDoParallel(cores = cores)
 
     if(opts$gam.test){
       mods <- mods[1:cores]
