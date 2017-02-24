@@ -18,8 +18,6 @@ targets:
   inst/global_opts.csv:
     command: global_opts()
 
-  inst/model_opts.csv:
-    command: model_opts(I(psi.test = FALSE), I(gam.test = TRUE))
 
   bbs:
     command: GetBBS()
@@ -43,19 +41,13 @@ targets:
     command: read.csv("inst/output/lowa/raw_counts.csv")
 
   inst/output/lowa/no_outlier_counts.csv:
-    command: RemoveOutliers(counts = lowa_counts, Write = TRUE, path = 'inst/output/lowa')
+    command: RemoveOutliers(raw.counts = lowa_counts, Write = TRUE, path = 'inst/output/lowa')
 
   inst/output/lowa/count_buff.csv:
     command: buffer_BBS(I(alpha = "lowa"), bbs = bbs)
     depends:
       - inst/output/lowa/no_outlier_counts.csv
 
-  inst/output/lowa/route_map.pdf:
-    command: make_route_plot(I(alpha = "lowa"))
-    depends:
-      - inst/output/lowa/count_buff.csv
-      - inst/output/lowa/raw_counts.csv
-      - inst/output/lowa/no_outlier_counts.csv
 
   inst/output/lowa/route_clim.csv:
     command: GetBioVars(I(alpha = "lowa"))
@@ -69,6 +61,7 @@ targets:
       - inst/global_opts.csv
       - inst/output/lowa/count_buff.csv
       - inst/output/lowa/route_clim.csv
+
 
 ## Run models
   lowa_pao:
@@ -85,13 +78,6 @@ targets:
       - inst/model_opts.csv
       - inst/output/lowa/annual_aic.csv
 
-#  lowa_gam_covs:
-#    command: top_covs(I(alpha = "lowa"))
-#    depends:
-#      - inst/output/lowa/gam_aic.csv
-
-#  lowa_psi_mods:
-#    command: GetPsiMods(covs = lowa_gam_covs)
 
   inst/output/lowa/psi_aic.csv:
     command: RunPsiMods(I(alpha = "lowa"), pao = lowa_pao)
@@ -112,20 +98,21 @@ targets:
     quiet: TRUE
 
 
+
 ## Generate indices
-  spp_betas:
+  lowa_betas:
     command: GetBetas(I(alpha = "lowa"))
     depends:
       - inst/output/lowa/top_mod.out
 
   inst/output/lowa/occ.csv:
-    command: GetOccProb(I(alpha = "lowa"), betas = spp_betas)
+    command: GetOccProb(I(alpha = "lowa"), betas = lowa_betas)
     depends:
       - inst/global_opts.csv
       - inst/output/lowa/count_buff.csv
 
   inst/output/lowa/indices.csv:
-    command: GetIndices(I(alpha = "lowa"))
+    command: GetIndices(I(alpha = "lowa"), betas = lowa_betas)
     depends:
       - inst/output/lowa/occ.csv
       - inst/output/lowa/count_buff.csv
@@ -141,6 +128,7 @@ targets:
       - inst/output/lowa/gam_aic.csv
       - inst/output/lowa/annual_aic.csv
       - inst/output/lowa/top_mod.out
+
 
 ## Generate reports
   inst/output/lowa/report.md:
