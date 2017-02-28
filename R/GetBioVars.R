@@ -65,12 +65,16 @@ GetBioVars <- function(alpha, index = c(1, 2, 8, 12, 18),
     rxy[problem_routes, first_climate:ncol(rxy)] <- fix_routes
   }
 
+  
+  ## Remove cells with no land neighbors
+  rxy <- rxy[-which(is.na(rxy[, ncol(rxy)])),]
+  
   ### Center and scale climate variables
   clim_scale <- matrix(99, nrow = length(ind_name), ncol = 2, dimnames = list(ind_name, c("mean", "sd")))
 
   for(ii in seq_along(ind_name)){
-    clim_scale[ii, "mean"] <- mean(as.matrix(dplyr::select(rxy, grep(ind_name[ii], names(rxy)))))
-    clim_scale[ii, "sd"] <- sd(as.matrix(dplyr::select(rxy, grep(ind_name[ii], names(rxy)))))
+    clim_scale[ii, "mean"] <- mean(as.matrix(dplyr::select(rxy, grep(ind_name[ii], names(rxy)))), na.rm = TRUE)
+    clim_scale[ii, "sd"] <- sd(as.matrix(dplyr::select(rxy, grep(ind_name[ii], names(rxy)))), na.rm = TRUE)
 
     rxy[,grep(ind_name[ii], names(rxy))] <- (rxy[,grep(ind_name[ii], names(rxy))] - clim_scale[ii, "mean"]) / clim_scale[ii, "sd"]
   }
