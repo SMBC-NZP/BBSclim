@@ -2,7 +2,6 @@
 #'
 #' Estimate annual probability of occupancy using parameter estimates from top model
 #' @param alpha Four letter alpha code for species of interest
-#' @param years Sequence of years included in analysis
 #' @param buff_method Optional: Which buffer method to use? Options include: "rec", "bcr"
 #' @param buffer Dataframe containing the buffered spp count data
 #' @export
