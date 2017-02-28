@@ -16,6 +16,7 @@ GetBioVars <- function(alpha, index = c(1, 2, 8, 12, 18),
                        ind_name = c("tmp", "dtr", "Twet", "Prec", "Pwarm"),
                        biovars = NA_biovars){
   
+  
   counts <- read.csv(paste0("inst/output/", alpha, "/count_buff.csv"))
   
   rxy <- dplyr::select(counts, routeID, Longitude, Latitude)
@@ -43,31 +44,74 @@ GetBioVars <- function(alpha, index = c(1, 2, 8, 12, 18),
   first_climate <- grep(ind_name[1], colnames(rxy))[1]
 
   if(length(problem_routes) > 0){
-    problem_xy <- dplyr::select(dplyr::slice(rxy, problem_routes), Longitude, Latitude)
-
-    fix_routes <- problem_out <- problem_nearby <- NULL
-    adj <- c(-.5,0,.5)
-
-    for (jj in 1:length(index)) {
-      for (ii in 1:(end_yr - start_yr + 1)) {
-        for (i_lat in 1:3) {
-          for (i_lon in 1:3) {
-            mjc	<- raster::extract(biovars[[ii]][[index[jj]]],
-                           problem_xy + matrix(c(adj[i_lon], adj[i_lat]),
-                                               nrow = length(problem_routes), ncol=2), byrow=T)
-            problem_nearby	<- cbind(problem_nearby, mjc)
+    ind <- 0
+    while(ind < 1){
+      problem_xy <- dplyr::select(dplyr::slice(rxy, problem_routes), Longitude, Latitude)
+      
+      fix_routes <- problem_out <- problem_nearby <- NULL
+      adj <- c(-.5,0,.5)
+      
+      for (jj in 1:length(index)) {
+        for (ii in 1:(end_yr - start_yr + 1)) {
+          for (i_lat in 1:3) {
+            for (i_lon in 1:3) {
+              mjc	<- raster::extract(biovars[[ii]][[index[jj]]],
+                                     problem_xy + matrix(c(adj[i_lon], adj[i_lat]),
+                                                         nrow = length(problem_routes), ncol=2), byrow=T)
+              problem_nearby	<- cbind(problem_nearby, mjc)
+            }
           }
+          problem_out <- rowMeans(problem_nearby, na.rm = TRUE)
+          fix_routes <- cbind(fix_routes, problem_out)
         }
-        problem_out <- rowMeans(problem_nearby, na.rm = TRUE)
-        fix_routes <- cbind(fix_routes, problem_out)
+      }
+      rxy[problem_routes, first_climate:ncol(rxy)] <- fix_routes
+      problem_routes2 <- which(is.na(rxy[, ncol(rxy)]))
+      if(length(problem_routes2) == 0 | length(problem_routes2) == length(problem_routes)){
+        ind <- 1
+        problem_routes <- problem_routes2
+      }else{
+        problem_routes <- problem_routes2
       }
     }
-    rxy[problem_routes, first_climate:ncol(rxy)] <- fix_routes
+    if(length(problem_routes) > 0){
+      ind <- 0
+      min.adj <- -1
+      max.adj <- 1
+      while(ind < 1){
+        problem_xy <- dplyr::select(dplyr::slice(rxy, problem_routes), Longitude, Latitude)
+        
+        fix_routes <- problem_out <- problem_nearby <- NULL
+        adj <- c(min.adj,0,max.adj)
+        
+        for (jj in 1:length(index)) {
+          for (ii in 1:(end_yr - start_yr + 1)) {
+            for (i_lat in 1:3) {
+              for (i_lon in 1:3) {
+                mjc	<- raster::extract(biovars[[ii]][[index[jj]]],
+                                       problem_xy + matrix(c(adj[i_lon], adj[i_lat]),
+                                                           nrow = length(problem_routes), ncol=2), byrow=T)
+                problem_nearby	<- cbind(problem_nearby, mjc)
+              }
+            }
+            problem_out <- rowMeans(problem_nearby, na.rm = TRUE)
+            fix_routes <- cbind(fix_routes, problem_out)
+          }
+        }
+        rxy[problem_routes, first_climate:ncol(rxy)] <- fix_routes
+        problem_routes2 <- which(is.na(rxy[, ncol(rxy)]))
+        if(length(problem_routes2) == 0 | length(problem_routes2) == length(problem_routes)){
+          ind <- 1
+          problem_routes <- problem_routes2
+        }else{
+          problem_routes <- problem_routes2
+          min.adj <- min.adj - 0.5
+          max.adj <- max.adj + 0.5
+        }
+      }
+    }
   }
 
-  
-  ## Remove cells with no land neighbors
-  rxy <- rxy[-which(is.na(rxy[, ncol(rxy)])),]
   
   ### Center and scale climate variables
   clim_scale <- matrix(99, nrow = length(ind_name), ncol = 2, dimnames = list(ind_name, c("mean", "sd")))
