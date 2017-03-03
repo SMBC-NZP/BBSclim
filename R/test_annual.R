@@ -29,11 +29,16 @@ test_annual <- function(alpha, pao){
                                       }
 
 
+                                       fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
+                                       r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1] 
+                                       rownames(fixedpars) <- (r1 + 1):(r1 + pao$nseasons)
+                                       
                                        ## Run model
-                                       RPresence::write_dm_and_run(paoname = pao$paoname,
-                                                                   noderived = TRUE, limit.real = TRUE,
+                                       RPresence::write_dm_and_run(paoname = pao$paoname, fixed = fixedpars,
                                                                    dms = spp_dm, model = i,
+                                                                   noderived = TRUE, limit.real = TRUE,
                                                                    modname = modname)
+                                      
 
                                        file.rename(from = paste0("pres_", modname, ".out"),
                                                    to = paste0("inst/output/", alpha, "/pres/", modname, ".out"))
@@ -78,8 +83,12 @@ test_annual <- function(alpha, pao){
           spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mod, is.annual = FALSE, is.het = opts$het)
         }
 
+        fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
+        r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1] 
+        rownames(fixedpars) <- (r1 + 1):(r1 + pao$nseasons)
+        
         ## Run model
-        RPresence::write_dm_and_run(paoname = pao$paoname,
+        RPresence::write_dm_and_run(paoname = pao$paoname, fixed = fixedpars,
                                     dms = spp_dm, model = i,
                                     noderived = TRUE, limit.real = TRUE,
                                     modname = modname)

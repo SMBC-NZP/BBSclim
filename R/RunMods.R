@@ -45,6 +45,10 @@ RunPsiMods <- function(alpha, pao){
                                       ## Create design matrices for model i
                                       spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
+                                      fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
+                                      r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1] 
+                                      rownames(fixedpars) <- (r1 + 1):(r1 + pao$nseasons)
+                                      
                                       ## Run model
                                       RPresence::write_dm_and_run(paoname = pao$paoname, fixed = fixedpars,
                                                                   dms = spp_dm, model = i,
@@ -95,8 +99,12 @@ RunPsiMods <- function(alpha, pao){
         ## Create design matrices for model i
         spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
+        fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
+        r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1] 
+        rownames(fixedpars) <- (r1 + 1):(r1 + pao$nseasons)
+        
         ## Run model
-        RPresence::write_dm_and_run(paoname = pao$paoname,
+        RPresence::write_dm_and_run(paoname = pao$paoname, fixed = fixedpars,
                                     dms = spp_dm, model = i,
                                     noderived = TRUE, limit.real = TRUE,
                                     modname = modname)
@@ -215,11 +223,15 @@ RunGamMods <- function(alpha, pao){
                                     ## Create design matrices for model i
                                     spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
+                                    fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
+                                    r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1] 
+                                    rownames(fixedpars) <- (r1 + 1):(r1 + pao$nseasons)
+                                    
                                     ## Run model
-                                    RPresence::write_dm_and_run(paoname = pao$paoname,
+                                    RPresence::write_dm_and_run(paoname = pao$paoname, fixed = fixedpars,
                                                                 dms = spp_dm, model = i,
-                                                                modname = modname,
-                                                                noderived = TRUE, limit.real = TRUE)
+                                                                noderived = TRUE, limit.real = TRUE,
+                                                                modname = modname)
 
                                     file.rename(from = paste0("pres_", modname, ".out"),
                                                 to = paste0("inst/output/", alpha, "/pres/", modname, ".out"))
@@ -266,11 +278,15 @@ RunGamMods <- function(alpha, pao){
       ## Create design matrices for model i
       spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.het = opts$het, is.annual = annual)
 
+      fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
+      r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1] 
+      rownames(fixedpars) <- (r1 + 1):(r1 + pao$nseasons)
+      
       ## Run model
-      RPresence::write_dm_and_run(paoname = pao$paoname,
+      RPresence::write_dm_and_run(paoname = pao$paoname, fixed = fixedpars,
                                   dms = spp_dm, model = i,
-                                  modname = modname,
-                                  noderived = TRUE, limit.real = TRUE)
+                                  noderived = TRUE, limit.real = TRUE,
+                                  modname = modname)
 
       file.rename(from = paste0("pres_", modname, ".out"),
                   to = paste0("inst/output/", alpha, "/pres/", modname, ".out"))
