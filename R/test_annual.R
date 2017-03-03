@@ -21,9 +21,11 @@ test_annual <- function(alpha, pao){
                                       if(i == 1){
                                         modname <- "annual"
                                         spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mod, is.annual = TRUE, is.het = opts$het)
+                                        annual <- TRUE
                                       }else{
                                         modname <- "constant"
                                         spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mod, is.annual = FALSE, is.het = opts$het)
+                                        annual <- FALSE
                                       }
 
 
@@ -39,18 +41,29 @@ test_annual <- function(alpha, pao){
                                       ## Read output file
                                       a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
-                                      j <- grep('-2log', a)
-                                      loglike <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+                                      ## Evaluate model (if model converges, will equal TRUE)
+                                      check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mod, strict = FALSE, is.annual = annual, is.het = opts$het)
 
-                                      ## Extract AIC
-                                      j <- grep('AIC', a)
-                                      aic <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+                                      if(check == FALSE){ # If model does not converge, save NA in AIC table
+                                        aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
+                                                                      AIC = NA)
 
-                                      ## Number of parameters
-                                      j <- grep('of par', a)
-                                      n  <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+                                      }else{ # If model does converge, save results to AIC table
+                                        ## Extract log likelihood
+                                        j <- grep('-2log', a)
+                                        loglike <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
 
-                                      aic_temp <- dplyr::data_frame(Model = modname, LogLik = loglike, nParam = n, AIC = aic)
+                                        ## Extract AIC
+                                        j <- grep('AIC', a)
+                                        aic <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+
+                                        ## Number of parameters
+                                        j <- grep('of par', a)
+                                        n  <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+
+                                        aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = loglike, nParam = n,
+                                                                      AIC = aic)
+                                      }
                                       aic_temp
                                     }
       annual_aic
@@ -77,20 +90,29 @@ test_annual <- function(alpha, pao){
         ## Read output file
         a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c', sep='\n', quiet=TRUE)
 
-        ## Extract log likelihood
-        j <- grep('-2log', a)
-        loglike <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+        ## Evaluate model (if model converges, will equal TRUE)
+        check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mod, strict = FALSE, is.annual = annual, is.het = opts$het)
 
-        ## Extract AIC
-        j <- grep('AIC', a)
-        aic <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+        if(check == FALSE){ # If model does not converge, save NA in AIC table
+          aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
+                                        AIC = NA)
 
-        ## Number of parameters
-        j <- grep('of par', a)
-        n  <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+        }else{ # If model does converge, save results to AIC table
+          ## Extract log likelihood
+          j <- grep('-2log', a)
+          loglike <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
 
-        aic_temp <- dplyr::data_frame(Model = modname, LogLik = loglike, nParam = n,
+          ## Extract AIC
+          j <- grep('AIC', a)
+          aic <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+
+          ## Number of parameters
+          j <- grep('of par', a)
+          n  <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
+
+          aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = loglike, nParam = n,
                                         AIC = aic)
+        }
 
         if(i == 1){
           aic_table <- aic_temp
