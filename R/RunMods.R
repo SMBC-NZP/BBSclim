@@ -68,7 +68,7 @@ RunPsiMods <- function(alpha, pao){
                                       a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
                                       ## Evaluate model (if model converges, will equal TRUE)
-                                      check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = TRUE, is.annual = annual, is.het = het)
+                                      check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict.psi = TRUE, strict.gam = TRUE, is.annual = annual, is.het = het)
 
                                       if(check == FALSE){ # If model does not converge, save NA in AIC table
                                         aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -123,7 +123,7 @@ RunPsiMods <- function(alpha, pao){
         a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c', sep='\n', quiet=TRUE)
 
       ## Evaluate model (if model converges, will equal TRUE)
-      check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = TRUE, is.annual = annual, is.het = het)
+      check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict.psi = TRUE, strict.gam = TRUE, is.annual = annual, is.het = het)
 
 
         if(check == FALSE){ # If model does not converge, save NA in AIC table
@@ -252,7 +252,7 @@ RunGamMods <- function(alpha, pao){
                                     a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
                                     ## Evaluate model (if model converges, will equal TRUE)
-                                    check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = FALSE,
+                                    check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict.psi = FALSE, strict.gam = TRUE,
                                                                is.het = het, is.annual = annual)
 
                                     if(check == FALSE){ # If model does not converge, save NA in AIC table
@@ -307,7 +307,7 @@ RunGamMods <- function(alpha, pao){
       a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
     ## Evaluate model (if model converges, will equal TRUE)
-    check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict = FALSE, is.het = het, is.annual = annual)
+    check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict.psi = FALSE, strict.gam = TRUE, is.het = het, is.annual = annual)
 
       if(check == FALSE){ # If model does not converge, save NA in AIC table
         aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,

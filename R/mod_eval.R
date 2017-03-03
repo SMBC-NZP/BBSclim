@@ -7,7 +7,7 @@
 #' @return TRUE if model converged; FALSE if not
 #' @export
 
-mod_eval <- function(pres_out, mod, pao2 , dig = 2, large = 8, is.annual, is.het, strict = FALSE){
+mod_eval <- function(pres_out, mod, pao2 , dig = 2, large = 8, is.annual, is.het, strict.psi = FALSE, strict.gam = FALSE){
   jj <- grep('std.error', pres_out)
   jj2 <- grep('Variance-Covariance Matrix of Untransformed', pres_out)
 
@@ -37,8 +37,8 @@ mod_eval <- function(pres_out, mod, pao2 , dig = 2, large = 8, is.annual, is.het
     eps.check 	<- !is.na(std.er[(6 + sum(num.betas[1:4])):(sum(num.betas[1:5]) + 5)])
   }
   if(num.betas[6] > 1) {
-    p1.check <- p2.check  <- !is.na(std.er[(7 + sum(num.betas[1:5])):(sum(num.betas[1:6]) + 5)])
-    if(is.het) p2.check  <- !is.na(std.er[(7 + sum(num.betas[1:6])):(sum(num.betas[1:6]) + 5 + num.betas[6])])
+    p1.check <- p2.check  <- !is.na(std.er[(6 + sum(num.betas[1:5])):(sum(num.betas[1:6]) + 5)])
+    if(is.het) p2.check  <- !is.na(std.er[(6 + sum(num.betas[1:6])):(sum(num.betas[1:6]) + 5 + num.betas[6])])
   }
 
 
@@ -74,7 +74,7 @@ mod_eval <- function(pres_out, mod, pao2 , dig = 2, large = 8, is.annual, is.het
   if (mean(c(psi.check, th0.check, th1.check, gam.check, eps.check, p1.check, p2.check, 1))==1) {
     if(num.betas[1]>1) {
       quads <- grep("psi.sq", betas)
-      if(strict){
+      if(strict.psi){
         psi.check[quads - 1]	<- coefs[quads] < 0
       }else{
         psi.check[quads - 1]	<- coefs[quads]/std.er[quads] < 1.96
@@ -82,11 +82,19 @@ mod_eval <- function(pres_out, mod, pao2 , dig = 2, large = 8, is.annual, is.het
     }
     if(num.betas[4]>1) {
       quads <- grep("gam1.sq", betas)
-      gam.check[quads - 4 - sum(num.betas[1:3])]	<- coefs[quads] < 0
+      if(strict.gam){
+        gam.check[quads - 4 - sum(num.betas[1:3])]	<- coefs[quads] < 0
+      }else{
+        gam.check[quads - 4 - sum(num.betas[1:3])]	<- coefs[quads]/std.er[quads] < 1.96
+      }
     }
     if(num.betas[5]>1) {
       quads <- grep("eps1.sq",betas)
-      eps.check[quads - 5 - sum(num.betas[1:4])]	<- coefs[quads] > 0
+      if(strict.gam){
+        eps.check[quads - 5 - sum(num.betas[1:4])]	<- coefs[quads] > 0
+      }else{
+        eps.check[quads - 5 - sum(num.betas[1:4])]	<- coefs[quads]/std.er[quads] > -1.96
+      }
     }
   }	# end the if statement
 
