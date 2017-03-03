@@ -46,7 +46,7 @@ RunPsiMods <- function(alpha, pao){
                                       spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
                                       ## Run model
-                                      RPresence::write_dm_and_run(paoname = pao$paoname,
+                                      RPresence::write_dm_and_run(paoname = pao$paoname, fixed = fixedpars,
                                                                   dms = spp_dm, model = i,
                                                                   noderived = TRUE, limit.real = TRUE,
                                                                   modname = modname)
