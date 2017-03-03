@@ -17,10 +17,9 @@ global_opts <- function(tenstops = TRUE, start_yr = 1997, end_yr = 2014){
 #' Set model options for running presence
 #' @export
 
-model_opts <- function(psi.test = FALSE, gam.test = FALSE, het = TRUE,
+model_opts <- function(psi.test = FALSE, gam.test = FALSE,
                        Parallel = TRUE, limit.cores = 50){
-    opts <- data.frame(het = het,       # Heterogeneous detection?
-                       psi.test = psi.test,  # Run subset of psi models?
+    opts <- data.frame(psi.test = psi.test,  # Run subset of psi models?
                        gam.test =gam.test,  # Run subset of gam models?
                        Parallel = Parallel,
                        limit.cores = limit.cores)      # Delete .out files once top model is selected?
