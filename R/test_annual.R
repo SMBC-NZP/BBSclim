@@ -10,14 +10,6 @@ test_annual <- function(alpha, pao){
     opts <- read.csv("inst/model_opts.csv")
     mod <- GetGamMods()[[961]]
 
-    het_aic <- read.csv(paste0("inst/output/", alpha, "/het_aic.csv"))
-    
-    if(het_aic$Model[1] == "het"){
-      het <- TRUE
-    }else{
-      het <- FALSE
-    }
-    
     if(opts$Parallel){
       cores <- 2
       cl <- parallel::makeCluster(cores)
@@ -29,11 +21,11 @@ test_annual <- function(alpha, pao){
                                       ## Create design matrices for model i
                                       if(i == 1){
                                         modname <- "annual"
-                                        spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mod, is.annual = TRUE, is.het = het)
+                                        spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mod, is.annual = TRUE, is.het = opts$het)
                                         annual <- TRUE
                                       }else{
                                         modname <- "constant"
-                                        spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mod, is.annual = FALSE, is.het = het)
+                                        spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mod, is.annual = FALSE, is.het = opts$het)
                                         annual <- FALSE
                                       }
 
@@ -56,7 +48,7 @@ test_annual <- function(alpha, pao){
                                       a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
                                       ## Evaluate model (if model converges, will equal TRUE)
-                                      check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mod, strict = FALSE, is.annual = annual, is.het = het)
+                                      check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mod, is.annual = annual, is.het = opts$het)
 
                                       if(check == FALSE){ # If model does not converge, save NA in AIC table
                                         aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -86,10 +78,10 @@ test_annual <- function(alpha, pao){
 
         if(i == 1){
           modname <- "annual"
-          spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mod, is.annual = TRUE, is.het = het)
+          spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mod, is.annual = TRUE, is.het = opts$het)
         }else{
           modname <- "constant"
-          spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mod, is.annual = FALSE, is.het = het)
+          spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mod, is.annual = FALSE, is.het = opts$het)
         }
 
         fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
@@ -109,7 +101,7 @@ test_annual <- function(alpha, pao){
         a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c', sep='\n', quiet=TRUE)
 
         ## Evaluate model (if model converges, will equal TRUE)
-        check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mod, strict = FALSE, is.annual = annual, is.het = het)
+        check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mod, is.annual = annual, is.het = opts$het)
 
         if(check == FALSE){ # If model does not converge, save NA in AIC table
           aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,

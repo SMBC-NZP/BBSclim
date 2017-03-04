@@ -9,7 +9,6 @@
 RunPsiMods <- function(alpha, pao){
     opts <- read.csv("inst/model_opts.csv")
 
-    het_aic <- read.csv(paste0("inst/output/", alpha, "/het_aic.csv"))
     annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
     
     mods1 <- GetGamMods()
@@ -20,11 +19,6 @@ RunPsiMods <- function(alpha, pao){
 
     mods <- GetPsiMods(covs = covs.ll)
 
-    if(het_aic$Model[1] == "het"){
-      het <- TRUE
-    }else{
-      het <- FALSE
-    }
 
     if(annual_aic$Model[1] == "annual"){
       annual <- TRUE
@@ -49,7 +43,7 @@ RunPsiMods <- function(alpha, pao){
                                       modname <- paste0('psi_model_', i)
 
                                       ## Create design matrices for model i
-                                      spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = het)
+                                      spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
                                       fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
                                       r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1] 
@@ -68,7 +62,7 @@ RunPsiMods <- function(alpha, pao){
                                       a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
                                       ## Evaluate model (if model converges, will equal TRUE)
-                                      check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict.psi = TRUE, strict.gam = TRUE, is.annual = annual, is.het = het)
+                                      check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict.psi = TRUE, strict.gam = TRUE, is.annual = annual, is.het = opts$het)
 
                                       if(check == FALSE){ # If model does not converge, save NA in AIC table
                                         aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -103,7 +97,7 @@ RunPsiMods <- function(alpha, pao){
         modname <- paste0('psi_model_', i)
 
         ## Create design matrices for model i
-        spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = het)
+        spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
         fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
         r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1] 
@@ -123,7 +117,7 @@ RunPsiMods <- function(alpha, pao){
         a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c', sep='\n', quiet=TRUE)
 
       ## Evaluate model (if model converges, will equal TRUE)
-      check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict.psi = TRUE, strict.gam = TRUE, is.annual = annual, is.het = het)
+      check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict.psi = TRUE, strict.gam = TRUE, is.annual = annual, is.het = opts$het)
 
 
         if(check == FALSE){ # If model does not converge, save NA in AIC table
@@ -197,22 +191,16 @@ RunGamMods <- function(alpha, pao){
   opts <- read.csv("inst/model_opts.csv")
 
   annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
-  het_aic <- read.csv(paste0("inst/output/", alpha, "/het_aic.csv"))
 
   mods <- GetGamMods()
 
 
-  if(het_aic$Model[1] == "het"){
-    het <- TRUE
-  }else{
-    het <- FALSE
-  }
-  
   if(annual_aic$Model[1] == "annual"){
     annual <- TRUE
   }else{
     annual <- FALSE
   }
+  
 
   if(opts$Parallel){
 
@@ -233,7 +221,7 @@ RunGamMods <- function(alpha, pao){
                                     modname <- paste0('gam_model_', i)
 
                                     ## Create design matrices for model i
-                                    spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = het)
+                                    spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
                                     fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
                                     r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1] 
@@ -253,7 +241,7 @@ RunGamMods <- function(alpha, pao){
 
                                     ## Evaluate model (if model converges, will equal TRUE)
                                     check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict.psi = FALSE, strict.gam = TRUE,
-                                                               is.het = het, is.annual = annual)
+                                                               is.het = opts$het, is.annual = annual)
 
                                     if(check == FALSE){ # If model does not converge, save NA in AIC table
                                       aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -288,7 +276,7 @@ RunGamMods <- function(alpha, pao){
       modname <- paste0('gam_model_', i)
 
       ## Create design matrices for model i
-      spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.het = het, is.annual = annual)
+      spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.het = opts$het, is.annual = annual)
 
       fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
       r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1] 
@@ -307,7 +295,7 @@ RunGamMods <- function(alpha, pao){
       a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
     ## Evaluate model (if model converges, will equal TRUE)
-    check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict.psi = FALSE, strict.gam = TRUE, is.het = het, is.annual = annual)
+    check <- mod_eval(pres_out = a, pao2 = pao, mod = mods[[i]], strict.psi = FALSE, strict.gam = TRUE, is.het = opts$het, is.annual = annual)
 
       if(check == FALSE){ # If model does not converge, save NA in AIC table
         aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,

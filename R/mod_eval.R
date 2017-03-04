@@ -76,24 +76,18 @@ mod_eval <- function(pres_out, mod, pao2 , dig = 2, large = 8, is.annual, is.het
       quads <- grep("psi.sq", betas)
       if(strict.psi){
         psi.check[quads - 1]	<- coefs[quads] < 0
-      }else{
-        psi.check[quads - 1]	<- coefs[quads]/std.er[quads] < 1.96
       }
     }
     if(num.betas[4]>1) {
       quads <- grep("gam1.sq", betas)
       if(strict.gam){
         gam.check[quads - 4 - sum(num.betas[1:3])]	<- coefs[quads] < 0
-      }else{
-        gam.check[quads - 4 - sum(num.betas[1:3])]	<- coefs[quads]/std.er[quads] < 1.96
       }
     }
     if(num.betas[5]>1) {
       quads <- grep("eps1.sq",betas)
       if(strict.gam){
         eps.check[quads - 5 - sum(num.betas[1:4])]	<- coefs[quads] > 0
-      }else{
-        eps.check[quads - 5 - sum(num.betas[1:4])]	<- coefs[quads]/std.er[quads] > -1.96
       }
     }
   }	# end the if statement
