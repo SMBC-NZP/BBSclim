@@ -7,7 +7,7 @@
 #' @return A .pao file containing the detection histories, covariates, and summary information to input into Presence
 #' @export
 
-write_pao <- function(alpha, sim = FALSE){
+write_pao <- function(alpha, sim = FALSE, name = NULL){
   opts <- read.csv("inst/global_opts.csv")
   covs <- read.csv(paste0("inst/output/", alpha, "/route_clim.csv"))
 
@@ -59,7 +59,7 @@ write_pao <- function(alpha, sim = FALSE){
                                      paoname = paste0("inst/output/", alpha, "/pres/pres_in.pao"))
 
   }else{
-    det_hist <- read.csv(paste0("inst/output/", alpha, "/pres/sim_hist.csv"))
+    det_hist <- read.csv(paste0("inst/output/", alpha, "/pres/", name, "_hist.csv"))
 
     spp_clim <- dplyr::arrange(covs, routeID)
     spp_clim2 <- dplyr::rename(spp_clim, Lat = Latitude, Lon = Longitude)
@@ -82,7 +82,7 @@ write_pao <- function(alpha, sim = FALSE){
     spp_pao <- RPresence::create.pao(data = det_hist, nsurveyseason = rep(tot_stops, n_seasons),
                                      unitcov = sitecovs, survcov = NULL,
                                      title = paste(common, "PRESENCE Analysis", sep = " "),
-                                     paoname = paste0("inst/output/", alpha, "/pres/sim.pao"))
+                                     paoname = paste0("inst/output/", alpha, "/pres/", name, ".pao"))
   }
   RPresence::write.pao(pao = spp_pao)
 }
