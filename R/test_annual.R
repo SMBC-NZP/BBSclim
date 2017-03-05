@@ -48,7 +48,8 @@ test_annual <- function(alpha, pao){
                                       a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c',sep='\n',quiet=TRUE)
 
                                       ## Evaluate model (if model converges, will equal TRUE)
-                                      check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mod, is.annual = annual, is.het = opts$het)
+                                      check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mod, is.annual = annual, is.het = opts$het,
+                                                                 nuisance = TRUE)
 
                                       if(check == FALSE){ # If model does not converge, save NA in AIC table
                                         aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
@@ -101,7 +102,8 @@ test_annual <- function(alpha, pao){
         a <- scan(paste0('inst/output/', alpha, "/pres/", modname, ".out"), what='c', sep='\n', quiet=TRUE)
 
         ## Evaluate model (if model converges, will equal TRUE)
-        check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mod, is.annual = annual, is.het = opts$het)
+        check <- BBSclim::mod_eval(pres_out = a, pao2 = pao, mod = mod, is.annual = annual, is.het = opts$het,
+                                   nuisance = TRUE)
 
         if(check == FALSE){ # If model does not converge, save NA in AIC table
           aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
