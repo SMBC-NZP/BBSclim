@@ -41,7 +41,6 @@ GetSummary <- function(alpha){
 
   ### Psi models AIC table
   psi_aic <- read.csv(paste0('inst/output/', alpha, '/psi_aic.csv'))
-  psi_aic <- psi_aic[1:10,]
 
 
   ### Gamma/Epsilon AIC table
@@ -58,8 +57,10 @@ GetSummary <- function(alpha){
   coefs <- round(as.numeric(substr(betas, 41,50)), digits = 2)
   std.er <- round(as.numeric(substr(betas, 54,63)), digits = 2)
 
+  m <- grep('==>name', top_mod)
+  modnum <- unique(na.omit(as.numeric(unlist(strsplit(top_mod[m], "[^0-9]+")))))
+  
   ## Covariates included in the top model
-  modnum <- psi_aic$Model_num[1]
   if(modnum == 31){
     covs_use <- list(psi.cov = c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet",
                                  "Prec", "sq_Prec", "Pwarm", "sq_Pwarm"),
@@ -73,16 +74,21 @@ GetSummary <- function(alpha){
   }
 
 
-  ## AIC table for psi, gamma, & epsilon
+  ## Beta coefficients for psi, gamma, & epsilon
   psi_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, alpha, covs_use = covs_use)
 
-  ## AIC table for th, th0, p, & omega
+  ## Beta coefficients for th, th0, p, & omega
   p_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, alpha, covs_use = covs_use, nuisance = TRUE)
 
+
+  ## Include only psi models that passed GOF test
+  psi_aic <- psi_aic[which(psi_aic$Model_num == modnum):nrow(psi_aic),]
+  psi_aic <- mutate(psi_aic, delta_AIC = AIC - min(AIC, na.rm = TRUE))
+  psi_aic <- psi_aic[1:10,]
+  
   colnames(gam_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$ AIC")
   colnames(psi_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$ AIC")
-
-
+  
   summ <- list(spp_name = common,
        spp_alpha = alpha,
        annual = annual,
@@ -93,7 +99,8 @@ GetSummary <- function(alpha){
        psi.aic = psi_aic,
        gam.aic = gam_aic,
        psi.betas = psi_beta_tab,
-       p.betas = p_beta_tab)
+       p.betas = p_beta_tab,
+       top_mod = modnum)
   summ
 }
 
