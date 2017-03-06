@@ -11,8 +11,6 @@ GetOccProb(alpha, betas, buff_method = "rec", Write = TRUE)
 
 \item{buff_method}{Optional: Which buffer method to use? Options include: "rec", "bcr"}
 
-\item{years}{Sequence of years included in analysis}
-
 \item{buffer}{Dataframe containing the buffered spp count data}
 }
 \description{

@@ -153,9 +153,10 @@ GetDM	<- function(pao,cov_list,
 
   # theta.pi
   dm5 <- matrix(0, n_seas, 1, dimnames = list(paste0('thta0pi', 1:n_seas), NULL)) 		# NOTE THE ZERO when fixing, note no colname
+  
   # p.pi
   dm6 <- matrix(1, n_seas, 1, dimnames = list(paste0('pi', 1:n_seas),'f1')) 	                # mixture on detection
-
+  if(is.het == FALSE) dm6 <- NULL
   dm_list <- list(dm1 = dm1, dm2 = dm2, dm3 = dm3, dm4 = dm4, dm5 = dm5, dm6 = dm6)
 
   dm_list

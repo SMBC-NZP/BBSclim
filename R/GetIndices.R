@@ -23,7 +23,7 @@ GetIndices <- function(alpha, betas){
   avg.psi$sd.err <- delta(index = "avg.psi", betas = betas, est = avg.psi$value, alpha)
   avg.psi$ind <- "avg.psi"
 
-  s.lat <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.99, coord = lat, limit = "south"))
+  s.lat <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.975, coord = lat, limit = "south"))
   s.lat$sd.err <- delta(index = "s.lat", betas = betas, est = s.lat$value, alpha)
   s.lat$ind <- "s.lat"
 
@@ -31,7 +31,7 @@ GetIndices <- function(alpha, betas){
   s.core$sd.err <- delta(index = "s.core", betas = betas, est = s.core$value, alpha)
   s.core$ind <- "s.core"
 
-  n.lat <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.99, coord = lat, limit = "north"))
+  n.lat <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.975, coord = lat, limit = "north"))
   n.lat$sd.err <- delta(index = "n.lat", betas = betas, est = n.lat$value, alpha)
   n.lat$ind <- "n.lat"
 
@@ -84,7 +84,7 @@ delta <- function(index, est, betas, alpha, epslon = 0.1e-10) {
         }
 
         if(index == "s.lat"){
-          est2 <- dplyr::summarise(prob_grp2, s.lat = range.limit(cell.probs = Prob, prob = 0.99, coord = lat, limit = "south"))$s.lat
+          est2 <- dplyr::summarise(prob_grp2, s.lat = range.limit(cell.probs = Prob, prob = 0.975, coord = lat, limit = "south"))$s.lat
         }
 
         if(index == "s.core"){
@@ -92,7 +92,7 @@ delta <- function(index, est, betas, alpha, epslon = 0.1e-10) {
         }
 
         if(index == "n.lat"){
-          est2 <- dplyr::summarise(prob_grp2, n.lat = range.limit(cell.probs = Prob, prob = 0.99, coord = lat, limit = "north"))$n.lat
+          est2 <- dplyr::summarise(prob_grp2, n.lat = range.limit(cell.probs = Prob, prob = 0.975, coord = lat, limit = "north"))$n.lat
         }
 
         if(index == "n.core"){
