@@ -37,7 +37,7 @@ targets:
     command: GetAOU(I(alpha = "{{spp_name}}"))
 
   inst/output/{{spp_name}}/raw_counts.csv:
-    command: GetSppCounts(bbs_raw = bbs, AOU = {{spp_name}}_AOU, Write = TRUE, path = 'inst/output/{{spp_name}}')
+    command: GetSppCounts(bbs_raw = bbs, AOU = {{spp_name}}_AOU, I(years = seq(from = 1972, to = 2014)), Write = TRUE, path = 'inst/output/{{spp_name}}')
 
   {{spp_name}}_counts:
     command: read.csv("inst/output/{{spp_name}}/raw_counts.csv")
