@@ -7,8 +7,9 @@
 #' @return TRUE if model converged; FALSE if not
 #' @export
 
-mod_eval <- function(pres_out, mod, pao2 , dig = 2, large = 8, is.annual, is.het, 
-                     strict.psi = FALSE, strict.gam = FALSE, nuisance = FALSE){
+mod_eval <- function(pres_out, mod, pao2 , dig = 2, large = 8, is.annual, is.het,
+                     check.quad = FALSE, strict.psi = FALSE, strict.gam = FALSE,
+                     nuisance = FALSE){
   jj <- grep('std.error', pres_out)
   jj2 <- grep('Variance-Covariance Matrix of Untransformed', pres_out)
 
@@ -77,7 +78,7 @@ mod_eval <- function(pres_out, mod, pao2 , dig = 2, large = 8, is.annual, is.het
 
 
   ### drop covariates with the wrong sign (if no neg SE)
-  # before, I only dropped signif coefficients, but now drop all
+  if(quad.check){
   if(nuisance == FALSE){
     if (mean(c(psi.check, th0.check, th1.check, gam.check, eps.check, p1.check, p2.check, 1))==1) {
       if(num.betas[1]>1) {
@@ -99,7 +100,9 @@ mod_eval <- function(pres_out, mod, pao2 , dig = 2, large = 8, is.annual, is.het
         }
       }
     }	# end the if statement
+   }
   }
+
   ### if no problem, finish analysis
   if (mean(c(psi.check, th0.check, th1.check, gam.check, eps.check, p1.check, p2.check, 1))==1){
     coef.ok <- 1
