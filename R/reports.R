@@ -19,11 +19,11 @@ PlotRoutes <- function(alpha){
   spp_out <- dplyr::anti_join(raw_routes, used_routes)
   spp_out <- dplyr::distinct(spp_out, routeID, .keep_all = TRUE)
 
-  xmin <- min(min(spp_buff2$Longitude), min(spp_out$Longitude)) - 4
-  xmax <- max(max(spp_buff2$Longitude), max(spp_out$Longitude)) + 4
+  xmin <- min(min(spp_buff2$Longitude), min(spp_out$Longitude)) - 2
+  xmax <- max(max(spp_buff2$Longitude), max(spp_out$Longitude)) + 2
 
-  ymin <- min(min(spp_buff2$Latitude), min(spp_out$Latitude)) - 4
-  ymax <- max(max(spp_buff2$Latitude), max(spp_out$Latitude)) + 4
+  ymin <- min(min(spp_buff2$Latitude), min(spp_out$Latitude)) - 2
+  ymax <- max(max(spp_buff2$Latitude), max(spp_out$Latitude)) + 2
 
 
   p <- ggplot() + theme(panel.background = element_rect(fill = "#CDD2D4", color = NA), axis.title = element_blank())
@@ -134,37 +134,69 @@ PlotPsi <- function(alpha){
 #' @export
 
 
-MapPsi <- function(alpha, proj = FALSE){
+MapPsi <- function(alpha, proj = TRUE, show.points = FALSE){
   psi <- read.csv(here::here(paste0('inst/output/', alpha, '/occ.csv')))
   indices <- read.csv(here::here(paste0('inst/output/', alpha, '/indices.csv')))
   limits <- dplyr::filter(indices, ind %in% c("s.lat", "n.lat"))
   core <- dplyr::filter(indices, ind %in% c("s.core", "n.core"))
   center <- dplyr::filter(indices, ind %in% c("avg.lat"))
 
-  xmin <- min(psi$lon) - 3
-  xmax <- max(psi$lon) + 3
+  xmin <- min(psi$lon) - 1
+  xmax <- max(psi$lon) + 1
 
-  ymin <- min(psi$lat) - 3
-  ymax <- max(psi$lat) + 3
+  ymin <- min(psi$lat) - 1
+  ymax <- max(psi$lat) + 1
+
+  if(show.points) routes <- read.csv(here::here(paste0('inst/output/', alpha, '/count_buff.csv')))
 
   if(proj){
-    p <- ggplot() + geom_tile(psi, aes(x = lon, y = lat, fill = Prob)) + facet_wrap(~Year)
+    p <- ggplot() + facet_wrap(~Year)
+    p <- p + geom_polygon(data = usa, aes(x=long, y = lat, group = group), fill = "#F0F0F1",  color="#909090") +
+      geom_polygon(data = canada, aes(x=long, y = lat, group = group), fill = "#F0F0F1", color="#909090") +
+      geom_polygon(data = mexico, aes(x=long, y = lat, group = group),  fill = "#F0F0F1", color="#909090")
+    p <- p + geom_tile(data = psi, aes(x = lon, y = lat, fill = Prob))
+    p <- p + geom_polygon(data = usa, aes(x=long, y = lat, group = group), fill = NA,  color="#909090") +
+      geom_polygon(data = canada, aes(x=long, y = lat, group = group), fill = NA, color="#909090") +
+      geom_polygon(data = mexico, aes(x=long, y = lat, group = group),  fill = NA, color="#909090")
     p <- p + coord_map(projection = "lambert", lat0 = 25, lat1 = 50, xlim = c(xmin, xmax), ylim = c(ymin, ymax))
     p <- p + geom_hline(data = limits, aes(yintercept = value, group = ind), linetype = "dashed", color = "grey70")
     p <- p + geom_hline(data = core, aes(yintercept = value, group = ind), linetype = "longdash", color = "grey70")
     p <- p + geom_hline(data = center, aes(yintercept = value), color = "grey70")
-    p <- p + scale_fill_continuous(low = "black", high = "#ef6e0b")
-    p <- p + scale_y_continuous("Latitude")
-    p <- p + scale_x_continuous("Longitude")
+    if(show.points){
+     p <- p + geom_point(data = routes, aes(x = Longitude, y = Latitude, size = speciestotal), color = "black", alpha = 0.5)
+     p <- p + scale_size_continuous(guide = FALSE)
+    }
+    p <- p + scale_fill_continuous(low = "#F0F0F1", high = "#ef6e0b")
+    p <- p + scale_x_continuous("Longitude",breaks = seq(from = 10*(xmin%/%10 + as.logical(xmin%%10)),
+                                                         to = 10*(xmax%/%10 + as.logical(xmax%%10)), by = 10))
+    p <- p + scale_y_continuous("Latitude", breaks = seq(from = 5*(ymin%/%5 + as.logical(ymin%%5)),
+                                                         to = 5*(ymax%/%5 + as.logical(ymax%%5)), by = 10))
+    p <- p + theme(panel.background = element_rect(fill = "#CDD2D4", color = NA), axis.title = element_blank())
     p
   }else{
-    p <- ggplot() + geom_raster(data = psi, aes(x = lon, y = lat, fill = Prob)) + facet_wrap(~Year)
+    p <- ggplot()
+    p <- p + geom_polygon(data = usa, aes(x=long, y = lat, group = group), fill = "#F0F0F1",  color="#909090") +
+      geom_polygon(data = canada, aes(x=long, y = lat, group = group), fill = "#F0F0F1", color="#909090") +
+      geom_polygon(data = mexico, aes(x=long, y = lat, group = group),  fill = "#F0F0F1", color="#909090")
+    p <- p + geom_raster(data = psi, aes(x = lon, y = lat, fill = Prob)) + facet_wrap(~Year)
+    p <- p + geom_polygon(data = usa, aes(x=long, y = lat, group = group), fill = NA,  color="#909090") +
+      geom_polygon(data = canada, aes(x=long, y = lat, group = group), fill = NA, color="#909090") +
+      geom_polygon(data = mexico, aes(x=long, y = lat, group = group),  fill = NA, color="#909090")
     p <- p + geom_hline(data = limits, aes(yintercept = value, group = ind), linetype = "dashed", color = "grey70")
     p <- p + geom_hline(data = core, aes(yintercept = value, group = ind), linetype = "longdash", color = "grey70")
     p <- p + geom_hline(data = center, aes(yintercept = value), color = "grey70")
-    p <- p + scale_fill_continuous(low = "black", high = "#ef6e0b")
-    p <- p + scale_y_continuous("Latitude")
-    p <- p + scale_x_continuous("Longitude")
+    if(show.points){
+      p <- p + geom_point(data = routes, aes(x = Longitude, y = Latitude, size = speciestotal), color = "black", alpha = 0.5)
+      p <- p + scale_size_continuous(guide = FALSE)
+    }
+    p <- p + scale_fill_continuous(low = "#F0F0F1", high = "#ef6e0b")
+    p <- p + theme(panel.background = element_rect(fill = "#CDD2D4", color = NA), axis.title = element_blank())
+    p <- p + scale_x_continuous("Longitude", breaks = seq(from = 10*(xmin%/%10 + as.logical(xmin%%10)),
+                                                          to = 10*(xmax%/%10 + as.logical(xmax%%10)), by = 10),
+                                limits = c(xmin, xmax))
+    p <- p + scale_y_continuous("Latitude", breaks = seq(from = 5*(ymin%/%5 + as.logical(ymin%%5)),
+                                                         to = 5*(ymax%/%5 + as.logical(ymax%%5)), by = 10),
+                                limits = c(ymin, ymax))
     p
   }
 

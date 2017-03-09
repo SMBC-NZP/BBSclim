@@ -45,10 +45,10 @@ kable(spp_summ$p.betas, "markdown", align="c", padding=2)
 
 
 ## Occupancy probability
-```{r psi_map, echo = FALSE, message = FALSE}
+```{r psi_map, echo = FALSE, message = FALSE, fig.height=12}
 BBSclim::MapPsi(alpha = spp_summ$spp_alpha)
 ```
-*Figure 2: Estimated annual probability of occupancy. Solid line shows estimated mean breeding latitude in each year. Long dash lines show the estimated 25th and 75th occupancy percentiles (i.e., core breeding range). Short dash lines show the estimated 5th and 95th occupancy percentiles (i.e., range limits)*
+*Figure 2: Estimated annual probability of occupancy. Solid line shows estimated mean breeding latitude in each year. Long dash lines show the estimated 25th and 75th occupancy percentiles (i.e., core breeding range). Short dash lines show the estimated 2.5th and 97.5th occupancy percentiles (i.e., range limits)*
 
 &nbsp;
 
