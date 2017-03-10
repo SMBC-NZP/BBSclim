@@ -78,7 +78,7 @@ mod_eval <- function(pres_out, mod, pao2 , dig = 2, large = 8, is.annual, is.het
 
 
   ### drop covariates with the wrong sign (if no neg SE)
-  if(quad.check){
+  if(check.quad){
   if(nuisance == FALSE){
     if (mean(c(psi.check, th0.check, th1.check, gam.check, eps.check, p1.check, p2.check, 1))==1) {
       if(num.betas[1]>1) {

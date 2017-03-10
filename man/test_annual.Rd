@@ -8,9 +8,11 @@ test_annual(alpha, pao)
 }
 \arguments{
 \item{alpha}{Alpha code for species of interest}
+
+\item{pao}{.pao file}
 }
 \value{
-TRUE if p should vary annual; otherwise FALSE
+AIC table comparing model with and without annual variation in p
 }
 \description{
 Tests whether there is support for annual variation in p

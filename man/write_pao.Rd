@@ -4,7 +4,7 @@
 \alias{write_pao}
 \title{write_pao}
 \usage{
-write_pao(alpha, sim = FALSE)
+write_pao(alpha, sim = FALSE, name = NULL)
 }
 \arguments{
 \item{alpha}{Four letter alpha code for the species of interest}

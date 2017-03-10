@@ -4,7 +4,7 @@
 \alias{MapPsi}
 \title{MapPsi}
 \usage{
-MapPsi(alpha, proj = FALSE)
+MapPsi(alpha, proj = TRUE, show.points = FALSE)
 }
 \arguments{
 \item{alpha}{4-letter alpha code for species of interest}

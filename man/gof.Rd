@@ -7,13 +7,9 @@
 gof(alpha, pao)
 }
 \arguments{
-\item{aic_tab}{AIC table from RunGamMods}
+\item{alpha}{Alpha code for species of interest}
 
-\item{mods}{List of models}
-
-\item{cov_data}{Data frame containing the covariates used to fit the full model}
-
-\item{year_seq}{Vector containing the years included in the analysis}
+\item{pao}{.pao file}
 }
 \description{
 Identify top model, test GOF, save output, and delete output files of all other models
