@@ -141,6 +141,10 @@ MapPsi <- function(alpha, proj = TRUE, show.points = FALSE){
   core <- dplyr::filter(indices, ind %in% c("s.core", "n.core"))
   center <- dplyr::filter(indices, ind %in% c("avg.lat"))
 
+  usa <- ggplot2::map_data("state")
+  canada <- ggplot2::map_data("worldHires", "Canada")
+  mexico <- ggplot2::map_data("worldHires", "Mexico")
+
   xmin <- min(psi$lon) - 1
   xmax <- max(psi$lon) + 1
 
