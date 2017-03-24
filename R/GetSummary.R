@@ -41,7 +41,7 @@ GetSummary <- function(alpha){
 
   ### Psi models AIC table
   psi_aic <- read.csv(paste0('inst/output/', alpha, '/psi_aic.csv'))
-
+  modnum <- psi_aic$Model_num[1]
 
   ### Gamma/Epsilon AIC table
   gam_aic <- read.csv(paste0('inst/output/', alpha, '/gam_aic.csv'))
@@ -58,8 +58,8 @@ GetSummary <- function(alpha){
   std.er <- round(as.numeric(substr(betas, 54,63)), digits = 2)
 
   m <- grep('==>name', top_mod)
-  modnum <- unique(na.omit(as.numeric(unlist(strsplit(top_mod[m], "[^0-9]+")))))
-  
+
+
   ## Covariates included in the top model
   if(modnum == 31){
     covs_use <- list(psi.cov = c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet",
@@ -85,10 +85,10 @@ GetSummary <- function(alpha){
   psi_aic <- psi_aic[which(psi_aic$Model_num == modnum):nrow(psi_aic),]
   psi_aic <- mutate(psi_aic, delta_AIC = AIC - min(AIC, na.rm = TRUE))
   psi_aic <- psi_aic[1:10,]
-  
+
   colnames(gam_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$ AIC")
   colnames(psi_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$ AIC")
-  
+
   summ <- list(spp_name = common,
        spp_alpha = alpha,
        annual = annual,
