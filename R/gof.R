@@ -8,7 +8,6 @@
 
 gof <- function(alpha, pao){
   mod_opts <- read.csv("inst/model_opts.csv")
-  glob_opts <- read.csv("inst/global_opts.csv")
 
 
   annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
@@ -21,18 +20,20 @@ gof <- function(alpha, pao){
 
   mods <- GetPsiMods(covs = covs.ll)
 
-  
+
   if(annual_aic$Model[1] == "annual"){
     annual <- TRUE
   }else{
     annual <- FALSE
   }
 
-  year_seq <- seq(from = glob_opts$start_yr, to = glob_opts$end_yr)
+  start_yr <- as.integer(substr(colnames(pao$unitcov)[grep("tmp", colnames(pao$unitcov))][1], 5, 8))
+
+  year_seq <- seq(from = start_yr, to = start_yr + pao$nseasons - 1)
 
   aic_tab <- read.csv(paste0("inst/output/", alpha, "/psi_aic.csv"))
   aic_tab <- aic_tab[!is.na(aic_tab$AIC),]
-  
+
   clim_data <- pao$unitcov
 
   det_hist <- pao$det.data
@@ -42,27 +43,27 @@ gof <- function(alpha, pao){
     if(!is.null(mod_opts$limit.cores)){
       cores <- min(cores, mod_opts$limit.cores)
     }
-    
+
     doParallel::registerDoParallel(cores = cores)
-     
+
     if(nrow(aic_tab) <= cores){
       mod_check <- foreach::foreach(i=1:nrow(aic_tab), .combine = rbind,
                                     .packages = c("dplyr", "BBSclim")) %dopar%{
-                                      
+
                                       ## Read in .out file for current top model
                                       modname <- aic_tab$Model[i]
                                       modnum <- aic_tab$Model_num[i]
                                       mod_out <- scan(paste0("inst/output/", alpha, "/pres/", modname,".out"), what='character', sep='\n', quiet=T)
                                       sim_name <- paste0("sim_", i)
-                                      
+
                                       ## Extract beta coef estimates and se
                                       jj <- grep('std.error', mod_out)
                                       jj2 <- grep('Variance-Covariance Matrix of Untransformed', mod_out)
-                                      
+
                                       betas <- mod_out[(jj+1):(jj2-1)]
                                       coefs <- as.numeric(substr(betas, 41,50))
                                       std.er <- as.numeric(substr(betas, 54,63))
-                                      
+
                                       ## Covariates included in the current top model
                                       if(modnum == 31){
                                         covs_use <- list(psi.cov = c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet",
@@ -75,8 +76,8 @@ gof <- function(alpha, pao){
                                       }else{
                                         covs_use <- mods[[modnum]]
                                       }
-                                      
-                                      
+
+
                                       ## Beta coefs
                                       psi.coefs <- coefs[grep('psi',betas)]
                                       th0.coefs <- coefs[grep('th0',betas)]
@@ -88,68 +89,68 @@ gof <- function(alpha, pao){
                                       if(length(p2.coefs) == 0)		p2.coefs <- p1.coefs	# if no het
                                       pi.coefs <- coefs[grep('pi1',betas)]
                                       if(length(pi.coefs)==0)		pi.coefs <- 0		# if no het
-                                      
+
                                       ## se
                                       psi.se <- std.er[grep('psi', betas)]
                                       gam.se <- std.er[grep('gam', betas)]
                                       eps.se <- std.er[grep('eps', betas)]
-                                      
+
                                       ## Simulate new detection history from top model
                                       sim.data	<- sim.bbs.ms(alpha = alpha, covs = covs_use, cov_data = clim_data,
                                                              psi.coefs = psi.coefs, th0.coefs = th0.coefs,
                                                              th1.coefs = th1.coefs, gam.coefs = gam.coefs,
                                                              eps.coefs = eps.coefs, p1.coefs = p1.coefs,
                                                              p2.coefs = p2.coefs, pi.coefs = pi.coefs, years = year_seq,
-                                                             is.het = mod_opts$het, is.annual = annual, det_hist = det_hist, 
+                                                             is.het = mod_opts$het, is.annual = annual, det_hist = det_hist,
                                                              opts = glob_opts, name = sim_name)
-                                      
+
                                       ## Create .pao file for simulated data
                                       write_pao(alpha = alpha, sim = TRUE, name = sim_name)
-                                      
+
                                       sim_pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/pres/", sim_name, ".pao"))
-                                      
+
                                       ## Run Presence on simulated data
                                       initvals <- c(psi.coefs, th0.coefs, th1.coefs, gam.coefs, eps.coefs, p1.coefs)
                                       if(length(p2.coefs) == 0)  initvals <- c(initvals, p2.coefs, pi.coefs)
-                                      
+
                                       ## Create design matrices for model
                                       sim_dm <- GetDM(pao = sim_pao, cov_list = covs_use, is.het = mod_opts$het, is.annual = annual)
 
-                                      
+
                                       fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
-                                      r1 <- dim(sim_dm$dm1)[1] + dim(sim_dm$dm2)[1] + dim(sim_dm$dm3)[1] + dim(sim_dm$dm4)[1] 
+                                      r1 <- dim(sim_dm$dm1)[1] + dim(sim_dm$dm2)[1] + dim(sim_dm$dm3)[1] + dim(sim_dm$dm4)[1]
                                       rownames(fixedpars) <- (r1 + 1):(r1 + pao$nseasons)
-                                      
+
                                       ## Run model
                                       RPresence::write_dm_and_run(paoname = pao$paoname, fixed = fixedpars,
                                                                   dms = sim_dm, model = i,
                                                                   noderived = TRUE, limit.real = TRUE,
                                                                   modname = sim_name)
-                                      
+
                                       file.rename(from = paste0("pres_", sim_name, ".out"),
                                                   to = paste0("inst/output/", alpha, "/pres/", sim_name, ".out"))
-                                      
+
                                       ## Test whether coefs from simulated data are similar to coefs from top model
                                       gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use, alpha = alpha,
                                                                     Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs,
                                                                     Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
                                                                     is.het = mod_opts$het, is.annual = annual)
                                       gof.pass
-                                      
+
                                     }
       aic_tab$check <- mod_check
-      
+
       top_mod <- aic_tab$Model[min(which(aic_tab$check == 1))]
-      
+
       if(top_mod != Inf){
       # If model passes GOF test, change output file name to "top_mod.out"
       file.rename(from = paste0("inst/output/", alpha, "/pres/", top_mod, ".out"),
                   to = paste0("inst/output/", alpha, "/top_mod.out"))
-      
+
       # Zip pres folder containing all other .out files
       files2zip <- dir(paste0("inst/output/", alpha, "/pres"), full.names = TRUE)
       zip(zipfile = paste0("inst/output/", alpha, '/presZip'), files = files2zip)
-      
+
       unlink(paste0("inst/output/", alpha, "/pres"), recursive = TRUE)
       }else{
         stop("No models pass GOF test")
@@ -159,24 +160,24 @@ gof <- function(alpha, pao){
       cycle <- 0
       while(pass == 0){
         aic_tab2 <- aic_tab[(cycle * cores + 1):min(nrow(aic_tab), (cycle * cores + cores)),]
-        
+
         mod_check <- foreach::foreach(i=1:nrow(aic_tab2), .combine = rbind,
                                       .packages = c("dplyr", "BBSclim")) %dopar%{
-                                        
+
                                         ## Read in .out file for current top model
                                         modname <- aic_tab2$Model[i]
                                         modnum <- aic_tab2$Model_num[i]
                                         mod_out <- scan(paste0("inst/output/", alpha, "/pres/", modname,".out"), what='character', sep='\n', quiet=T)
                                         sim_name <- paste0("sim_", i)
-                                        
+
                                         ## Extract beta coef estimates and se
                                         jj <- grep('std.error', mod_out)
                                         jj2 <- grep('Variance-Covariance Matrix of Untransformed', mod_out)
-                                        
+
                                         betas <- mod_out[(jj+1):(jj2-1)]
                                         coefs <- as.numeric(substr(betas, 41,50))
                                         std.er <- as.numeric(substr(betas, 54,63))
-                                        
+
                                         ## Covariates included in the current top model
                                         if(modnum == 31){
                                           covs_use <- list(psi.cov = c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet",
@@ -189,8 +190,8 @@ gof <- function(alpha, pao){
                                         }else{
                                           covs_use <- mods[[modnum]]
                                         }
-                                        
-                                        
+
+
                                         ## Beta coefs
                                         psi.coefs <- coefs[grep('psi',betas)]
                                         th0.coefs <- coefs[grep('th0',betas)]
@@ -202,12 +203,12 @@ gof <- function(alpha, pao){
                                         if(length(p2.coefs) == 0)		p2.coefs <- p1.coefs	# if no het
                                         pi.coefs <- coefs[grep('pi1',betas)]
                                         if(length(pi.coefs)==0)		pi.coefs <- 0		# if no het
-                                        
+
                                         ## se
                                         psi.se <- std.er[grep('psi', betas)]
                                         gam.se <- std.er[grep('gam', betas)]
                                         eps.se <- std.er[grep('eps', betas)]
-                                        
+
                                         ## Simulate new detection history from top model
                                         sim.data	<- sim.bbs.ms(alpha = alpha, covs = covs_use, cov_data = clim_data,
                                                                psi.coefs = psi.coefs, th0.coefs = th0.coefs,
@@ -216,54 +217,54 @@ gof <- function(alpha, pao){
                                                                p2.coefs = p2.coefs, pi.coefs = pi.coefs, years = year_seq,
                                                                is.het = mod_opts$het, is.annual = annual, det_hist = det_hist, opts = glob_opts,
                                                                name = sim_name)
-                                        
+
                                         ## Create .pao file for simulated data
                                         write_pao(alpha = alpha, sim = TRUE, name = sim_name)
-                                        
+
                                         sim_pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/pres/", sim_name, ".pao"))
-                                        
+
                                         ## Run Presence on simulated data
                                         initvals <- c(psi.coefs, th0.coefs, th1.coefs, gam.coefs, eps.coefs, p1.coefs)
                                         if(length(p2.coefs) == 0)  initvals <- c(initvals, p2.coefs, pi.coefs)
-                                        
+
                                         ## Create design matrices for model
                                         sim_dm <- GetDM(pao = sim_pao, cov_list = covs_use, is.het = mod_opts$het, is.annual = annual)
-                                      
-                                        
+
+
                                         fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
-                                        r1 <- dim(sim_dm$dm1)[1] + dim(sim_dm$dm2)[1] + dim(sim_dm$dm3)[1] + dim(sim_dm$dm4)[1] 
+                                        r1 <- dim(sim_dm$dm1)[1] + dim(sim_dm$dm2)[1] + dim(sim_dm$dm3)[1] + dim(sim_dm$dm4)[1]
                                         rownames(fixedpars) <- (r1 + 1):(r1 + pao$nseasons)
-                                        
+
                                         ## Run model
                                         RPresence::write_dm_and_run(paoname = pao$paoname, fixed = fixedpars,
                                                                     dms = sim_dm, model = i,
                                                                     noderived = TRUE, limit.real = TRUE,
                                                                     modname = sim_name)
-                                        
+
                                         file.rename(from = paste0("pres_", sim_name, ".out"),
                                                     to = paste0("inst/output/", alpha, "/pres/", sim_name, ".out"))
-                                        
+
                                         ## Test whether coefs from simulated data are similar to coefs from top model
                                         gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use, alpha = alpha,
                                                                       Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs,
                                                                       Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
                                                                       is.het = mod_opts$het, is.annual = annual)
                                         gof.pass
-                                        
+
                                       }
         aic_tab2$check <- mod_check
-        
+
         top_mod <- aic_tab2$Model[min(which(aic_tab2$check == 1))]
-        
+
         if(top_mod != Inf){
           # If model passes GOF test, change output file name to "top_mod.out"
           file.rename(from = paste0("inst/output/", alpha, "/pres/", top_mod, ".out"),
                       to = paste0("inst/output/", alpha, "/top_mod.out"))
-          
+
           # Zip pres folder containing all other .out files
           files2zip <- dir(paste0("inst/output/", alpha, "/pres"), full.names = TRUE)
           zip(zipfile = paste0("inst/output/", alpha, '/presZip'), files = files2zip)
-          
+
           unlink(paste0("inst/output/", alpha, "/pres"), recursive = TRUE)
           pass <- 1
         }else{
@@ -271,10 +272,10 @@ gof <- function(alpha, pao){
         }
 
       }
-       
+
     }
   }else{
-  
+
   gof.pass <- 0
   model.num <- 0
 
@@ -344,11 +345,11 @@ gof <- function(alpha, pao){
       sim_dm <- GetDM(pao = sim_pao, cov_list = covs_use, is.het = mod_opts$het, is.annual = annual)
 
       sim_name <- paste0(alpha, "_sim")
-      
+
       fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
-      r1 <- dim(sim_dm$dm1)[1] + dim(sim_dm$dm2)[1] + dim(sim_dm$dm3)[1] + dim(sim_dm$dm4)[1] 
+      r1 <- dim(sim_dm$dm1)[1] + dim(sim_dm$dm2)[1] + dim(sim_dm$dm3)[1] + dim(sim_dm$dm4)[1]
       rownames(fixedpars) <- (r1 + 1):(r1 + pao$nseasons)
-      
+
       ## Run model
       RPresence::write_dm_and_run(paoname = pao$paoname, fixed = fixedpars,
                                   dms = sim_dm, model = i,

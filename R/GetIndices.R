@@ -14,8 +14,7 @@ GetIndices <- function(alpha, betas){
   prob_df <- read.csv(paste0('inst/output/', alpha, '/occ.csv'))
   spp_buff <- read.csv(paste0('inst/output/', alpha, '/count_buff.csv'))
 
-  opts <- read.csv('inst/global_opts.csv')
-  years <- seq(from = opts$start_yr, to = opts$end_yr)
+  years <- seq(from = min(prob_df$Year), to = max(prob_df$Year))
 
   prob_grp <- dplyr::group_by(prob_df, Year)
 

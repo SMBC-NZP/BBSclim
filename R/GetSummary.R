@@ -5,9 +5,6 @@
 
 GetSummary <- function(alpha){
   mod_opts <- read.csv("inst/model_opts.csv")
-  glob_opts <- read.csv("inst/global_opts.csv")
-
-  nYears <- length(seq(from = glob_opts$start_yr, to = glob_opts$end_yr))
 
   common <- BBSclim::code_lookup$common[BBSclim::code_lookup$alpha == toupper(alpha)]
 
@@ -34,6 +31,9 @@ GetSummary <- function(alpha){
   used_counts <- read.csv(paste0('inst/output/', alpha, '/no_outlier_counts.csv'))
   buff_counts <- read.csv(paste0('inst/output/', alpha, '/count_buff.csv'))
   outliers <- unique(raw_counts$routeID[!('%in%'(raw_counts$routeID, used_counts$routeID))])
+
+  years <- seq(from = min(raw_counts$Year), to = max(raw_counts$Year))
+  nYears <- length(years)
 
   ### Annual variation in p AIC table
   colnames(annual_aic) <- c("Model", "LogLik", "k", "AIC", "$\\Delta$ AIC")
@@ -75,10 +75,10 @@ GetSummary <- function(alpha){
 
 
   ## Beta coefficients for psi, gamma, & epsilon
-  psi_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, alpha, covs_use = covs_use)
+  psi_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, alpha, covs_use = covs_use, years = years)
 
   ## Beta coefficients for th, th0, p, & omega
-  p_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, alpha, covs_use = covs_use, nuisance = TRUE)
+  p_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, alpha, covs_use = covs_use, years = years, nuisance = TRUE)
 
 
   ## Include only psi models that passed GOF test
@@ -110,11 +110,8 @@ GetSummary <- function(alpha){
 #' @param nuisance If true, returns AIC table of theta, theta', p, & omega; if false, returns AIC table for psi, gamma & epsilon
 
 
-MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nuisance = FALSE){
+MakeBetatab <- function(coefs, sd.err, alpha, covs_use, years, nuisance = FALSE){
   mod_opts <- read.csv("inst/model_opts.csv")
-  glob_opts <- read.csv("inst/global_opts.csv")
-
-  nYears <- length(seq(from = glob_opts$start_yr, to = glob_opts$end_yr))
 
   ## Did p vary annually?
   annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
@@ -363,7 +360,7 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nuisance = FALSE){
     ## Covert to data frame, add intercept, covert to character, replace NA with "-"
     beta_df <- as.data.frame(beta_est)
     if(is.annual){
-      covs <- data.frame(cov = c("Intercept", paste0("Year_", seq(from = glob_opts$start_yr + 1, to = glob_opts$end_yr)), as.character(levels(covs_use2[order(covs_use2)]))))
+      covs <- data.frame(cov = c("Intercept", paste0("Year_", seq(from = min(years) + 1, to = max(years))), as.character(levels(covs_use2[order(covs_use2)]))))
     }else{
       covs <- data.frame(cov = c("Intercept", as.character(levels(covs_use2[order(covs_use2)]))))
     }

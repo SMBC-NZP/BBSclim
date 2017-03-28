@@ -7,10 +7,9 @@
 #' @export
 
 GetOccProb <- function(alpha, betas, buff_method = "rec", Write = TRUE){
-    opts <- read.csv('inst/global_opts.csv')
-    years <- seq(from = opts$start_yr, to = opts$end_yr)
 
     buffer <- read.csv(paste0('inst/output/', alpha, '/count_buff.csv'))
+    years <- seq(from = min(buffer$Year), to = max(buffer$Year))
     climate <- raster.to.array(alpha, years)
 
     r.psi <- matrix(0, dim(climate)[1], length(years))
