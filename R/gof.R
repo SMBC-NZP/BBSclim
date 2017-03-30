@@ -274,6 +274,7 @@ gof <- function(alpha, pao){
       }
 
     }
+
   }else{
 
   gof.pass <- 0

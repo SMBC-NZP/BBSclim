@@ -12,20 +12,21 @@ packages:
 targets:
   all:
     depends:
+      - annual
 {{#spp_names}}
       - inst/reports/{{spp_name}}.html
 {{/spp_names}}
 
 
 ## Load objects used for all species
-  bbs:
-    command: GetBBS()
-    depends:
-      - inst/global_opts.csv
 
   NA_biovars:
     command: data(target_name)
 
+  bbs:
+    command: GetBBS()
+    depends:
+      - inst/global_opts.csv
 
 
 ## Data processing steps
@@ -37,13 +38,12 @@ targets:
     command: GetAOU(I(alpha = "{{spp_name}}"))
 
   inst/output/{{spp_name}}/raw_counts.csv:
-    command: GetSppCounts(bbs_raw = bbs, AOU = {{spp_name}}_AOU, I(years = seq(from = 1990, to = 2014)), Write = TRUE, path = 'inst/output/{{spp_name}}')
-
-  {{spp_name}}_counts:
-    command: read.csv("inst/output/{{spp_name}}/raw_counts.csv")
+    command: GetSppCounts(bbs_raw = bbs, AOU = {{spp_name}}_AOU, I(years = seq(from = 2010, to = 2014)), path = 'inst/output/{{spp_name}}')
 
   inst/output/{{spp_name}}/no_outlier_counts.csv:
-    command: RemoveOutliers(raw.counts = {{spp_name}}_counts, Write = TRUE, path = 'inst/output/{{spp_name}}')
+    command: RemoveOutliers(path = 'inst/output/{{spp_name}}')
+    depends:
+      - inst/output/{{spp_name}}/raw_counts.csv
 
   inst/output/{{spp_name}}/count_buff.csv:
     command: buffer_BBS(I(alpha = "{{spp_name}}"), bbs = bbs)
@@ -59,33 +59,41 @@ targets:
   inst/output/{{spp_name}}/pres/pres_in.pao:
     command: write_pao(I(alpha = "{{spp_name}}"))
     depends:
-      - inst/global_opts.csv
       - inst/output/{{spp_name}}/count_buff.csv
       - inst/output/{{spp_name}}/route_clim.csv
 
 
+{{/spp_names}}
+
+
+## Test for annual variation
+
+  annual:
+    command: test_annual()
+    depends:
+      - inst/model_opts.csv
+      - inst/spp_list.csv
+{{#spp_names}}
+      - inst/output/{{spp_name}}/pres/pres_in.pao
+{{/spp_names}}
+    cleanup_level: never
+
 ## Run models
+{{#spp_names}}
   {{spp_name}}_pao:
     command: read.pao(f = "inst/output/{{spp_name}}/pres/pres_in.pao")
 
-
-  inst/output/{{spp_name}}/annual_aic.csv:
-    command: test_annual(I(alpha = "{{spp_name}}"), pao = {{spp_name}}_pao)
-    depends:
-      - inst/model_opts.csv
 
   inst/output/{{spp_name}}/gam_aic.csv:
     command: RunGamMods(I(alpha = "{{spp_name}}"), pao = {{spp_name}}_pao)
     depends:
       - inst/model_opts.csv
-      - inst/output/{{spp_name}}/annual_aic.csv
 
 
   inst/output/{{spp_name}}/psi_aic.csv:
     command: RunPsiMods(I(alpha = "{{spp_name}}"), pao = {{spp_name}}_pao)
     depends:
       - inst/model_opts.csv
-      - inst/output/{{spp_name}}/annual_aic.csv
       - inst/output/{{spp_name}}/gam_aic.csv
 
   inst/output/{{spp_name}}/top_mod.out:
@@ -93,7 +101,6 @@ targets:
     depends:
       - inst/output/{{spp_name}}/gam_aic.csv
       - inst/output/{{spp_name}}/psi_aic.csv
-      - inst/output/{{spp_name}}/annual_aic.csv
       - inst/model_opts.csv
       - inst/global_opts.csv
       - inst/output/{{spp_name}}/route_clim.csv
@@ -128,7 +135,6 @@ targets:
       - inst/output/{{spp_name}}/no_outlier_counts.csv
       - inst/output/{{spp_name}}/psi_aic.csv
       - inst/output/{{spp_name}}/gam_aic.csv
-      - inst/output/{{spp_name}}/annual_aic.csv
       - inst/output/{{spp_name}}/top_mod.out
 
 

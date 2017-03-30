@@ -10,7 +10,7 @@ RunPsiMods <- function(alpha, pao){
     opts <- read.csv("inst/model_opts.csv")
 
     annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
-    
+
     mods1 <- GetGamMods()
     aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
     top <- aic_tab$Model_num[1]
@@ -46,9 +46,9 @@ RunPsiMods <- function(alpha, pao){
                                       spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
                                       fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
-                                      r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1] 
+                                      r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1]
                                       rownames(fixedpars) <- (r1 + 1):(r1 + pao$nseasons)
-                                      
+
                                       ## Run model
                                       RPresence::write_dm_and_run(paoname = pao$paoname, fixed = fixedpars,
                                                                   dms = spp_dm, model = i,
@@ -86,6 +86,7 @@ RunPsiMods <- function(alpha, pao){
                                       }
                                       aic_temp
                                     }
+
       aic_table
     }else{
       if(opts$psi.test){
@@ -100,9 +101,9 @@ RunPsiMods <- function(alpha, pao){
         spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
         fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
-        r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1] 
+        r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1]
         rownames(fixedpars) <- (r1 + 1):(r1 + pao$nseasons)
-        
+
         ## Run model
         RPresence::write_dm_and_run(paoname = pao$paoname, fixed = fixedpars,
                                     dms = spp_dm, model = i,
@@ -149,6 +150,7 @@ RunPsiMods <- function(alpha, pao){
 
        }
       }
+
 
 
     b <- scan(paste0("inst/output/", alpha, "/pres/psi_model_31.out"), what='c',sep='\n',quiet=TRUE)
@@ -200,7 +202,7 @@ RunGamMods <- function(alpha, pao){
   }else{
     annual <- FALSE
   }
-  
+
 
   if(opts$Parallel){
 
@@ -224,9 +226,9 @@ RunGamMods <- function(alpha, pao){
                                     spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
 
                                     fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
-                                    r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1] 
+                                    r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1]
                                     rownames(fixedpars) <- (r1 + 1):(r1 + pao$nseasons)
-                                    
+
                                     ## Run model
                                     RPresence::write_dm_and_run(paoname = pao$paoname, fixed = fixedpars,
                                                                 dms = spp_dm, model = i,
@@ -265,6 +267,7 @@ RunGamMods <- function(alpha, pao){
                                     }
                                     aic_temp
                                   }
+
     aic_table
   }else{
     if(opts$gam.test){
@@ -279,9 +282,9 @@ RunGamMods <- function(alpha, pao){
       spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.het = opts$het, is.annual = annual)
 
       fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
-      r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1] 
+      r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1]
       rownames(fixedpars) <- (r1 + 1):(r1 + pao$nseasons)
-      
+
       ## Run model
       RPresence::write_dm_and_run(paoname = pao$paoname, fixed = fixedpars,
                                   dms = spp_dm, model = i,
@@ -326,6 +329,8 @@ RunGamMods <- function(alpha, pao){
 
     }
   }
+
+
 
   ## Add delta AIC column and sort by delta AIC
   aic_table <- dplyr::mutate(aic_table, delta_AIC = AIC - min(AIC, na.rm = TRUE))
