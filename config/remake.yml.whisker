@@ -38,7 +38,7 @@ targets:
     command: GetAOU(I(alpha = "{{spp_name}}"))
 
   inst/output/{{spp_name}}/raw_counts.csv:
-    command: GetSppCounts(bbs_raw = bbs, AOU = {{spp_name}}_AOU, I(years = seq(from = 2010, to = 2014)), path = 'inst/output/{{spp_name}}')
+    command: GetSppCounts(bbs_raw = bbs, AOU = {{spp_name}}_AOU, I(years = seq(from = 1990, to = 2014)), path = 'inst/output/{{spp_name}}')
 
   inst/output/{{spp_name}}/no_outlier_counts.csv:
     command: RemoveOutliers(path = 'inst/output/{{spp_name}}')
