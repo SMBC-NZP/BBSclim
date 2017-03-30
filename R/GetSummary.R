@@ -75,10 +75,10 @@ GetSummary <- function(alpha){
 
 
   ## Beta coefficients for psi, gamma, & epsilon
-  psi_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, alpha, covs_use = covs_use, years = years)
+  psi_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, alpha, nYears = nYears, covs_use = covs_use, years = years)
 
   ## Beta coefficients for th, th0, p, & omega
-  p_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, alpha, covs_use = covs_use, years = years, nuisance = TRUE)
+  p_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, alpha, nYears = nYears, covs_use = covs_use, years = years, nuisance = TRUE)
 
 
   ## Include only psi models that passed GOF test
@@ -110,7 +110,7 @@ GetSummary <- function(alpha){
 #' @param nuisance If true, returns AIC table of theta, theta', p, & omega; if false, returns AIC table for psi, gamma & epsilon
 
 
-MakeBetatab <- function(coefs, sd.err, alpha, covs_use, years, nuisance = FALSE){
+MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nYears, years, nuisance = FALSE){
   mod_opts <- read.csv("inst/model_opts.csv")
 
   ## Did p vary annually?

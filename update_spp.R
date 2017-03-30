@@ -1,3 +1,5 @@
+# Set global options
+model_opts(psi.test = TRUE, gam.test = TRUE)
 
 ## Format makefile given current species list
 library(whisker)
