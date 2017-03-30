@@ -32,7 +32,8 @@ Imports:
     classInt,
     doParallel,
     parallel,
-    whisker
+    whisker,
+    httr
 Depends:
     foreach,
     ggplot2,
