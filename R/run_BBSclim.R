@@ -7,7 +7,7 @@
 
 
 run_BBSclim <- function(...){
-  httr::set_config(config(ssl_verifypeer = 0L))
+  httr::set_config(httr::config(ssl_verifypeer = 0L))
 
   ### Install packages from
   devtools::install_github('crushing05/BBS.tenstop')
