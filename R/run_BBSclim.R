@@ -18,8 +18,6 @@ run_BBSclim <- function(...){
   remake::install_missing_packages("remake.yml")
   devtools::install_github('krlmlr/here')
 
-  devtools::install_github('SMBC-NZP/BBSclim')
-
 
   BBSclim::model_opts(...)
 

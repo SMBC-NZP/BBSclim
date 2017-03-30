@@ -16,6 +16,7 @@ Imports:
     tidyr,
     scales,
     markdown,
+    digest,
     knitr,
     devtools,
     plyr,
