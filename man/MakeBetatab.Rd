@@ -4,7 +4,7 @@
 \alias{MakeBetatab}
 \title{MakeAICtab}
 \usage{
-MakeBetatab(coefs, sd.err, alpha, covs_use, nuisance = FALSE)
+MakeBetatab(coefs, sd.err, alpha, covs_use, years, nuisance = FALSE)
 }
 \arguments{
 \item{nuisance}{If true, returns AIC table of theta, theta', p, & omega; if false, returns AIC table for psi, gamma & epsilon}

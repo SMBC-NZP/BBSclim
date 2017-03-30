@@ -4,8 +4,8 @@
 \alias{model_opts}
 \title{model_opts}
 \usage{
-model_opts(psi.test = FALSE, gam.test = FALSE, het = TRUE,
-  Parallel = TRUE, limit.cores = 50)
+model_opts(tenstops = TRUE, psi.test = FALSE, gam.test = FALSE,
+  het = TRUE, Parallel = TRUE, limit.cores = 50)
 }
 \description{
 Set model options for running presence

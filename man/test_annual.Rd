@@ -4,12 +4,7 @@
 \alias{test_annual}
 \title{test_annual}
 \usage{
-test_annual(alpha, pao)
-}
-\arguments{
-\item{alpha}{Alpha code for species of interest}
-
-\item{pao}{.pao file}
+test_annual()
 }
 \value{
 AIC table comparing model with and without annual variation in p
