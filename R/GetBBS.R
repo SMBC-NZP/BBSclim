@@ -5,7 +5,7 @@
 
 GetBBS <- function(is.tenstops = NULL){
   if(is.null(is.tenstops)){
-    opts <- read.csv("inst/global_opts.csv")
+    opts <- read.csv("inst/model_opts.csv")
     if(opts$tenstops){
       bbs <- BBS.tenstop::get_BBS10()
     }else{

@@ -8,7 +8,7 @@
 #' @export
 
 write_pao <- function(alpha, sim = FALSE, name = NULL){
-  opts <- read.csv("inst/global_opts.csv")
+  opts <- read.csv("inst/model_opts.csv")
   covs <- read.csv(paste0("inst/output/", alpha, "/route_clim.csv"))
 
   common <- code_lookup$common[code_lookup$alpha == toupper(alpha)]

@@ -102,7 +102,7 @@ gof <- function(alpha, pao){
                                                              eps.coefs = eps.coefs, p1.coefs = p1.coefs,
                                                              p2.coefs = p2.coefs, pi.coefs = pi.coefs, years = year_seq,
                                                              is.het = mod_opts$het, is.annual = annual, det_hist = det_hist,
-                                                             opts = glob_opts, name = sim_name)
+                                                             opts = mod_opts, name = sim_name)
 
                                       ## Create .pao file for simulated data
                                       write_pao(alpha = alpha, sim = TRUE, name = sim_name)
@@ -215,7 +215,7 @@ gof <- function(alpha, pao){
                                                                th1.coefs = th1.coefs, gam.coefs = gam.coefs,
                                                                eps.coefs = eps.coefs, p1.coefs = p1.coefs,
                                                                p2.coefs = p2.coefs, pi.coefs = pi.coefs, years = year_seq,
-                                                               is.het = mod_opts$het, is.annual = annual, det_hist = det_hist, opts = glob_opts,
+                                                               is.het = mod_opts$het, is.annual = annual, det_hist = det_hist, opts = mod_opts,
                                                                name = sim_name)
 
                                         ## Create .pao file for simulated data
@@ -331,7 +331,7 @@ gof <- function(alpha, pao){
                             th1.coefs = th1.coefs, gam.coefs = gam.coefs,
                             eps.coefs = eps.coefs, p1.coefs = p1.coefs,
                             p2.coefs = p2.coefs, pi.coefs = pi.coefs, years = year_seq,
-                            is.het = mod_opts$het, is.annual = annual, det_hist = det_hist, opts = glob_opts)
+                            is.het = mod_opts$het, is.annual = annual, det_hist = det_hist, opts = mod_opts)
 
     ## Create .pao file for simulated data
     write_pao(alpha = alpha, sim = TRUE, name = sim_name)
