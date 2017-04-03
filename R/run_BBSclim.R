@@ -9,14 +9,15 @@
 run_BBSclim <- function(...){
   httr::set_config(httr::config(ssl_verifypeer = 0L))
 
+
   ### Install packages from
-  devtools::install_github('crushing05/BBS.tenstop')
-  devtools::install_github('crushing05/BBS.fiftystop')
-  devtools::install_github('richfitz/datastorr')
-  devtools::install_github('crushing05/rBBS')
-  devtools::install_github('richfitz/remake')
-  remake::install_missing_packages("remake.yml")
-  devtools::install_github('krlmlr/here')
+  suppressMessages(devtools::install_github('crushing05/BBS.tenstop'))
+  suppressMessages(devtools::install_github('crushing05/BBS.fiftystop'))
+  suppressMessages(devtools::install_github('richfitz/datastorr'))
+  suppressMessages(devtools::install_github('crushing05/rBBS'))
+  suppressMessages(devtools::install_github('richfitz/remake'))
+  suppressMessages(remake::install_missing_packages("remake.yml"))
+  suppressMessages(devtools::install_github('krlmlr/here'))
 
 
   BBSclim::model_opts(...)

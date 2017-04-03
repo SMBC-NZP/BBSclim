@@ -6,10 +6,12 @@
 #' @param psi_mods list containing the parameters for each model to evaluate
 #' @export
 
-RunPsiMods <- function(alpha, pao){
+RunPsiMods <- function(alpha){
     opts <- read.csv("inst/model_opts.csv")
 
     annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
+
+    pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/pres/pres_in.pao"))
 
     mods1 <- GetGamMods()
     aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
@@ -43,7 +45,7 @@ RunPsiMods <- function(alpha, pao){
                                       modname <- paste0('psi_model_', i)
 
                                       ## Create design matrices for model i
-                                      spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
+                                      spp_dm <- suppressMessages(BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het))
 
                                       fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
                                       r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1]
@@ -87,6 +89,7 @@ RunPsiMods <- function(alpha, pao){
                                       aic_temp
                                     }
 
+      doParallel::stopImplicitCluster()
       aic_table
     }else{
       if(opts$psi.test){
@@ -98,7 +101,7 @@ RunPsiMods <- function(alpha, pao){
         modname <- paste0('psi_model_', i)
 
         ## Create design matrices for model i
-        spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
+        spp_dm <- suppressMessages(BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het))
 
         fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
         r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1]
@@ -189,13 +192,14 @@ RunPsiMods <- function(alpha, pao){
 #' @export
 
 
-RunGamMods <- function(alpha, pao){
+RunGamMods <- function(alpha){
   opts <- read.csv("inst/model_opts.csv")
 
   annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
 
   mods <- GetGamMods()
 
+  pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/pres/pres_in.pao"))
 
   if(annual_aic$Model[1] == "annual"){
     annual <- TRUE
@@ -223,7 +227,7 @@ RunGamMods <- function(alpha, pao){
                                     modname <- paste0('gam_model_', i)
 
                                     ## Create design matrices for model i
-                                    spp_dm <- BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het)
+                                    spp_dm <- suppressMessages(BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het))
 
                                     fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
                                     r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1]
@@ -268,6 +272,7 @@ RunGamMods <- function(alpha, pao){
                                     aic_temp
                                   }
 
+    doParallel::stopImplicitCluster()
     aic_table
   }else{
     if(opts$gam.test){
@@ -279,7 +284,7 @@ RunGamMods <- function(alpha, pao){
       modname <- paste0('gam_model_', i)
 
       ## Create design matrices for model i
-      spp_dm <- GetDM(pao = pao, cov_list = mods[[i]], is.het = opts$het, is.annual = annual)
+      spp_dm <- suppressMessages(BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.het = opts$het, is.annual = annual))
 
       fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
       r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1]

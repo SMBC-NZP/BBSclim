@@ -4,7 +4,6 @@
 #' @param count Data frame containing the (buffered) count data for the focal species
 #' @param index Integer vector containing the bioclim variables of interest
 #' @param ind_name Character vector containing abbreviated name of the bioclim variables of interest
-#' @param biovars A list (length = # years) containing the RasterStack objects containing the annual bioclim variable estimates
 #' @return A .csv files containing the following fields:
 #' @return   routeID The unique 8 digit route ID for each route
 #' @return   Latitude The latitude for the route
@@ -13,12 +12,11 @@
 #' @export
 
 GetBioVars <- function(alpha, index = c(1, 2, 8, 12, 18),
-                       ind_name = c("tmp", "dtr", "Twet", "Prec", "Pwarm"),
-                       biovars = NA_biovars){
-  
-  
+                       ind_name = c("tmp", "dtr", "Twet", "Prec", "Pwarm")){
+
+
   counts <- read.csv(paste0("inst/output/", alpha, "/count_buff.csv"))
-  
+
   rxy <- dplyr::select(counts, routeID, Longitude, Latitude)
   rxy <- rxy[!duplicated(rxy),]
 
@@ -28,12 +26,12 @@ GetBioVars <- function(alpha, index = c(1, 2, 8, 12, 18),
   end_yr <- max(counts$Year)
   bbs_years <- seq(from = start_yr, to = end_yr)
 
-  clim_years <- as.numeric(gsub("[^0-9]", "", names(biovars)))
+  clim_years <- as.numeric(gsub("[^0-9]", "", names(NA_biovars)))
   if(sum(bbs_years %in% clim_years) < length(bbs_years)) stop("Count data contains years with no climate data")
 
   for (jj in 1:length(index)) {
     for (ii in 1:(end_yr - start_yr + 1)) {
-      out	<- raster::extract(biovars[[ii]][[index[jj]]], xy)
+      out	<- raster::extract(NA_biovars[[ii]][[index[jj]]], xy)
       varname <- paste(ind_name[[jj]], bbs_years[[ii]], sep = "_")
       rxy[[varname]] <- out
     }
@@ -47,15 +45,15 @@ GetBioVars <- function(alpha, index = c(1, 2, 8, 12, 18),
     ind <- 0
     while(ind < 1){
       problem_xy <- dplyr::select(dplyr::slice(rxy, problem_routes), Longitude, Latitude)
-      
+
       fix_routes <- problem_out <- problem_nearby <- NULL
       adj <- c(-.5,0,.5)
-      
+
       for (jj in 1:length(index)) {
         for (ii in 1:(end_yr - start_yr + 1)) {
           for (i_lat in 1:3) {
             for (i_lon in 1:3) {
-              mjc	<- raster::extract(biovars[[ii]][[index[jj]]],
+              mjc	<- raster::extract(NA_biovars[[ii]][[index[jj]]],
                                      problem_xy + matrix(c(adj[i_lon], adj[i_lat]),
                                                          nrow = length(problem_routes), ncol=2), byrow=T)
               problem_nearby	<- cbind(problem_nearby, mjc)
@@ -80,15 +78,15 @@ GetBioVars <- function(alpha, index = c(1, 2, 8, 12, 18),
       max.adj <- 1
       while(ind < 1){
         problem_xy <- dplyr::select(dplyr::slice(rxy, problem_routes), Longitude, Latitude)
-        
+
         fix_routes <- problem_out <- problem_nearby <- NULL
         adj <- c(min.adj,0,max.adj)
-        
+
         for (jj in 1:length(index)) {
           for (ii in 1:(end_yr - start_yr + 1)) {
             for (i_lat in 1:3) {
               for (i_lon in 1:3) {
-                mjc	<- raster::extract(biovars[[ii]][[index[jj]]],
+                mjc	<- raster::extract(NA_biovars[[ii]][[index[jj]]],
                                        problem_xy + matrix(c(adj[i_lon], adj[i_lat]),
                                                            nrow = length(problem_routes), ncol=2), byrow=T)
                 problem_nearby	<- cbind(problem_nearby, mjc)
@@ -112,7 +110,7 @@ GetBioVars <- function(alpha, index = c(1, 2, 8, 12, 18),
     }
   }
 
-  
+
   ### Center and scale climate variables
   clim_scale <- matrix(99, nrow = length(ind_name), ncol = 2, dimnames = list(ind_name, c("mean", "sd")))
 

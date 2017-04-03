@@ -5,7 +5,7 @@
 #' @param pao pao file
 #' @return AIC table comparing model with and without heterogeneity in p
 #' @export
- 
+
 test_het <- function(alpha, pao){
     opts <- read.csv("inst/model_opts.csv")
     mod <- GetGamMods()[[961]]
@@ -31,15 +31,15 @@ test_het <- function(alpha, pao){
 
 
                                        fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
-                                       r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1] 
+                                       r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1]
                                        rownames(fixedpars) <- (r1 + 1):(r1 + pao$nseasons)
-                                       
+
                                        ## Run model
                                        RPresence::write_dm_and_run(paoname = pao$paoname, fixed = fixedpars,
                                                                    dms = spp_dm, model = i,
                                                                    noderived = TRUE, limit.real = TRUE,
                                                                    modname = modname)
-                                      
+
 
                                        file.rename(from = paste0("pres_", modname, ".out"),
                                                    to = paste0("inst/output/", alpha, "/pres/", modname, ".out"))
@@ -71,7 +71,8 @@ test_het <- function(alpha, pao){
                                                                       AIC = aic)
                                       }
                                       aic_temp
-                                    }
+                                     }
+      doParallel::stopImplicitCluster()
       het_aic
     }else{
       for(i in 1:2){
@@ -87,9 +88,9 @@ test_het <- function(alpha, pao){
         }
 
         fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
-        r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1] 
+        r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1]
         rownames(fixedpars) <- (r1 + 1):(r1 + pao$nseasons)
-        
+
         ## Run model
         RPresence::write_dm_and_run(paoname = pao$paoname, fixed = fixedpars,
                                     dms = spp_dm, model = i,

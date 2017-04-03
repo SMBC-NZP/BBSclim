@@ -19,7 +19,7 @@
 #' @return   dm6 Design matrix for p.pi
 #' @export
 
-GetDM	<- function(pao,cov_list,
+GetDM	<- function(pao, cov_list,
                   is.het, is.annual, coord.p = TRUE, coord.th = TRUE) {
 
   start_yr <- as.integer(substr(colnames(pao$unitcov)[grep("tmp", colnames(pao$unitcov))][1], 5, 8))

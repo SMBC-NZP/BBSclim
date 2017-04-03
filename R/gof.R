@@ -6,9 +6,10 @@
 #' @export
 #'
 
-gof <- function(alpha, pao){
+gof <- function(alpha){
   mod_opts <- read.csv("inst/model_opts.csv")
 
+  pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/pres/pres_in.pao"))
 
   annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
 
@@ -114,7 +115,7 @@ gof <- function(alpha, pao){
                                       if(length(p2.coefs) == 0)  initvals <- c(initvals, p2.coefs, pi.coefs)
 
                                       ## Create design matrices for model
-                                      sim_dm <- GetDM(pao = sim_pao, cov_list = covs_use, is.het = mod_opts$het, is.annual = annual)
+                                      sim_dm <- suppressMessages(BBSclim::GetDM(pao = sim_pao, cov_list = covs_use, is.het = mod_opts$het, is.annual = annual))
 
 
                                       fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
@@ -138,6 +139,7 @@ gof <- function(alpha, pao){
                                       gof.pass
 
                                     }
+      doParallel::stopImplicitCluster()
       aic_tab$check <- mod_check
 
       top_mod <- aic_tab$Model[min(which(aic_tab$check == 1))]
@@ -228,7 +230,7 @@ gof <- function(alpha, pao){
                                         if(length(p2.coefs) == 0)  initvals <- c(initvals, p2.coefs, pi.coefs)
 
                                         ## Create design matrices for model
-                                        sim_dm <- GetDM(pao = sim_pao, cov_list = covs_use, is.het = mod_opts$het, is.annual = annual)
+                                        sim_dm <- suppressMessages(BBSclim::GetDM(pao = sim_pao, cov_list = covs_use, is.het = mod_opts$het, is.annual = annual))
 
 
                                         fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
@@ -343,7 +345,7 @@ gof <- function(alpha, pao){
       if(length(p2.coefs) == 0)  initvals <- c(initvals, p2.coefs, pi.coefs)
 
       ## Create design matrices for model
-      sim_dm <- GetDM(pao = sim_pao, cov_list = covs_use, is.het = mod_opts$het, is.annual = annual)
+      sim_dm <- suppressMessages(BBSclim::GetDM(pao = sim_pao, cov_list = covs_use, is.het = mod_opts$het, is.annual = annual))
 
       sim_name <- paste0(alpha, "_sim")
 

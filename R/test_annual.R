@@ -33,7 +33,7 @@ test_annual <- function(){
              spp_pao <- RPresence::read.pao(paste0("inst/output/", spp2[i], "/pres/pres_in.pao"))
 
              if(ann[i]){modname <- paste0(spp2[i], "_annual")}else{modname <- paste0(spp2[i], "_constant")}
-             spp_dm <- BBSclim::GetDM(pao = spp_pao, cov_list = mod, is.annual = ann[i], is.het = opts$het)
+             spp_dm <- suppressMessages(BBSclim::GetDM(pao = spp_pao, cov_list = mod, is.annual = ann[i], is.het = opts$het))
 
 
              fixedpars <- matrix(rep("eq", spp_pao$nseasons), spp_pao$nseasons, 1)
