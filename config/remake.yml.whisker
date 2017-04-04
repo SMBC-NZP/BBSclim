@@ -13,19 +13,58 @@ targets:
   all:
     depends:
       - annual_check
-      - data_check
 {{#spp_names}}
       - inst/reports/{{spp_name}}.html
 {{/spp_names}}
 
+## Data used for all species
+  NA_biovars:
+    command: data(target_name)
+
+  bbs:
+    command: GetBBS()
 
 ## Format BBS & climate data; create .pao input files for Presence
+{{#spp_names}}
 
-  data_check:
-    command: input_data(start_yr = 2010)
+  inst/output/{{spp_name}}:
+    command: CreateSpp(I(alpha = "{{spp_name}}"))
     depends:
       - inst/spp_list.csv
-      - inst/model_opts.csv
+
+
+  {{spp_name}}_AOU:
+    command: GetAOU(I(alpha = "{{spp_name}}"))
+    depends:
+      - inst/spp_list.csv
+
+
+  inst/output/{{spp_name}}/raw_counts.csv:
+    command: GetSppCounts(bbs_raw = bbs, AOU = {{spp_name}}_AOU, I(years = seq(from = 1972, to = 2014)), path = 'inst/output/{{spp_name}}')
+
+  inst/output/{{spp_name}}/no_outlier_counts.csv:
+    command: RemoveOutliers(path = 'inst/output/{{spp_name}}')
+    depends:
+      - inst/output/{{spp_name}}/raw_counts.csv
+
+  inst/output/{{spp_name}}/count_buff.csv:
+    command: buffer_BBS(I(alpha = "{{spp_name}}"), bbs = bbs)
+    depends:
+      - inst/output/{{spp_name}}/no_outlier_counts.csv
+
+  inst/output/{{spp_name}}/route_clim.csv:
+    command: GetBioVars(I(alpha = "{{spp_name}}"))
+    depends:
+      - NA_biovars
+      - inst/output/{{spp_name}}/count_buff.csv
+
+  inst/output/{{spp_name}}/pres/pres_in.pao:
+    command: write_pao(I(alpha = "{{spp_name}}"))
+    depends:
+      - inst/output/{{spp_name}}/count_buff.csv
+      - inst/output/{{spp_name}}/route_clim.csv
+
+{{/spp_names}}
 
 
 ## Test for annual variation
@@ -35,7 +74,9 @@ targets:
     depends:
       - inst/spp_list.csv
       - inst/model_opts.csv
-
+{{#spp_names}}
+      - inst/output/{{spp_name}}/pres/pres_in.pao
+{{/spp_names}}
 
 ## Run models
 {{#spp_names}}

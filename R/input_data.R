@@ -43,11 +43,11 @@ input_data <- function(start_yr = 1972, end_yr = 2014){
           ### Add buffer around routes with counts > 0
           suppressMessages(BBSclim::buffer_BBS(bbs = bbs_data, alpha = spp[i]))
 
-          ### Extract climate variables for route locations
-          BBSclim::GetBioVars(alpha = spp[i])
-
-          ### Write .pao input file for Presence
-          BBSclim::write_pao(alpha = spp[i])
+          # ### Extract climate variables for route locations
+          # BBSclim::GetBioVars(alpha = spp[i])
+          #
+          # ### Write .pao input file for Presence
+          # BBSclim::write_pao(alpha = spp[i])
 
         }
         doParallel::stopImplicitCluster()

@@ -14,7 +14,7 @@
 GetBioVars <- function(alpha, index = c(1, 2, 8, 12, 18),
                        ind_name = c("tmp", "dtr", "Twet", "Prec", "Pwarm")){
 
-
+  biovars <- raster::raster("data/NA_biovars.rda")
   counts <- read.csv(paste0("inst/output/", alpha, "/count_buff.csv"))
 
   rxy <- dplyr::select(counts, routeID, Longitude, Latitude)
@@ -26,8 +26,7 @@ GetBioVars <- function(alpha, index = c(1, 2, 8, 12, 18),
   end_yr <- max(counts$Year)
   bbs_years <- seq(from = start_yr, to = end_yr)
 
-  clim_years <- as.numeric(gsub("[^0-9]", "", names(NA_biovars)))
-  if(sum(bbs_years %in% clim_years) < length(bbs_years)) stop("Count data contains years with no climate data")
+  if(sum(bbs_years %in% seq(from = 1971, to = 2014)) < length(bbs_years)) stop("Count data contains years with no climate data")
 
   for (jj in 1:length(index)) {
     for (ii in 1:(end_yr - start_yr + 1)) {

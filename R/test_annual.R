@@ -81,6 +81,7 @@ test_annual <- function(){
                aic_temp
              }
 
+        doParallel::stopImplicitCluster()
 
         for(i in 1:length(spp)){
           aic_temp <- dplyr::filter(annual_aic, sp == spp[i])
