@@ -59,7 +59,7 @@ test_annual <- function(){
                                         nuisance = TRUE)
 
              if(check == FALSE){ # If model does not converge, save NA in AIC table
-                 aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = NA, nParam = NA,
+                 aic_temp <- dplyr::data_frame(Model = modname, LogLik = NA, nParam = NA,
                                                AIC = NA, sp = spp2[i])
 
              }else{ # If model does converge, save results to AIC table
@@ -75,7 +75,7 @@ test_annual <- function(){
                j <- grep('of par', a)
                n  <- as.numeric(unlist(strsplit(a[j],'=',2))[2])
 
-               aic_temp <- dplyr::data_frame(Model = modname, Model_num = i, LogLik = loglike, nParam = n,
+               aic_temp <- dplyr::data_frame(Model = modname, LogLik = loglike, nParam = n,
                                              AIC = aic, sp = spp2[i])
                }
                aic_temp

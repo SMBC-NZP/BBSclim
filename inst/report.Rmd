@@ -29,7 +29,9 @@ BBSclim::PlotRoutes(spp_summ$spp_alpha)
 ## Results
 
 ```{r betas, echo=FALSE, comment='', results='asis'}
-kable(spp_summ$psi.betas, "markdown", align="c", padding=2)
+if(!is.na(spp_summ$pass)){kable(spp_summ$psi.betas, "markdown", align="c", padding=2)}else{
+  kable(data.frame(Error = "No models passed GOF tests"), format = "markdown", align="c")
+}
 ```
 *Table 1: Estimated coefficients (and standard errors) for the probability of occupancy ($\psi$), the probability of colonization ($\gamma$), & the probability of extinction ($\epsilon$). All estimates are from the top model (see Table 3) and coefficients are on the logit scale*  
 
@@ -39,14 +41,14 @@ kable(spp_summ$psi.betas, "markdown", align="c", padding=2)
 
 
 ```{r betas2, echo=FALSE, comment='', results='asis'}
-kable(spp_summ$p.betas, "markdown", align="c", padding=2)
+if(!is.na(spp_summ$pass)){kable(spp_summ$p.betas, "markdown", align="c", padding=2)}
 ```
 *Table 2: Estimated coefficients (and standard errors) for the  probability of availability at a stop given occupancy but not availabile at the previous stop ($\theta$), the probability of availability at a stop given occupancy and availability at the previous stop ($\theta'$), probabilities of detection given availability ($p_1$ & $p_2$), & probability that detection is $p_1$ ($\omega$). All estimates are from the top model (see Table 3) and coefficients are on the logit scale*  
 
 
 ## Occupancy probability
 ```{r psi_map, echo = FALSE, message = FALSE, fig.height=12}
-BBSclim::MapPsi(alpha = spp_summ$spp_alpha)
+if(!is.na(spp_summ$pass)){BBSclim::MapPsi(alpha = spp_summ$spp_alpha)}
 ```
 *Figure 2: Estimated annual probability of occupancy. Solid line shows estimated mean breeding latitude in each year. Long dash lines show the estimated 25th and 75th occupancy percentiles (i.e., core breeding range). Short dash lines show the estimated 2.5th and 97.5th occupancy percentiles (i.e., range limits)*
 
@@ -55,7 +57,7 @@ BBSclim::MapPsi(alpha = spp_summ$spp_alpha)
 &nbsp;
 
 ```{r lat_indices, echo = FALSE, message = FALSE}
-BBSclim::PlotLat(alpha = spp_summ$spp_alpha)
+if(!is.na(spp_summ$pass)){BBSclim::PlotLat(alpha = spp_summ$spp_alpha)}
 ```
 *Figure 3: Annual change in latitude indices. Solid line shows estimated mean breeding latitude in each year. Long dash lines show the estimated 25th and 75th occupancy percentiles (i.e., core breeding range). Short dash lines show the estimated 5th and 95th occupancy percentiles (i.e., range limits)*   
 
@@ -65,14 +67,17 @@ BBSclim::PlotLat(alpha = spp_summ$spp_alpha)
 
 
 ```{r lon_indices, echo = FALSE, message = FALSE}
-BBSclim::PlotLon(alpha = spp_summ$spp_alpha)
+if(!is.na(spp_summ$pass)){BBSclim::PlotLon(alpha = spp_summ$spp_alpha)}
 ```
 *Figure 4: Annual change in mean breeding longitudinal*   
 
 ## Model selection results
 
 ```{r psi_results, echo=FALSE, comment='', results='asis'}
-kable(spp_summ$psi.aic[1:max(which(!is.na(spp_summ$psi.aic$LogLik))), -1], "markdown", align="c", padding=2)
+if(!is.na(spp_summ$psi.aic$LogLik[1])){
+kable(spp_summ$psi.aic[1:max(which(!is.na(spp_summ$psi.aic$LogLik))), -1], "markdown", align="c", padding=2)}else{
+  kable(data.frame(Error = "No models passed GOF tests"), format = "markdown", align="c")
+}
 ```
 *Table 3: Summary of model selection support for climate effects on the initial occupancy probability ($\psi$). The full model set included 31 models estimating the effects of all combinations of five climate covariates on $\psi$. Only the top 10 models are shown. In all models, climate covariates on the colonization and extinction probabilities ($\gamma$ & $\epsilon$) were held constant based on the top model identified in Table 4 (see below). For all models, linear and quadratic terms for each covariate were considered together. The model with the lowest $\Delta$ AIC from this set was considered the top model*  
 
@@ -81,7 +86,10 @@ kable(spp_summ$psi.aic[1:max(which(!is.na(spp_summ$psi.aic$LogLik))), -1], "mark
 &nbsp;
 
 ```{r gam_results, echo=FALSE, comment='', results='asis'}
-kable(spp_summ$gam.aic[1:max(which(!is.na(spp_summ$gam.aic$LogLik))), -1], "markdown", align="c", padding=2)
+if(!is.na(spp_summ$gam.aic$LogLik[1])){
+kable(spp_summ$gam.aic[1:max(which(!is.na(spp_summ$gam.aic$LogLik))), -1], "markdown", align="c", padding=2)}else{
+  kable(data.frame(Error = "No models passed GOF tests"), format = "markdown", align="c")
+}
 ```
 *Table 4: Summary of model selection support for climate effects on the probabilities of colonization ($\gamma$) and extinction ($\epsilon$). The full model set included 961 models estimating the effects of all combinations of five climate covariates on $\gamma$ & $\epsilon$. Only the top 25 models are shown. In all models, climate covariates on the initial occupancy probability ($\psi$) were held constant. For all models, linear and quadratic terms for each covariate were considered together*
 
@@ -90,7 +98,10 @@ kable(spp_summ$gam.aic[1:max(which(!is.na(spp_summ$gam.aic$LogLik))), -1], "mark
 &nbsp;
 
 ```{r annual_results, echo=FALSE, comment=''}
-kable(spp_summ$annual.aic, "markdown", align="c", padding=2)
+if(!is.na(spp_summ$annual.aic$LogLik[1])){
+kable(spp_summ$annual.aic, "markdown", align="c", padding=2)}else{
+  kable(data.frame(Error = "No models passed GOF tests"), format = "markdown", align="c")
+}
 ```
 *Table 5: Summary of model selection support for annual variation in detection probability ($p$)*  
 
