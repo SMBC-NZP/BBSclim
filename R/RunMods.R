@@ -45,7 +45,7 @@ RunPsiMods <- function(alpha){
                                       modname <- paste0('psi_model_', i)
 
                                       ## Create design matrices for model i
-                                      spp_dm <- suppressMessages(BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het))
+                                      spp_dm <- suppressWarnings(BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het))
 
                                       fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
                                       r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1]
@@ -101,7 +101,7 @@ RunPsiMods <- function(alpha){
         modname <- paste0('psi_model_', i)
 
         ## Create design matrices for model i
-        spp_dm <- suppressMessages(BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het))
+        spp_dm <- suppressWarnings(BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het))
 
         fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
         r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1]
@@ -227,7 +227,7 @@ RunGamMods <- function(alpha){
                                     modname <- paste0('gam_model_', i)
 
                                     ## Create design matrices for model i
-                                    spp_dm <- suppressMessages(BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het))
+                                    spp_dm <- suppressWarnings(BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.annual = annual, is.het = opts$het))
 
                                     fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
                                     r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1]
@@ -284,7 +284,7 @@ RunGamMods <- function(alpha){
       modname <- paste0('gam_model_', i)
 
       ## Create design matrices for model i
-      spp_dm <- suppressMessages(BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.het = opts$het, is.annual = annual))
+      spp_dm <- suppressWarnings(BBSclim::GetDM(pao = pao, cov_list = mods[[i]], is.het = opts$het, is.annual = annual))
 
       fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
       r1 <- dim(spp_dm$dm1)[1] + dim(spp_dm$dm2)[1] + dim(spp_dm$dm3)[1] + dim(spp_dm$dm4)[1]

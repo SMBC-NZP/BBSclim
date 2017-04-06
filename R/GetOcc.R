@@ -6,7 +6,12 @@
 #' @param buffer Dataframe containing the buffered spp count data
 #' @export
 
-GetOccProb <- function(alpha, betas, buff_method = "rec", Write = TRUE){
+GetOccProb <- function(alpha, buff_method = "rec", Write = TRUE){
+  psi_aic <- read.csv(paste0('inst/output/', alpha, '/psi_aic_check.csv'))
+  pass <- psi_aic$check[1] == 1
+
+  if(!is.na(pass)){
+    betas <- BBSclim::GetBetas(alpha)
 
     buffer <- read.csv(paste0('inst/output/', alpha, '/count_buff.csv'))
     years <- seq(from = min(buffer$Year), to = max(buffer$Year))
@@ -47,20 +52,23 @@ GetOccProb <- function(alpha, betas, buff_method = "rec", Write = TRUE){
       if(is.null(buff_method)){
         write.csv(psi.df2, file = paste0("inst/output/", alpha, "/occ.csv"), row.names = FALSE)
       }else{
-        psi.df3 <- dplyr::filter(psi.df2, lat < max(buffer$Latitude) + 2 & lat > min(buffer$Latitude) - 2 &
-                                   lon > min(buffer$Longitude) - 2 & lon < max(buffer$Longitude) + 2)
+        psi.df3 <- dplyr::filter(psi.df2, lat < max(buffer$Latitude) + 5 & lat > min(buffer$Latitude) - 5 &
+                                   lon > min(buffer$Longitude) - 5 & lon < max(buffer$Longitude) + 5)
         write.csv(psi.df3, file = paste0("inst/output/", alpha, "/occ.csv"), row.names = FALSE)
       }
     }else{
       if(is.null(buff_method)){
         psi.df2
       }else{
-        psi.df3 <- dplyr::filter(psi.df2, lat < max(buffer$Latitude) + 2 & lat > min(buffer$Latitude) - 2 &
-                                   lon > min(buffer$Longitude) - 2 & lon < max(buffer$Longitude) + 2)
+        psi.df3 <- dplyr::filter(psi.df2, lat < max(buffer$Latitude) + 5 & lat > min(buffer$Latitude) - 5 &
+                                   lon > min(buffer$Longitude) - 5 & lon < max(buffer$Longitude) + 5)
         psi.df3
       }
     }
-
+  }else{
+    psi.df <- data.frame(occ = NA)
+    write.csv(psi.df, file = paste0("inst/output/", alpha, "/occ.csv"), row.names = FALSE)
+  }
 }
 
 #' raster.to.array

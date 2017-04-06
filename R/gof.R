@@ -42,7 +42,7 @@ gof <- function(alpha){
   if(mod_opts$Parallel){
     cores <- parallel::detectCores()
     if(!is.null(mod_opts$limit.cores)){
-      cores <- min(cores, mod_opts$limit.cores)
+      cores <- min(cores, mod_opts$limit.cores, nrow(aic_tab))
     }
 
     doParallel::registerDoParallel(cores = cores)
@@ -144,7 +144,10 @@ gof <- function(alpha){
 
       top_mod <- aic_tab$Model[min(which(aic_tab$check == 1))]
 
-      if(top_mod != Inf){
+      if(!is.na(top_mod)){
+        aic_tab <- aic_tab[aic_tab$check == 1,]
+        write.csv(aic_tab, paste0("inst/output/", alpha, "/psi_aic_check.csv"))
+
       # If model passes GOF test, change output file name to "top_mod.out"
       file.rename(from = paste0("inst/output/", alpha, "/pres/", top_mod, ".out"),
                   to = paste0("inst/output/", alpha, "/top_mod.out"))
@@ -155,7 +158,15 @@ gof <- function(alpha){
 
       unlink(paste0("inst/output/", alpha, "/pres"), recursive = TRUE)
       }else{
-        stop("No models pass GOF test")
+        write.csv(aic_tab, paste0("inst/output/", alpha, "/psi_aic_check.csv"))
+
+        file.rename(from = paste0("inst/output/", alpha, "/pres/psi_model_31.out"),
+                    to = paste0("inst/output/", alpha, "/top_mod.out"))
+
+        files2zip <- dir(paste0("inst/output/", alpha, "/pres"), full.names = TRUE)
+        zip(zipfile = paste0("inst/output/", alpha, '/presZip'), files = files2zip)
+
+        unlink(paste0("inst/output/", alpha, "/pres"), recursive = TRUE)
       }
     }else{
       pass <- 0
@@ -230,7 +241,7 @@ gof <- function(alpha){
                                         if(length(p2.coefs) == 0)  initvals <- c(initvals, p2.coefs, pi.coefs)
 
                                         ## Create design matrices for model
-                                        sim_dm <- suppressMessages(BBSclim::GetDM(pao = sim_pao, cov_list = covs_use, is.het = mod_opts$het, is.annual = annual))
+                                        sim_dm <- suppressWarnings(BBSclim::GetDM(pao = sim_pao, cov_list = covs_use, is.het = mod_opts$het, is.annual = annual))
 
 
                                         fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
@@ -258,7 +269,10 @@ gof <- function(alpha){
 
         top_mod <- aic_tab2$Model[min(which(aic_tab2$check == 1))]
 
-        if(top_mod != Inf){
+        if(!is.na(top_mod) & cycle <= ceiling(nrow(aic_tab)/cores)){
+          aic_tab2 <- aic_tab2[aic_tab2$check == 1,]
+          write.csv(aic_tab2, paste0("inst/output/", alpha, "/psi_aic_check.csv"))
+
           # If model passes GOF test, change output file name to "top_mod.out"
           file.rename(from = paste0("inst/output/", alpha, "/pres/", top_mod, ".out"),
                       to = paste0("inst/output/", alpha, "/top_mod.out"))
@@ -270,7 +284,20 @@ gof <- function(alpha){
           unlink(paste0("inst/output/", alpha, "/pres"), recursive = TRUE)
           pass <- 1
         }else{
-          cycle <- cycle + 1
+          if(cycle < ceiling(nrow(aic_tab)/cores)){
+            cycle <- cycle + 1
+          }else{
+            aic_tab$check <- 0
+            write.csv(aic_tab, paste0("inst/output/", alpha, "/psi_aic_check.csv"))
+
+            file.rename(from = paste0("inst/output/", alpha, "/pres/psi_model_31.out"),
+                        to = paste0("inst/output/", alpha, "/top_mod.out"))
+
+            files2zip <- dir(paste0("inst/output/", alpha, "/pres"), full.names = TRUE)
+            zip(zipfile = paste0("inst/output/", alpha, '/presZip'), files = files2zip)
+
+            unlink(paste0("inst/output/", alpha, "/pres"), recursive = TRUE)
+          }
         }
 
       }
@@ -328,7 +355,7 @@ gof <- function(alpha){
     eps.se <- std.er[grep('eps', betas)]
 
     ## Simulate new detection history from top model
-    sim.data	<- sim.bbs.ms(alpha = alpha, covs = covs_use, cov_data = clim_data,
+    sim.data	<- sim.bbs.ms(alpha = alpha, covs = covs_use, cov_data = clim_data, name = sim_name,
                             psi.coefs = psi.coefs, th0.coefs = th0.coefs,
                             th1.coefs = th1.coefs, gam.coefs = gam.coefs,
                             eps.coefs = eps.coefs, p1.coefs = p1.coefs,

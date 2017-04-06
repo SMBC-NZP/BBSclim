@@ -40,67 +40,83 @@ GetSummary <- function(alpha){
 
 
   ### Psi models AIC table
-  psi_aic <- read.csv(paste0('inst/output/', alpha, '/psi_aic.csv'))
+  psi_aic <- read.csv(paste0('inst/output/', alpha, '/psi_aic_check.csv'))
   modnum <- psi_aic$Model_num[1]
+  pass <- psi_aic$check[1] == 1
 
   ### Gamma/Epsilon AIC table
   gam_aic <- read.csv(paste0('inst/output/', alpha, '/gam_aic.csv'))
   gam_aic <- gam_aic[1:25,]
 
-  ## Extract beta coef estimates and se
-  top_mod <- scan(paste0("inst/output/", alpha, "/top_mod.out"), what='character', sep='\n', quiet=T)
+  if(!is.na(pass)){
+    ## Extract beta coef estimates and se
+    top_mod <- scan(paste0("inst/output/", alpha, "/top_mod.out"), what='character', sep='\n', quiet=T)
 
-  jj <- grep('std.error', top_mod)
-  jj2 <- grep('Variance-Covariance Matrix of Untransformed', top_mod)
+    jj <- grep('std.error', top_mod)
+    jj2 <- grep('Variance-Covariance Matrix of Untransformed', top_mod)
 
-  betas <- top_mod[(jj+1):(jj2-1)]
-  coefs <- round(as.numeric(substr(betas, 41,50)), digits = 2)
-  std.er <- round(as.numeric(substr(betas, 54,63)), digits = 2)
+    betas <- top_mod[(jj+1):(jj2-1)]
+    coefs <- round(as.numeric(substr(betas, 41,50)), digits = 2)
+    std.er <- round(as.numeric(substr(betas, 54,63)), digits = 2)
 
-  m <- grep('==>name', top_mod)
+    m <- grep('==>name', top_mod)
 
 
-  ## Covariates included in the top model
-  if(modnum == 31){
-    covs_use <- list(psi.cov = c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet",
-                                 "Prec", "sq_Prec", "Pwarm", "sq_Pwarm"),
-                     th0.cov = mods[[1]]$th0.cov,
-                     th1.cov = mods[[1]]$th1.cov,
-                     gam.cov = mods[[1]]$gam.cov,
-                     eps.cov = mods[[1]]$eps.cov,
-                     p1.cov = mods[[1]]$p1.cov)
+    ## Covariates included in the top model
+    if(modnum == 31){
+      covs_use <- list(psi.cov = c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet",
+                                   "Prec", "sq_Prec", "Pwarm", "sq_Pwarm"),
+                       th0.cov = mods[[1]]$th0.cov,
+                       th1.cov = mods[[1]]$th1.cov,
+                       gam.cov = mods[[1]]$gam.cov,
+                       eps.cov = mods[[1]]$eps.cov,
+                       p1.cov = mods[[1]]$p1.cov)
+    }else{
+      covs_use <- mods[[modnum]]
+    }
+
+
+    ## Beta coefficients for psi, gamma, & epsilon
+    psi_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, alpha, nYears = nYears, covs_use = covs_use, years = years)
+
+    ## Beta coefficients for th, th0, p, & omega
+    p_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, alpha, nYears = nYears, covs_use = covs_use, years = years, nuisance = TRUE)
+
+
+    ## Include only psi models that passed GOF test
+    psi_aic <- psi_aic[which(psi_aic$Model_num == modnum):nrow(psi_aic),]
+    psi_aic <- dplyr::mutate(psi_aic, delta_AIC = AIC - min(AIC, na.rm = TRUE))
+    psi_aic <- dplyr::select(psi_aic, -check)
+    psi_aic <- psi_aic[1:10,]
+
+    colnames(gam_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$ AIC")
+    colnames(psi_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$ AIC")
+
+    summ <- list(spp_name = common,
+                 spp_alpha = alpha,
+                 annual = annual,
+                 n.routes = length(unique(used_counts$routeID)),
+                 n.outliers = length(outliers),
+                 n.buffer = length(unique(buff_counts$routeID)) - length(unique(used_counts$routeID)),
+                 annual.aic = annual_aic,
+                 psi.aic = psi_aic,
+                 gam.aic = gam_aic,
+                 psi.betas = psi_beta_tab,
+                 p.betas = p_beta_tab,
+                 top_mod = modnum,
+                 pass = pass)
   }else{
-    covs_use <- mods[[modnum]]
+    summ <- list(spp_name = common,
+                 spp_alpha = alpha,
+                 annual = annual,
+                 n.routes = length(unique(used_counts$routeID)),
+                 n.outliers = length(outliers),
+                 n.buffer = length(unique(buff_counts$routeID)) - length(unique(used_counts$routeID)),
+                 annual.aic = annual_aic,
+                 psi.aic = psi_aic,
+                 gam.aic = gam_aic,
+                 pass = pass)
   }
-
-
-  ## Beta coefficients for psi, gamma, & epsilon
-  psi_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, alpha, nYears = nYears, covs_use = covs_use, years = years)
-
-  ## Beta coefficients for th, th0, p, & omega
-  p_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, alpha, nYears = nYears, covs_use = covs_use, years = years, nuisance = TRUE)
-
-
-  ## Include only psi models that passed GOF test
-  psi_aic <- psi_aic[which(psi_aic$Model_num == modnum):nrow(psi_aic),]
-  psi_aic <- mutate(psi_aic, delta_AIC = AIC - min(AIC, na.rm = TRUE))
-  psi_aic <- psi_aic[1:10,]
-
-  colnames(gam_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$ AIC")
-  colnames(psi_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$ AIC")
-
-  summ <- list(spp_name = common,
-       spp_alpha = alpha,
-       annual = annual,
-       n.routes = length(unique(used_counts$routeID)),
-       n.outliers = length(outliers),
-       n.buffer = length(unique(buff_counts$routeID)) - length(unique(used_counts$routeID)),
-       annual.aic = annual_aic,
-       psi.aic = psi_aic,
-       gam.aic = gam_aic,
-       psi.betas = psi_beta_tab,
-       p.betas = p_beta_tab,
-       top_mod = modnum)
   summ
 }
 

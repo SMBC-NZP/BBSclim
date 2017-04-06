@@ -14,7 +14,6 @@
 GetBioVars <- function(alpha, index = c(1, 2, 8, 12, 18),
                        ind_name = c("tmp", "dtr", "Twet", "Prec", "Pwarm")){
 
-  biovars <- raster::raster("data/NA_biovars.rda")
   counts <- read.csv(paste0("inst/output/", alpha, "/count_buff.csv"))
 
   rxy <- dplyr::select(counts, routeID, Longitude, Latitude)

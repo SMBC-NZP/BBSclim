@@ -79,22 +79,24 @@ PlotLat <- function(alpha, ci = FALSE){
 #' @param alpha 4-letter alpha code for species of interest
 #' @export
 
-PlotLon <- function(alpha, ci = TRUE){
+PlotLon <- function(alpha, ci = FALSE){
   indices <- read.csv(here::here(paste0('inst/output/', alpha, '/indices.csv')))
-  lon.indices <- dplyr::filter(indices, ind == "avg.lon")
+  lon.indices <- dplyr::filter(indices, ind == "w.lon" | ind == "e.lon" |
+                                 ind == "w.core" | ind == "e.core" | ind == "avg.lon")
 
-  p <- ggplot(lon.indices, aes(x = Year, y = value, group = ind, color = ind))
+
+  p <- ggplot(lon.indices, aes(x = value, y = Year, group = ind, color = ind))
   p <- p + geom_line(aes(linetype = ind))
-  p <- p + scale_y_continuous("(West)        Longitude        (East)")
+  p <- p + scale_x_continuous("(West)               Longitude                 (East)")
   p <- p + scale_linetype_manual(values = c("solid", "dashed", "longdash", "dashed", "longdash"))
   p <- p + scale_color_manual(values = c("black", "grey35", "grey50", "grey35", "grey50"))
-  p <- p + scale_x_continuous(breaks = seq(from = min(lon.indices$Year),
+  p <- p + scale_y_continuous(breaks = seq(from = min(lon.indices$Year),
                                            to = max(lon.indices$Year),
                                            by = 2))
   p <- p + theme(legend.position = "none")
 
   if(ci){
-    p <- p + geom_ribbon(aes(ymin = (value - 1.96 * sd.err), ymax = (value + 1.96 * sd.err)), alpha = 0.2)
+    p <- p + geom_ribbon(aes(xmin = (value - 1.96 * sd.err), xmax = (value + 1.96 * sd.err)), alpha = 0.2)
     p
   }else{
     p
