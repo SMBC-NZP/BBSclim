@@ -2,11 +2,12 @@
 #'
 #' Run full analysis
 #' @param ... Arguments to be passed to model_opts()
-#' @return If you're lucky, .html files and model results for each species in spp_list.csv
+#' @param annual TRUE/FALSE Should annual models be fit for all species in spp_list_annual?
+#' @param runmods TRUE/FALSE Should psi & gamma/epsilon models be fit for all species in spp_list_runmods?
 #' @export
 
 
-run_BBSclim <- function(...){
+run_BBSclim <- function(annual, runmods, ...){
   httr::set_config(httr::config(ssl_verifypeer = 0L))
 
 
@@ -22,12 +23,26 @@ run_BBSclim <- function(...){
 
   BBSclim::model_opts(...)
 
-  spp <- read.csv("inst/spp_list.csv")
-  spp_names <- as.character(spp$spp)
-  vals <- list(spp_names = whisker::iteratelist(spp_names, value="spp_name"))
+  if(annual){
+    spp <- read.csv("inst/spp_list_annual.csv")
+    spp_names <- as.character(spp$spp)
+    vals <- list(spp_names = whisker::iteratelist(spp_names, value="spp_name"))
 
-  str <- whisker::whisker.render(readLines("config/remake.yml.whisker"), vals)
-  writeLines(str, "remake.yml")
+    str <- whisker::whisker.render(readLines("config/remake_annual.yml.whisker"), vals)
+    writeLines(str, "remake_annual.yml")
 
-  remake::make()
+    remake::make(remake_file = "remake_annual.yml")
+  }
+
+
+  if(runmods){
+    spp <- read.csv("inst/spp_list_runmods.csv")
+    spp_names <- as.character(spp$spp)
+    vals <- list(spp_names = whisker::iteratelist(spp_names, value="spp_name"))
+
+    str <- whisker::whisker.render(readLines("config/remake_runmods.yml.whisker"), vals)
+    writeLines(str, "remake_runmods.yml")
+
+    remake::make(remake_file = "remake_runmods.yml")
+  }
 }

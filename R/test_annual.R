@@ -7,7 +7,7 @@
 test_annual <- function(){
     opts <- read.csv("inst/model_opts.csv")
     mod <- GetGamMods()[[961]]
-    spp_list <- read.csv('inst/spp_list.csv')
+    spp_list <- read.csv('inst/spp_list_annual.csv')
 
     spp <- NULL
     ## Check if test_annual has already been run for species
