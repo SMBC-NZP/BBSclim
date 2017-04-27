@@ -26,6 +26,7 @@ run_BBSclim <- function(annual, runmods, ...){
   if(annual){
     spp <- read.csv("inst/spp_list_annual.csv")
     spp_names <- as.character(spp$spp)
+    spp_names <- spp_names[!duplicated(spp_names)]
     vals <- list(spp_names = whisker::iteratelist(spp_names, value="spp_name"))
 
     str <- whisker::whisker.render(readLines("config/remake_annual.yml.whisker"), vals)
@@ -38,6 +39,7 @@ run_BBSclim <- function(annual, runmods, ...){
   if(runmods){
     spp <- read.csv("inst/spp_list_runmods.csv")
     spp_names <- as.character(spp$spp)
+    spp_names <- spp_names[!duplicated(spp_names)]
     vals <- list(spp_names = whisker::iteratelist(spp_names, value="spp_name"))
 
     str <- whisker::whisker.render(readLines("config/remake_runmods.yml.whisker"), vals)
