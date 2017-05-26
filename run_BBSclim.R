@@ -6,7 +6,7 @@ install.packages("devtools")
 devtools::install_github('SMBC-NZP/BBSclim')
 
 ### Run annual models
-BBSclim::run_BBSclim(annual = TRUE, runmods = FALSE)
+BBSclim::run_BBSclim(annual = FALSE, runmods = TRUE)
 
 
 

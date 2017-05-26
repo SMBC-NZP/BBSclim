@@ -86,7 +86,7 @@ PlotLon <- function(alpha, ci = FALSE){
 
 
   p <- ggplot(lon.indices, aes(x = value, y = Year, group = ind, color = ind))
-  p <- p + geom_line(aes(linetype = ind))
+  p <- p + geom_path(aes(linetype = ind))
   p <- p + scale_x_continuous("(West)               Longitude                 (East)")
   p <- p + scale_linetype_manual(values = c("solid", "dashed", "longdash", "dashed", "longdash"))
   p <- p + scale_color_manual(values = c("black", "grey35", "grey50", "grey35", "grey50"))
@@ -207,6 +207,94 @@ MapPsi <- function(alpha, proj = TRUE, show.points = FALSE){
   }
 
 
+}
+
+
+#' MapDiff
+#'
+#' Initial/final & difference occupancy maps
+#' @param alpha 4-letter alpha code for species of interest
+#' @export
+
+
+MapDiff <- function(alpha){
+  occ <- read.csv(here::here(paste0('inst/output/', alpha, '/occ.csv')))
+
+  occ1 <- dplyr::filter(occ, Year == min(Year))
+  occl <- dplyr::filter(occ, Year == max(Year))
+  occd <- dplyr::mutate(occl, Diff = Prob - occ1$Prob)
+  occd <- dplyr::select(occd, -Prob)
+  occd <- dplyr::rename(occd, Prob = Diff)
+
+  occ2 <- dplyr::bind_rows(occ1, occd)
+  occ2 <- dplyr::mutate(occ2, Period = rep(c("Initial", "Difference"), each = nrow(occ1)))
+
+  usa <- ggplot2::map_data("state")
+  canada <- ggplot2::map_data("worldHires", "Canada")
+  mexico <- ggplot2::map_data("worldHires", "Mexico")
+
+  xmin <- min(occ$lon) - 1
+  xmax <- max(occ$lon) + 1
+
+  ymin <- min(occ$lat) - 1
+  ymax <- max(occ$lat) + 1
+
+  p <- ggplot()
+  p <- p + geom_polygon(data = usa, aes(x=long, y = lat, group = group), fill = "#F0F0F1",  color="#909090") +
+    geom_polygon(data = canada, aes(x=long, y = lat, group = group), fill = "#F0F0F1", color="#909090") +
+    geom_polygon(data = mexico, aes(x=long, y = lat, group = group),  fill = "#F0F0F1", color="#909090")
+  p <- p + geom_tile(data = occ1, aes(x = lon, y = lat, fill = Prob))
+  p <- p + geom_polygon(data = usa, aes(x=long, y = lat, group = group), fill = NA,  color="#909090") +
+    geom_polygon(data = canada, aes(x=long, y = lat, group = group), fill = NA, color="#909090") +
+    geom_polygon(data = mexico, aes(x=long, y = lat, group = group),  fill = NA, color="#909090")
+  p <- p + coord_map(projection = "lambert", lat0 = 25, lat1 = 50, xlim = c(xmin, xmax), ylim = c(ymin, ymax))
+  p <- p + scale_fill_continuous(low = "#F0F0F1", high = "#ef6e0b",  name =  "Occupancy \nProb.")
+  p <- p + scale_x_continuous("Longitude",breaks = seq(from = 10*(xmin%/%10 + as.logical(xmin%%10)),
+                                                       to = 10*(xmax%/%10 + as.logical(xmax%%10)), by = 10))
+  p <- p + scale_y_continuous("Latitude", breaks = seq(from = 5*(ymin%/%5 + as.logical(ymin%%5)),
+                                                       to = 5*(ymax%/%5 + as.logical(ymax%%5)), by = 10))
+  p <- p + theme(panel.background = element_rect(fill = "#CDD2D4", color = NA),
+                 axis.title = element_blank(), legend.title = element_text(size = 10))
+  p <- p + labs(title = paste0(unique(occ1$Year), " (Initial)"))
+
+  q <- ggplot()
+  q <- q + geom_polygon(data = usa, aes(x=long, y = lat, group = group), fill = "#F0F0F1",  color="#909090") +
+    geom_polygon(data = canada, aes(x=long, y = lat, group = group), fill = "#F0F0F1", color="#909090") +
+    geom_polygon(data = mexico, aes(x=long, y = lat, group = group),  fill = "#F0F0F1", color="#909090")
+  q <- q + geom_tile(data = occl, aes(x = lon, y = lat, fill = Prob))
+  q <- q + geom_polygon(data = usa, aes(x=long, y = lat, group = group), fill = NA,  color="#909090") +
+    geom_polygon(data = canada, aes(x=long, y = lat, group = group), fill = NA, color="#909090") +
+    geom_polygon(data = mexico, aes(x=long, y = lat, group = group),  fill = NA, color="#909090")
+  q <- q + coord_map(projection = "lambert", lat0 = 25, lat1 = 50, xlim = c(xmin, xmax), ylim = c(ymin, ymax))
+  q <- q + scale_fill_continuous(low = "#F0F0F1", high = "#ef6e0b", name =  "Occupancy \nProb.")
+  q <- q + scale_x_continuous("Longitude",breaks = seq(from = 10*(xmin%/%10 + as.logical(xmin%%10)),
+                                                       to = 10*(xmax%/%10 + as.logical(xmax%%10)), by = 10))
+  q <- q + scale_y_continuous("Latitude", breaks = seq(from = 5*(ymin%/%5 + as.logical(ymin%%5)),
+                                                       to = 5*(ymax%/%5 + as.logical(ymax%%5)), by = 10))
+  q <- q + theme(panel.background = element_rect(fill = "#CDD2D4", color = NA),
+                 axis.title = element_blank(), legend.title = element_text(size = 10))
+  q <- q + labs(title = unique(occl$Year))
+
+
+  r <- ggplot()
+  r <- r + geom_polygon(data = usa, aes(x=long, y = lat, group = group), fill = "#F0F0F1",  color="#909090") +
+    geom_polygon(data = canada, aes(x=long, y = lat, group = group), fill = "#F0F0F1", color="#909090") +
+    geom_polygon(data = mexico, aes(x=long, y = lat, group = group),  fill = "#F0F0F1", color="#909090")
+  r <- r + geom_tile(data = occd, aes(x = lon, y = lat, fill = Prob))
+  r <- r + geom_polygon(data = usa, aes(x=long, y = lat, group = group), fill = NA,  color="#909090") +
+    geom_polygon(data = canada, aes(x=long, y = lat, group = group), fill = NA, color="#909090") +
+    geom_polygon(data = mexico, aes(x=long, y = lat, group = group),  fill = NA, color="#909090")
+  r <- r + coord_map(projection = "lambert", lat0 = 25, lat1 = 50, xlim = c(xmin, xmax), ylim = c(ymin, ymax))
+  r <- r + scale_fill_gradient2(low = "#c45b4d", mid ="#F0F0F1", high = "#268bd2", name = "Difference")
+  r <- r + scale_x_continuous("Longitude",breaks = seq(from = 10*(xmin%/%10 + as.logical(xmin%%10)),
+                                                       to = 10*(xmax%/%10 + as.logical(xmax%%10)), by = 10))
+  r <- r + scale_y_continuous("Latitude", breaks = seq(from = 5*(ymin%/%5 + as.logical(ymin%%5)),
+                                                       to = 5*(ymax%/%5 + as.logical(ymax%%5)), by = 10))
+  r <- r + theme(panel.background = element_rect(fill = "#CDD2D4", color = NA),
+                 axis.title = element_blank(), legend.title = element_text(size = 10))
+
+  s <- gridExtra::grid.arrange(gridExtra::arrangeGrob(p, q, ncol = 2), r, ncol = 1)
+  grid::grid.draw(s)
 }
 
 #' md2html

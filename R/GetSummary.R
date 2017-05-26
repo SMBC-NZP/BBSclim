@@ -8,23 +8,25 @@ GetSummary <- function(alpha){
 
   common <- BBSclim::code_lookup$common[BBSclim::code_lookup$alpha == toupper(alpha)]
 
-  mods1 <- GetGamMods()
-  aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
-  top <- aic_tab$Model_num[1]
+  mods1 <- GetPsiMods()
+  aic_psi <- read.csv(paste0("inst/output/", alpha, "/psi_aic.csv"))
+  top <- aic_psi$Model_num[1]
   covs <- mods1[[top]]
-  covs.ll <- list(gam_covs = covs$gam.cov, eps_covs = covs$eps.cov)
 
-  mods <- GetPsiMods(covs = covs.ll)
+  mods <- GetGamMods(psi_covs = covs$psi.cov)
 
   ## Did p vary annually?
   annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
 
-  if(annual_aic$Model[1] == "annual"){
-    annual <- "Yes"
+  if(is.na(annual_aic$LogLik[1])){
+    annual <- "NO"
   }else{
-    annual <- "No"
+    if(annual_aic$Model[1] == "annual"){
+      annual <- "Yes"
+    }else{
+      annual <- "No"
+    }
   }
-
 
   ## Count data
   raw_counts <- read.csv(paste0('inst/output/', alpha, '/raw_counts.csv'))
@@ -40,13 +42,14 @@ GetSummary <- function(alpha){
 
 
   ### Psi models AIC table
-  psi_aic <- read.csv(paste0('inst/output/', alpha, '/psi_aic_check.csv'))
-  modnum <- psi_aic$Model_num[1]
-  pass <- psi_aic$check[1] == 1
+  psi_aic <- read.csv(paste0('inst/output/', alpha, '/psi_aic.csv'))
+  psi_max <- max(!is.na(psi_aic$LogLik))
+  psi_aic <- psi_aic[1:min(psi_max, 10),]
 
   ### Gamma/Epsilon AIC table
-  gam_aic <- read.csv(paste0('inst/output/', alpha, '/gam_aic.csv'))
-  gam_aic <- gam_aic[1:25,]
+  gam_aic <- read.csv(paste0('inst/output/', alpha, '/gam_aic_check.csv'))
+  modnum <- gam_aic$Model_num[1]
+  pass <- gam_aic$check[1] == 1
 
   if(!is.na(pass)){
     ## Extract beta coef estimates and se
@@ -63,17 +66,7 @@ GetSummary <- function(alpha){
 
 
     ## Covariates included in the top model
-    if(modnum == 31){
-      covs_use <- list(psi.cov = c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet",
-                                   "Prec", "sq_Prec", "Pwarm", "sq_Pwarm"),
-                       th0.cov = mods[[1]]$th0.cov,
-                       th1.cov = mods[[1]]$th1.cov,
-                       gam.cov = mods[[1]]$gam.cov,
-                       eps.cov = mods[[1]]$eps.cov,
-                       p1.cov = mods[[1]]$p1.cov)
-    }else{
-      covs_use <- mods[[modnum]]
-    }
+    covs_use <- mods[[modnum]]
 
 
     ## Beta coefficients for psi, gamma, & epsilon
@@ -83,11 +76,12 @@ GetSummary <- function(alpha){
     p_beta_tab <- MakeBetatab(coefs = coefs, sd.err = std.er, alpha, nYears = nYears, covs_use = covs_use, years = years, nuisance = TRUE)
 
 
-    ## Include only psi models that passed GOF test
-    psi_aic <- psi_aic[which(psi_aic$Model_num == modnum):nrow(psi_aic),]
-    psi_aic <- dplyr::mutate(psi_aic, delta_AIC = AIC - min(AIC, na.rm = TRUE))
-    psi_aic <- dplyr::select(psi_aic, -check)
-    psi_aic <- psi_aic[1:10,]
+    ## Include only gamma models that passed GOF test
+    gam_aic <- gam_aic[which(gam_aic$Model_num == modnum):nrow(gam_aic),]
+    gam_aic <- dplyr::mutate(gam_aic, delta_AIC = AIC - min(AIC, na.rm = TRUE))
+    gam_aic <- dplyr::select(gam_aic, -check)
+    gam_max <- max(!is.na(gam_aic$LogLik))
+    gam_aic <- gam_aic[1:min(gam_max, 25),]
 
     colnames(gam_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$ AIC")
     colnames(psi_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$ AIC")
@@ -120,9 +114,9 @@ GetSummary <- function(alpha){
   summ
 }
 
-#' MakeAICtab
+#' MakeBetatab
 #'
-#' Make AIC table for including in report
+#' Make Beta table for including in report
 #' @param nuisance If true, returns AIC table of theta, theta', p, & omega; if false, returns AIC table for psi, gamma & epsilon
 
 
@@ -132,21 +126,25 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nYears, years, nuisance 
   ## Did p vary annually?
   annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
 
-  if(annual_aic$Model[1] == "annual"){
-    is.annual <- TRUE
-  }else{
+  if(is.na(annual_aic$LogLik[1])){
     is.annual <- FALSE
+  }else{
+    if(annual_aic$Model[1] == "annual"){
+      is.annual <- TRUE
+    }else{
+      is.annual <- FALSE
+    }
   }
 
   if(!nuisance){
     ## Covert covs included in psi, gam, & eps models to factor, set levels
     covs_use2 <- factor(unique(c(covs_use$psi.cov, covs_use$gam.cov, covs_use$eps.cov)),
-                        levels = c("tmp", "sq_tmp", "Twet", "sq_Twet", "Prec",
+                        levels = c("Lat", "sq_Lat", "Lon", "sq_Lon", "tmp", "sq_tmp", "Twet", "sq_Twet", "Prec",
                                    "sq_Prec", "Pwarm", "sq_Pwarm", "dtr", "sq_dtr"))
 
 
     ## Data frame containing beta coeffecients and se
-    beta_est <- matrix(NA, nrow = 11, ncol = 3)
+    beta_est <- matrix(NA, nrow = 15, ncol = 3)
     colnames(beta_est) <- c("$\\psi$", "$\\gamma$", "$\\epsilon$")
 
 
@@ -162,17 +160,19 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nYears, years, nuisance 
                                             length(covs_use$th1.cov) + length(covs_use$gam.cov) + 5], ")", sep = "")
 
     ## Fill in coefficients for climate covariates
-    for(i in 1:10){
+    for(i in 5:14){
       # Psi
-      if(levels(covs_use2)[i] %in% covs_use$psi.cov){
-        beta.num <- which(covs_use$psi.cov == levels(covs_use2)[i])
-        beta_est[i + 1, 1] <- paste(coefs[1 + beta.num], " (", sd.err[1 + beta.num], ")", sep = "")
+      if(length(covs_use$psi.cov) > 4){
+        if(levels(covs_use2)[i] %in% covs_use$psi.cov){
+          beta.num <- which(covs_use$psi.cov == levels(covs_use2)[i])
+          beta_est[i - 3, 1] <- paste(coefs[5 + beta.num], " (", sd.err[5 + beta.num], ")", sep = "")
+        }
       }
 
       # Gamma
       if(levels(covs_use2)[i] %in% covs_use$gam.cov){
         beta.num <- which(covs_use$gam.cov == levels(covs_use2)[i])
-        beta_est[i + 1, 2] <-  paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+        beta_est[i - 3, 2] <-  paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                               length(covs_use$th1.cov) + 4 + beta.num],
                                       " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                      length(covs_use$th1.cov) + 4 + beta.num], ")", sep = "")
@@ -181,13 +181,19 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nYears, years, nuisance 
       # Epsilon
       if(levels(covs_use2)[i] %in% covs_use$eps.cov){
         beta.num <- which(covs_use$eps.cov == levels(covs_use2)[i])
-        beta_est[i + 1, 3] <-   paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+        beta_est[i - 3, 3] <-   paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                length(covs_use$th1.cov) + length(covs_use$gam.cov) + 5 + beta.num],
                                        " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                       length(covs_use$th1.cov) + length(covs_use$gam.cov) + 5 + beta.num], ")", sep = "")
       }
     }
 
+    for(i in 1:4){
+      if(levels(covs_use2)[i] %in% covs_use$psi.cov){
+        beta.num <- which(covs_use$psi.cov == levels(covs_use2)[i])
+        beta_est[i + 11, 1] <- paste(coefs[1 + beta.num], " (", sd.err[1 + beta.num], ")", sep = "")
+      }
+    }
 
     ## Rename climate covariates
     covs_use2 <- dplyr::recode(covs_use2, tmp = "Temp", sq_tmp = "Temp^2",
@@ -198,7 +204,7 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nYears, years, nuisance 
 
     ## Covert to data frame, add intercept, covert to character, replace NA with "-"
     beta_df <- as.data.frame(beta_est)
-    covs <- data.frame(cov = c("Intercept", as.character(levels(covs_use2[order(covs_use2)]))))
+    covs <- data.frame(cov = c("Intercept", as.character(levels(covs_use2[order(covs_use2)]))[5:14], as.character(levels(covs_use2[order(covs_use2)]))[1:4]))
     beta_df <- dplyr::bind_cols(covs, beta_df)
     beta_df[, 2:4] <- as.character(unlist(beta_df[, 2:4]))
     beta_df[is.na(beta_df)] <- "-"

@@ -9,31 +9,36 @@
 gof <- function(alpha){
   mod_opts <- read.csv("inst/model_opts.csv")
 
-  pao <- RPresence::read.pao(paste0("inst/output/", alpha, "/pres/pres_in.pao"))
+  pao <- suppressMessages(RPresence::read.pao(paste0("inst/output/", alpha, "/pres/pres_in.pao")))
 
   annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
 
-  mods1 <- GetGamMods()
-  aic_gam <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
-  top <- aic_gam$Model_num[1]
+  mods1 <- GetPsiMods()
+  aic_psi <- read.csv(paste0("inst/output/", alpha, "/psi_aic.csv"))
+  top <- aic_psi$Model_num[1]
   covs <- mods1[[top]]
-  covs.ll <- list(gam_covs = covs$gam.cov, eps_covs = covs$eps.cov)
 
-  mods <- GetPsiMods(covs = covs.ll)
+  mods <- GetGamMods(psi_covs = covs$psi.cov)
 
 
-  if(annual_aic$Model[1] == "annual"){
-    annual <- TRUE
-  }else{
+  if(is.na(annual_aic$LogLik[1])){
     annual <- FALSE
+  }else{
+    if(annual_aic$Model[1] == "annual"){
+      annual <- TRUE
+    }else{
+      annual <- FALSE
+    }
   }
 
   start_yr <- as.integer(substr(colnames(pao$unitcov)[grep("tmp", colnames(pao$unitcov))][1], 5, 8))
 
   year_seq <- seq(from = start_yr, to = start_yr + pao$nseasons - 1)
 
-  aic_tab <- read.csv(paste0("inst/output/", alpha, "/psi_aic.csv"))
+  aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
   aic_tab <- aic_tab[!is.na(aic_tab$AIC),]
+
+  if(nrow(aic_tab) == 0) stop("No models passed overfitting test")
 
   clim_data <- pao$unitcov
 
@@ -55,7 +60,7 @@ gof <- function(alpha){
                                       modname <- aic_tab$Model[i]
                                       modnum <- aic_tab$Model_num[i]
                                       mod_out <- scan(paste0("inst/output/", alpha, "/pres/", modname,".out"), what='character', sep='\n', quiet=T)
-                                      sim_name <- paste0("sim_", i)
+                                      sim_name <- paste0("sim_", modnum)
 
                                       ## Extract beta coef estimates and se
                                       jj <- grep('std.error', mod_out)
@@ -66,17 +71,7 @@ gof <- function(alpha){
                                       std.er <- as.numeric(substr(betas, 54,63))
 
                                       ## Covariates included in the current top model
-                                      if(modnum == 31){
-                                        covs_use <- list(psi.cov = c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet",
-                                                                     "Prec", "sq_Prec", "Pwarm", "sq_Pwarm"),
-                                                         th0.cov = NULL,
-                                                         th1.cov = NULL,
-                                                         gam.cov = mods[[1]]$gam.cov,
-                                                         eps.cov = mods[[1]]$eps.cov,
-                                                         p1.cov = mods[[1]]$p1.cov)
-                                      }else{
-                                        covs_use <- mods[[modnum]]
-                                      }
+                                      covs_use <- mods[[modnum]]
 
 
                                       ## Beta coefs
@@ -97,7 +92,7 @@ gof <- function(alpha){
                                       eps.se <- std.er[grep('eps', betas)]
 
                                       ## Simulate new detection history from top model
-                                      sim.data	<- sim.bbs.ms(alpha = alpha, covs = covs_use, cov_data = clim_data,
+                                      sim.data	<- BBSclim::sim.bbs.ms(alpha = alpha, covs = covs_use, cov_data = clim_data,
                                                              psi.coefs = psi.coefs, th0.coefs = th0.coefs,
                                                              th1.coefs = th1.coefs, gam.coefs = gam.coefs,
                                                              eps.coefs = eps.coefs, p1.coefs = p1.coefs,
@@ -146,7 +141,7 @@ gof <- function(alpha){
 
       if(!is.na(top_mod)){
         aic_tab <- aic_tab[aic_tab$check == 1,]
-        write.csv(aic_tab, paste0("inst/output/", alpha, "/psi_aic_check.csv"))
+        write.csv(aic_tab, paste0("inst/output/", alpha, "/gam_aic_check.csv"))
 
       # If model passes GOF test, change output file name to "top_mod.out"
       file.rename(from = paste0("inst/output/", alpha, "/pres/", top_mod, ".out"),
@@ -158,15 +153,15 @@ gof <- function(alpha){
 
       unlink(paste0("inst/output/", alpha, "/pres"), recursive = TRUE)
       }else{
-        write.csv(aic_tab, paste0("inst/output/", alpha, "/psi_aic_check.csv"))
-
-        file.rename(from = paste0("inst/output/", alpha, "/pres/psi_model_31.out"),
-                    to = paste0("inst/output/", alpha, "/top_mod.out"))
-
-        files2zip <- dir(paste0("inst/output/", alpha, "/pres"), full.names = TRUE)
-        zip(zipfile = paste0("inst/output/", alpha, '/presZip'), files = files2zip)
-
-        unlink(paste0("inst/output/", alpha, "/pres"), recursive = TRUE)
+        write.csv(aic_tab, paste0("inst/output/", alpha, "/gam_aic_check.csv"))
+        stop("No model passed GOF")
+        # file.rename(from = paste0("inst/output/", alpha, "/pres/psi_model_33.out"),
+        #             to = paste0("inst/output/", alpha, "/top_mod.out"))
+        #
+        # files2zip <- dir(paste0("inst/output/", alpha, "/pres"), full.names = TRUE)
+        # zip(zipfile = paste0("inst/output/", alpha, '/presZip'), files = files2zip)
+        #
+        # unlink(paste0("inst/output/", alpha, "/pres"), recursive = TRUE)
       }
     }else{
       pass <- 0
@@ -181,7 +176,7 @@ gof <- function(alpha){
                                         modname <- aic_tab2$Model[i]
                                         modnum <- aic_tab2$Model_num[i]
                                         mod_out <- scan(paste0("inst/output/", alpha, "/pres/", modname,".out"), what='character', sep='\n', quiet=T)
-                                        sim_name <- paste0("sim_", i)
+                                        sim_name <- paste0("sim_", modnum)
 
                                         ## Extract beta coef estimates and se
                                         jj <- grep('std.error', mod_out)
@@ -192,17 +187,7 @@ gof <- function(alpha){
                                         std.er <- as.numeric(substr(betas, 54,63))
 
                                         ## Covariates included in the current top model
-                                        if(modnum == 31){
-                                          covs_use <- list(psi.cov = c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet",
-                                                                       "Prec", "sq_Prec", "Pwarm", "sq_Pwarm"),
-                                                           th0.cov = NULL,
-                                                           th1.cov = NULL,
-                                                           gam.cov = mods[[1]]$gam.cov,
-                                                           eps.cov = mods[[1]]$eps.cov,
-                                                           p1.cov = mods[[1]]$p1.cov)
-                                        }else{
-                                          covs_use <- mods[[modnum]]
-                                        }
+                                        covs_use <- mods[[modnum]]
 
 
                                         ## Beta coefs
@@ -223,7 +208,7 @@ gof <- function(alpha){
                                         eps.se <- std.er[grep('eps', betas)]
 
                                         ## Simulate new detection history from top model
-                                        sim.data	<- sim.bbs.ms(alpha = alpha, covs = covs_use, cov_data = clim_data,
+                                        sim.data	<-  BBSclim::sim.bbs.ms(alpha = alpha, covs = covs_use, cov_data = clim_data,
                                                                psi.coefs = psi.coefs, th0.coefs = th0.coefs,
                                                                th1.coefs = th1.coefs, gam.coefs = gam.coefs,
                                                                eps.coefs = eps.coefs, p1.coefs = p1.coefs,
@@ -254,8 +239,8 @@ gof <- function(alpha){
                                                                     noderived = TRUE, limit.real = TRUE,
                                                                     modname = sim_name)
 
-                                        file.rename(from = paste0("pres_", sim_name, ".out"),
-                                                    to = paste0("inst/output/", alpha, "/pres/", sim_name, ".out"))
+                                        suppressMessages(file.rename(from = paste0("pres_", sim_name, ".out"),
+                                                    to = paste0("inst/output/", alpha, "/pres/", sim_name, ".out")))
 
                                         ## Test whether coefs from simulated data are similar to coefs from top model
                                         gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use, alpha = alpha,
@@ -271,7 +256,7 @@ gof <- function(alpha){
 
         if(!is.na(top_mod) & cycle <= ceiling(nrow(aic_tab)/cores)){
           aic_tab2 <- aic_tab2[aic_tab2$check == 1,]
-          write.csv(aic_tab2, paste0("inst/output/", alpha, "/psi_aic_check.csv"))
+          write.csv(aic_tab2, paste0("inst/output/", alpha, "/gam_aic_check.csv"))
 
           # If model passes GOF test, change output file name to "top_mod.out"
           file.rename(from = paste0("inst/output/", alpha, "/pres/", top_mod, ".out"),
@@ -288,15 +273,16 @@ gof <- function(alpha){
             cycle <- cycle + 1
           }else{
             aic_tab$check <- 0
-            write.csv(aic_tab, paste0("inst/output/", alpha, "/psi_aic_check.csv"))
-
-            file.rename(from = paste0("inst/output/", alpha, "/pres/psi_model_31.out"),
-                        to = paste0("inst/output/", alpha, "/top_mod.out"))
-
-            files2zip <- dir(paste0("inst/output/", alpha, "/pres"), full.names = TRUE)
-            zip(zipfile = paste0("inst/output/", alpha, '/presZip'), files = files2zip)
-
-            unlink(paste0("inst/output/", alpha, "/pres"), recursive = TRUE)
+            stop("No model passed GOF")
+            # write.csv(aic_tab, paste0("inst/output/", alpha, "/gam_aic_check.csv"), row.names = FALSE)
+            #
+            # file.rename(from = paste0("inst/output/", alpha, "/pres/psi_model_33.out"),
+            #             to = paste0("inst/output/", alpha, "/top_mod.out"))
+            #
+            # files2zip <- dir(paste0("inst/output/", alpha, "/pres"), full.names = TRUE)
+            # zip(zipfile = paste0("inst/output/", alpha, '/presZip'), files = files2zip)
+            #
+            # unlink(paste0("inst/output/", alpha, "/pres"), recursive = TRUE)
           }
         }
 
@@ -324,17 +310,13 @@ gof <- function(alpha){
     std.er <- as.numeric(substr(betas, 54,63))
 
     ## Covariates included in the current top model
-    if(modnum == 31){
-      covs_use <- list(psi.cov = c("tmp", "sq_tmp", "dtr", "sq_dtr", "Twet", "sq_Twet",
-                                   "Prec", "sq_Prec", "Pwarm", "sq_Pwarm"),
-                       th0.cov = NULL,
-                       th1.cov = NULL,
-                       gam.cov = mods[[1]]$gam.cov,
-                       eps.cov = mods[[1]]$eps.cov,
-                       p1.cov = mods[[1]]$p1.cov)
-    }else{
-      covs_use <- mods[[modnum]]
-    }
+    covs_use <- list(psi.cov = c("Lat", "sq_Lat", "Lon", "sq_Lon"),
+                     th0.cov = NULL,
+                     th1.cov = NULL,
+                     gam.cov = mods[[1]]$gam.cov,
+                     eps.cov = mods[[1]]$eps.cov,
+                     p1.cov = mods[[1]]$p1.cov)
+
 
 
     ## Beta coefs
@@ -355,7 +337,7 @@ gof <- function(alpha){
     eps.se <- std.er[grep('eps', betas)]
 
     ## Simulate new detection history from top model
-    sim.data	<- sim.bbs.ms(alpha = alpha, covs = covs_use, cov_data = clim_data, name = sim_name,
+    sim.data	<-  BBSclim::sim.bbs.ms(alpha = alpha, covs = covs_use, cov_data = clim_data, name = sim_name,
                             psi.coefs = psi.coefs, th0.coefs = th0.coefs,
                             th1.coefs = th1.coefs, gam.coefs = gam.coefs,
                             eps.coefs = eps.coefs, p1.coefs = p1.coefs,
@@ -418,6 +400,7 @@ gof <- function(alpha){
 #' sim.bbs.ms
 #'
 #' Simulate BBS data using covariates and coefficients from top model
+#' @export
 
 sim.bbs.ms <-  function(alpha, covs, psi.coefs, th0.coefs, th1.coefs,
                         gam.coefs, eps.coefs, p1.coefs, p2.coefs,
@@ -427,7 +410,25 @@ sim.bbs.ms <-  function(alpha, covs, psi.coefs, th0.coefs, th1.coefs,
 
   occ		<- matrix(NA, dim(cov_data)[1], length(years))
   occ.prob <- rep(plogis(psi.coefs[1]), dim(cov_data)[1])  # if no covs
-  if(length(psi.coefs)>1)   occ.prob	<- plogis(psi.coefs %*% t(cbind(1,cov_data[,paste0(covs$psi.cov, "_", as.character(years[1]))])))   # problem if psi.ind==logical(0)
+
+  coord.ind.psi <- grep("Lat|Lon", covs$psi.cov)
+  psi.covs <- rep(1, dim(cov_data)[1])
+  clim.ind.psi <- seq(1:length(covs$psi.cov))[!(seq(1:length(covs$psi.cov)) %in% coord.ind.psi)]
+  clim.covs <- NULL
+  if(length(clim.ind.psi) > 0){
+    clim.covs <- cov_data[,paste0(covs$psi.cov[clim.ind.psi], "_", as.character(years[1]))]
+    psi.covs <- cbind(psi.covs, clim.covs)
+  }
+
+  coord.ind.psi <- grep('Lat|Lon', covs$psi.cov)
+  coord.covs <- NULL
+  if(length(coord.ind.psi) > 0){
+    coord.covs <- cov_data[, covs$psi.cov[coord.ind.psi]]
+    psi.covs <- cbind(psi.covs, coord.covs)
+  }
+
+
+  if(length(psi.coefs) > 1)   occ.prob	<- plogis(psi.coefs %*% t(psi.covs))   # problem if psi.ind==logical(0)
   occ[,1]		<- rbinom(occ.prob, 1, occ.prob)
 
 
@@ -534,20 +535,20 @@ test.presence.gof	<- function(modname, large = 4, pao2, mod, is.annual, is.het, 
   if(is.annual) num.betas[6] <- num.betas[6] + pao2$nseasons
 
   # check for quadratic terms with significant wrong sign
-  test.quad <- 1.96    					# for most models, require all quads to have correct sign
-  #if(length(grep("gof", modname))==1) test.quad <- 1.96	# if a gof test, then only reject significantly wrong sign
-  if(num.betas[1] > 1) {
-    quads <- grep("psi.sq",betas2)
-    psi.check 	<- c(T, coefs2[quads]/std.er2[quads]<test.quad)
-  }
-  if(num.betas[4]>1) {
-    quads <- grep("gam1.sq",betas2)
-    gam.check 	<- c(T, coefs2[quads]/std.er2[quads]<test.quad)
-  }
-  if(num.betas[5]>1) {
-    quads <- grep("eps1.sq",betas2)
-    eps.check 	<- c(T, coefs2[quads]/std.er2[quads]>(-test.quad))
-  }
+  # test.quad <- 1.96    					# for most models, require all quads to have correct sign
+  # #if(length(grep("gof", modname))==1) test.quad <- 1.96	# if a gof test, then only reject significantly wrong sign
+  # if(num.betas[1] > 1) {
+  #   quads <- grep("psi.sq",betas2)
+  #   psi.check 	<- c(T, coefs2[quads]/std.er2[quads]<test.quad)
+  # }
+  # if(num.betas[4]>1) {
+  #   quads <- grep("gam1.sq",betas2)
+  #   gam.check 	<- c(T, coefs2[quads]/std.er2[quads]<test.quad)
+  # }
+  # if(num.betas[5]>1) {
+  #   quads <- grep("eps1.sq",betas2)
+  #   eps.check 	<- c(T, coefs2[quads]/std.er2[quads]>(-test.quad))
+  # }
 
 
   #### compare bootstrap coefs to original
@@ -565,7 +566,7 @@ test.presence.gof	<- function(modname, large = 4, pao2, mod, is.annual, is.het, 
 
 
   wonky <- min(min(!is.na(std.er2[1:sum(num.betas[1:5])]) > 0), min(abs(!is.na(std.er2))) < large,
-               min(psi.check, na.rm=T), min(gam.check, na.rm=T), min(eps.check, na.rm=T),
+               #min(psi.check, na.rm=T), min(gam.check, na.rm=T), min(eps.check, na.rm=T),
                mean(abs(z.score)<1.96)>0.8)
 
   wonky

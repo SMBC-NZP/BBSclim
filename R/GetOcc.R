@@ -7,7 +7,7 @@
 #' @export
 
 GetOccProb <- function(alpha, buff_method = "rec", Write = TRUE){
-  psi_aic <- read.csv(paste0('inst/output/', alpha, '/psi_aic_check.csv'))
+  psi_aic <- read.csv(paste0('inst/output/', alpha, '/gam_aic_check.csv'))
   pass <- psi_aic$check[1] == 1
 
   if(!is.na(pass)){
@@ -22,7 +22,7 @@ GetOccProb <- function(alpha, buff_method = "rec", Write = TRUE){
     # Initial occupancy prob
     psi.mat <- matrix(betas$psi.betas, nrow = dim(climate)[1], ncol = length(betas$psi.betas), byrow = TRUE)
     psi.cov <- names(betas$psi.betas)
-    r.psi[, 1] <- plogis(rowSums(psi.mat * climate[, psi.cov, 1]))
+    r.psi[, 1] <- plogis(rowSums(psi.mat * climate[, names(betas$psi.betas), 1]))
 
     # Extinction/colonization prob
     gam.mat <- matrix(betas$gam.betas, nrow = dim(climate)[1], length(betas$gam.betas), byrow=T)
@@ -30,8 +30,8 @@ GetOccProb <- function(alpha, buff_method = "rec", Write = TRUE){
     eps.mat <- matrix(betas$eps.betas, nrow = dim(climate)[1], length(betas$eps.betas), byrow=T)
     eps.cov <- names(betas$eps.betas)
     for (yy in 2:length(years)) {
-      r.gam <- matrix(plogis(rowSums(gam.mat * climate[, gam.cov, yy])), dim(climate)[1], 1)  #  real colonization for each site
-      r.eps <- matrix(plogis(rowSums(eps.mat * climate[, eps.cov, yy])), dim(climate)[1], 1)  #  real extinction for each site
+      r.gam <- matrix(plogis(rowSums(gam.mat * climate[, names(betas$gam.betas), yy])), dim(climate)[1], 1)  #  real colonization for each site
+      r.eps <- matrix(plogis(rowSums(eps.mat * climate[, names(betas$eps.betas), yy])), dim(climate)[1], 1)  #  real extinction for each site
       #   compute psi for years 2 ... years
       r.psi[, yy]<- r.psi[, yy - 1] * (1 - r.eps) + (1 - r.psi[, yy - 1]) * r.gam
     }
@@ -79,23 +79,39 @@ raster.to.array <- function(alpha, years) {
     index <- c(1,2,8,12,18)
     scale.values <- read.csv(paste0("inst/output/", alpha, "/clim_scale.csv"))
 
+    xy.values <- read.csv(paste0("inst/output/", alpha, "/route_clim.csv"))
+    mu.lat <- mean(xy.values$Latitude)
+    sd.lat <- sd(xy.values$Latitude)
+
+    mu.lon <- mean(xy.values$Longitude)
+    sd.lon <- sd(xy.values$Longitude)
+
     for (ii in seq_along(years)) {
 
       # get climate data within masked area
       for (jj in seq_along(index)) {
-        assign(paste0("bio.",index[jj]), NA_biovars[[paste0("biovars",as.character(years[ii]))]][[index[jj]]])    # mask the climate data
+        assign(paste0("bio.", index[jj]), NA_biovars[[paste0("biovars",as.character(years[ii]))]][[index[jj]]])    # mask the climate data
         assign(paste0("all.values.",index[jj]), raster::getValues(get(paste0("bio.",index[jj]))))                                                 # extract climate values
         assign(paste0("values.",index[jj]), get(paste0("all.values.",index[jj]))[!is.na(get(paste0("all.values.",index[jj])))])                   # remove NAs
         assign(paste0("center.values.",index[jj]), (get(paste0("values.",index[jj])) - scale.values[jj,"mean"])/scale.values[jj,"sd"])     # center and scale
-        if (ii+jj==2)  climate <- array(1, dim=c(length(get(paste0("values.",index[jj]))), 11, length(years)))  # first dim is num of sites, 11 is for intercept + 10 covariates
-        # here, we alternate linear and quadratic terms, i.e., tmp, sqtmp, dtr, sqdtr, etc
+        if (ii+jj==2)  climate <- array(1, dim=c(length(get(paste0("values.",index[jj]))), 15, length(years)))  # first dim is num of sites, 11 is for intercept + 10 covariates
+        # alternate linear and quadratic terms, i.e., tmp, sqtmp, dtr, sqdtr, etc
         climate[,jj*2,ii] <- get(paste0("center.values.",index[jj]))     # must be same order as params, need intercept!
         climate[,jj*2+1,ii] <- get(paste0("center.values.",index[jj]))^2     # must be same order as params, need intercept!
       }  # end jj loop
 
+      ## Scale lat/long based on mean/sd used to fit model
+      xy <- as.data.frame(raster::rasterToPoints(bio.1))
+      sy <- (xy$y - mu.lat)/sd.lat
+      sx <- (xy$x - mu.lon)/sd.lon
+      climate[, length(index)*2 + 2, ii] <- sx
+      climate[, length(index)*2 + 3, ii] <- sx^2
+      climate[, length(index)*2 + 4, ii] <- sy
+      climate[, length(index)*2 + 5, ii] <- sy^2
+
     } # end ii loop
     dimnames(climate) <- list(1:(dim(climate)[1]),
-                              c("int","tmp","sq_tmp","dtr","sq_dtr","Twet","sq_Twet","Prec","sq_Prec","Pwarm","sq_Pwarm"),
+                              c("int","tmp","sq_tmp","dtr","sq_dtr","Twet","sq_Twet","Prec","sq_Prec","Pwarm","sq_Pwarm", "Lat", "sq_Lat", "Lon", "sq_Lon"),
                               c(years))
    climate
 
@@ -122,7 +138,7 @@ GetBetas <- function(alpha) {
   psi.names <- gsub("[0-9]", "", psi.names)[-1]
   psi.names <- gsub("_$", "", psi.names)
   psi.betas <- as.numeric(substr(psi.betas, 41, 50))
-  names(psi.betas) <- c("int", psi.names)
+  names(psi.betas) <- trimws(c("int", psi.names))
 
   gam.betas <- betas[grep('gam', betas)]
   loc.per <- regexpr("gam", gam.betas)

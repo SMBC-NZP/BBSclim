@@ -7,7 +7,7 @@
 #' @return A .pao file containing the detection histories, covariates, and summary information to input into Presence
 #' @export
 
-write_pao <- function(alpha, sim = FALSE, name = NULL){
+write_pao <- function(alpha, psi = FALSE, sim = FALSE, name = NULL){
   opts <- read.csv("inst/model_opts.csv")
   covs <- read.csv(paste0("inst/output/", alpha, "/route_clim.csv"))
 
@@ -36,6 +36,7 @@ write_pao <- function(alpha, sim = FALSE, name = NULL){
     pres <- dplyr::arrange(pres, routeID)
 
     det_hist <- dplyr::select(pres, -routeID)
+    if(psi) det_hist <- det_hist[, 1:tot_stops]
 
     spp_clim <- dplyr::arrange(covs, routeID)
     spp_clim2 <- dplyr::rename(spp_clim, Lat = Latitude, Lon = Longitude)
@@ -52,11 +53,17 @@ write_pao <- function(alpha, sim = FALSE, name = NULL){
     }
 
     sitecovs	<- dplyr::select(spp_clim3, -routeID)
+    if(psi) sitecovs <- dplyr::select(sitecovs, grep(paste0(min(counts$Year), "|Stop|Lon|Lat"), names(sitecovs)))
 
-    spp_pao <- RPresence::create.pao(data = det_hist, nsurveyseason = rep(tot_stops, n_seasons),
+    pname <- paste0("inst/output/", alpha, "/pres/pres_in.pao")
+    if(psi) pname <- paste0("inst/output/", alpha, "/pres/pres_in_psi.pao")
+
+    nss <- rep(tot_stops, n_seasons)
+    if(psi) nss <- tot_stops
+    spp_pao <- RPresence::create.pao(data = det_hist, nsurveyseason = nss,
                                      unitcov = sitecovs, survcov = NULL,
                                      title = paste(common, "PRESENCE Analysis", sep = " "),
-                                     paoname = paste0("inst/output/", alpha, "/pres/pres_in.pao"))
+                                     paoname = pname)
 
   }else{
     det_hist <- read.csv(paste0("inst/output/", alpha, "/pres/", name, "_hist.csv"))

@@ -55,12 +55,23 @@ targets:
       - NA_biovars
       - inst/output/{{spp_name}}/count_buff.csv
 
-  inst/output/{{spp_name}}/pres/pres_in.pao:
-    command: write_pao(I(alpha = "{{spp_name}}"))
+  inst/output/{{spp_name}}/pres/pres_in_psi.pao:
+    command: write_pao(I(alpha = "{{spp_name}}", psi = TRUE))
     depends:
       - inst/output/{{spp_name}}/count_buff.csv
       - inst/output/{{spp_name}}/route_clim.csv
 
+  inst/output/{{spp_name}}/psi_aic.csv:
+    command: RunPsiMods(I(alpha = "{{spp_name}}"))
+    depends:
+      - inst/output/{{spp_name}}/pres/pres_in_psi.pao
+      - inst/model_opts.csv
+
+  inst/output/{{spp_name}}/pres/pres_in.pao:
+    command: write_pao(I(alpha = "{{spp_name}}", psi = TRUE))
+    depends:
+      - inst/output/{{spp_name}}/count_buff.csv
+      - inst/output/{{spp_name}}/route_clim.csv
 {{/spp_names}}
 
 
@@ -72,6 +83,7 @@ targets:
       - inst/spp_list_annual.csv
       - inst/model_opts.csv
 {{#spp_names}}
+      - inst/output/{{spp_name}}/psi_aic.csv
       - inst/output/{{spp_name}}/pres/pres_in.pao
 {{/spp_names}}
 

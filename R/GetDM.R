@@ -20,7 +20,7 @@
 #' @export
 
 GetDM	<- function(pao, cov_list,
-                  is.het, is.annual, coord.p = TRUE, coord.th = TRUE) {
+                  is.het, is.annual, psi = FALSE, coord.p = TRUE, coord.th = TRUE) {
 
   start_yr <- as.integer(substr(colnames(pao$unitcov)[grep("tmp", colnames(pao$unitcov))][1], 5, 8))
 
@@ -30,19 +30,31 @@ GetDM	<- function(pao, cov_list,
 
   years <- seq(from = start_yr, to = start_yr + n_seas - 1)
 
-  num.betas	<- c(1 + length(cov_list$psi.cov),
-                 1 + length(cov_list$th0.cov),
-                 1 + length(cov_list$th1.cov),
-                 1 + length(cov_list$gam.cov),
-                 1 + length(cov_list$eps.cov),
-                 1 + length(cov_list$p1.cov))
+  if(psi){
+    num.betas	<- c(1 + length(cov_list$psi.cov),
+                   1 + length(cov_list$th0.cov),
+                   1 + length(cov_list$th1.cov),
+                   1 + length(cov_list$p1.cov))
+  }else{
+    num.betas	<- c(1 + length(cov_list$psi.cov),
+                   1 + length(cov_list$th0.cov),
+                   1 + length(cov_list$th1.cov),
+                   1 + length(cov_list$gam.cov),
+                   1 + length(cov_list$eps.cov),
+                   1 + length(cov_list$p1.cov))
+  }
+
 
 
   # 1st design matrix, 1 row for psi, K rows for theta0, K rows for theta1
   dm1 <- matrix('0', n_surv * 2 + 1, sum(num.betas[1:3]))
 
   # psi
-  psi.dm <- c(1, paste(cov_list$psi.cov, as.character(years[1]), sep = "_"))
+  coord.ind.psi <- grep('Lat|Lon', cov_list$psi.cov)
+  clim.ind.psi <- seq(1:length(cov_list$psi.cov))[!(seq(1:length(cov_list$psi.cov)) %in% coord.ind.psi)]
+  psi.dm <- c(1, paste(cov_list$psi.cov[clim.ind.psi], as.character(years[1]), sep = "_"), c(cov_list$psi.cov[coord.ind.psi]))
+  if(length(coord.ind.psi) == 0) psi.dm <- c(1, paste(cov_list$psi.cov, as.character(years[1]), sep = "_"))
+  if(length(clim.ind.psi) == 0) psi.dm <- c(1, cov_list$psi.cov[coord.ind.psi])
   if(length(cov_list$psi.cov) == 0) psi.dm <- 1   # if no covs, just need intercept
   dm1[1, 1:num.betas[1]] <- psi.dm
 
@@ -94,22 +106,33 @@ GetDM	<- function(pao, cov_list,
   colnames(dm1) <- paste0('a',1:sum(num.betas[1:3]))
 
   # gam
-  gam.dm <- c(1, paste(cov_list$gam.cov, as.character(years[2]), sep = "_"))
-  for (ii in 3:length(years)) {
-    gam.dm <- c(gam.dm, c(1, paste(cov_list$gam.cov, as.character(years[ii]), sep = "_")))
+  if(psi){
+    dm2 <- NULL
+  }else{
+    gam.dm <- c(1, paste(cov_list$gam.cov, as.character(years[2]), sep = "_"))
+    for (ii in 3:length(years)) {
+      gam.dm <- c(gam.dm, c(1, paste(cov_list$gam.cov, as.character(years[ii]), sep = "_")))
+    }
+    if(length(cov_list$gam.cov) == 0) gam.dm  <- rep(1, n_seas - 1)
+    dm2 <- matrix(gam.dm, n_seas - 1, num.betas[4], byrow=T,
+                  dimnames = list(paste0('gam', 1:(n_seas-1)), paste0('b', 1:num.betas[4])))
   }
-  if(length(cov_list$gam.cov) == 0) gam.dm  <- rep(1, n_seas - 1)
-  dm2 <- matrix(gam.dm, n_seas - 1, num.betas[4], byrow=T,
-                dimnames = list(paste0('gam', 1:(n_seas-1)), paste0('b', 1:num.betas[4])))
+
+
 
   # eps
-  eps.dm <- c(1, paste(cov_list$eps.cov, as.character(years[2]), sep = "_"))
-  for (ii in 3:length(years)) {
-    eps.dm <- c(eps.dm, c(1, paste(cov_list$eps.cov, as.character(years[ii]), sep = "_")))
+  if(psi){
+    dm3 <- NULL
+  }else{
+    eps.dm <- c(1, paste(cov_list$eps.cov, as.character(years[2]), sep = "_"))
+    for (ii in 3:length(years)) {
+      eps.dm <- c(eps.dm, c(1, paste(cov_list$eps.cov, as.character(years[ii]), sep = "_")))
+    }
+    if(length(cov_list$eps.cov) == 0) eps.dm  <- rep(1, n_seas - 1)
+    dm3 <- matrix(eps.dm, n_seas - 1, num.betas[5], byrow = T,
+                  dimnames = list(paste0('eps',1:(n_seas - 1)),paste0('c', 1:num.betas[5])))
   }
-  if(length(cov_list$eps.cov) == 0) eps.dm  <- rep(1, n_seas - 1)
-  dm3 <- matrix(eps.dm, n_seas - 1, num.betas[5], byrow = T,
-                dimnames = list(paste0('eps',1:(n_seas - 1)),paste0('c', 1:num.betas[5])))
+
 
   # p
   stop.ind   <- grep('Stop', cov_list$p1.cov)
@@ -127,8 +150,11 @@ GetDM	<- function(pao, cov_list,
   if(is.annual == FALSE)	time2 <- NULL
 
   coord.ind.p <- grep('Lat|Lon', cov_list$p1.cov)
-  coord.mat.p <- matrix(rep(cov_list$p1.cov[coord.ind.p], n_surv), nrow = n_surv, byrow = TRUE)
-  if(length(coord.ind.p) == 0)	coord.mat.p <- NULL
+  if(length(coord.ind.p) == 0){
+    coord.mat.p <- NULL
+  }else{
+    coord.mat.p <- matrix(rep(cov_list$p1.cov[coord.ind.p], n_surv), nrow = n_surv, byrow = TRUE)
+  }
 
   cov.mat.p <- NULL
   non.stop.p <- grep('Stop|Lat|Lon', cov_list$p1.cov, invert=T)
