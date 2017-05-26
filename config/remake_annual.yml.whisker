@@ -56,7 +56,7 @@ targets:
       - inst/output/{{spp_name}}/count_buff.csv
 
   inst/output/{{spp_name}}/pres/pres_in_psi.pao:
-    command: write_pao(I(alpha = "{{spp_name}}", psi = TRUE))
+    command: write_psi_pao(I(alpha = "{{spp_name}}"))
     depends:
       - inst/output/{{spp_name}}/count_buff.csv
       - inst/output/{{spp_name}}/route_clim.csv
