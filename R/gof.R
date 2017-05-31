@@ -38,7 +38,7 @@ gof <- function(alpha){
   aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
   aic_tab <- aic_tab[!is.na(aic_tab$AIC),]
 
-  if(nrow(aic_tab) == 0) stop("No models passed overfitting test")
+  #if(nrow(aic_tab) == 0) stop("No models passed overfitting test")
 
   clim_data <- pao$unitcov
 
