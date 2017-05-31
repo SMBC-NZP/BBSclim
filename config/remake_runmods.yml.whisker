@@ -23,12 +23,13 @@ targets:
     command: RunGamMods(I(alpha = "{{spp_name}}"))
     depends:
       - inst/model_opts.csv
+      - inst/output/{{spp_name}}/annual_aic.csv
 
 
   inst/output/{{spp_name}}/top_mod.out:
     command: gof(I(alpha = "{{spp_name}}"))
     depends:
-      - inst/output/{{spp_name}}/psi_aic.csv
+      - inst/output/{{spp_name}}/gam_aic.csv
     quiet: TRUE
 
 
