@@ -109,13 +109,26 @@ GetDM	<- function(pao, cov_list,
   if(psi){
     dm2 <- NULL
   }else{
-    gam.dm <- c(1, paste(cov_list$gam.cov, as.character(years[2]), sep = "_"))
-    for (ii in 3:length(years)) {
-      gam.dm <- c(gam.dm, c(1, paste(cov_list$gam.cov, as.character(years[ii]), sep = "_")))
+    coord.ind.gam <- grep('Lat|Lon', cov_list$gam.cov)
+    clim.ind.gam <- seq(1:length(cov_list$gam.cov))[!(seq(1:length(cov_list$gam.cov)) %in% coord.ind.gam)]
+    if(length(clim.ind.gam) == 0){
+      gam.dm <- c(1, cov_list$gam.cov[coord.ind.gam])
+      for (ii in 3:length(years)) {
+        gam.dm <- c(gam.dm, c(1, cov_list$gam.cov[coord.ind.gam]))
+      }
+
+      dm2 <- matrix(gam.dm, n_seas - 1, num.betas[4], byrow = T,
+                    dimnames = list(paste0('gam', 1:(n_seas-1)), paste0('b', 1:num.betas[4])))
+    }else{
+      gam.dm <- c(1, paste(cov_list$gam.cov[clim.ind.gam], as.character(years[2]), sep = "_"), c(cov_list$gam.cov[coord.ind.gam]))
+      for (ii in 3:length(years)) {
+        gam.dm <- c(gam.dm, c(1, paste(cov_list$gam.cov[clim.ind.gam], as.character(years[ii]), sep = "_"), c(cov_list$gam.cov[coord.ind.gam])))
+      }
+
+      dm2 <- matrix(gam.dm, n_seas - 1, num.betas[4], byrow = T,
+                    dimnames = list(paste0('gam', 1:(n_seas-1)), paste0('b', 1:num.betas[4])))
     }
-    if(length(cov_list$gam.cov) == 0) gam.dm  <- rep(1, n_seas - 1)
-    dm2 <- matrix(gam.dm, n_seas - 1, num.betas[4], byrow=T,
-                  dimnames = list(paste0('gam', 1:(n_seas-1)), paste0('b', 1:num.betas[4])))
+    if(length(cov_list$gam.cov) == 0) gam.dm <- 1   # if no covs, just need intercept
   }
 
 
@@ -124,13 +137,26 @@ GetDM	<- function(pao, cov_list,
   if(psi){
     dm3 <- NULL
   }else{
-    eps.dm <- c(1, paste(cov_list$eps.cov, as.character(years[2]), sep = "_"))
-    for (ii in 3:length(years)) {
-      eps.dm <- c(eps.dm, c(1, paste(cov_list$eps.cov, as.character(years[ii]), sep = "_")))
+    coord.ind.eps <- grep('Lat|Lon', cov_list$eps.cov)
+    clim.ind.eps <- seq(1:length(cov_list$eps.cov))[!(seq(1:length(cov_list$eps.cov)) %in% coord.ind.eps)]
+    if(length(clim.ind.eps) == 0){
+      eps.dm <- c(1, cov_list$eps.cov[coord.ind.eps])
+      for (ii in 3:length(years)) {
+        eps.dm <- c(eps.dm, c(1, cov_list$eps.cov[coord.ind.eps]))
+      }
+
+      dm3 <- matrix(eps.dm, n_seas - 1, num.betas[5], byrow = T,
+                    dimnames = list(paste0('eps', 1:(n_seas-1)), paste0('c', 1:num.betas[5])))
+    }else{
+      eps.dm <- c(1, paste(cov_list$eps.cov[clim.ind.eps], as.character(years[2]), sep = "_"), c(cov_list$eps.cov[coord.ind.eps]))
+      for (ii in 3:length(years)) {
+        eps.dm <- c(eps.dm, c(1, paste(cov_list$eps.cov[clim.ind.eps], as.character(years[ii]), sep = "_"), c(cov_list$eps.cov[coord.ind.eps])))
+      }
+
+      dm3 <- matrix(eps.dm, n_seas - 1, num.betas[5], byrow = T,
+                    dimnames = list(paste0('eps', 1:(n_seas-1)), paste0('c', 1:num.betas[5])))
     }
-    if(length(cov_list$eps.cov) == 0) eps.dm  <- rep(1, n_seas - 1)
-    dm3 <- matrix(eps.dm, n_seas - 1, num.betas[5], byrow = T,
-                  dimnames = list(paste0('eps',1:(n_seas - 1)),paste0('c', 1:num.betas[5])))
+    if(length(cov_list$eps.cov) == 0) eps.dm <- 1   # if no covs, just need intercept
   }
 
 

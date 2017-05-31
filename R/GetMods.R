@@ -24,11 +24,17 @@ GetGamMods <- function(psi_covs){
     for(j in 1:length(gam_mods)){
       gam_mods2[[length(gam_mods) * (i - 1) + j]] <-  list(psi.cov = psi_covs,
                                                            th0.cov = th_covs, th1.cov = th_covs,
-                                                           gam.cov = gam_mods[[i]], eps.cov = gam_mods[[j]],
+                                                           gam.cov = c(gam_mods[[i]], "Lat", "sq_Lat", "Lon", "sq_Lon"),
+                                                           eps.cov = c(gam_mods[[j]], "Lat", "sq_Lat", "Lon", "sq_Lon"),
                                                            p1.cov = p_covs)
     }
   }
 
+  gam_mods2[[(length(gam_mods2) + 1)]] <- list(psi.cov = psi_covs,
+                                            th0.cov = th_covs, th1.cov = th_covs,
+                                            gam.cov = c("Lat", "sq_Lat", "Lon", "sq_Lon"),
+                                            eps.cov = c("Lat", "sq_Lat", "Lon", "sq_Lon"),
+                                            p1.cov = p_covs)
   gam_mods2
 }
 

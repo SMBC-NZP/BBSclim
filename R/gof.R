@@ -408,7 +408,7 @@ sim.bbs.ms <-  function(alpha, covs, psi.coefs, th0.coefs, th1.coefs,
 
   # initial occupancy
 
-  occ		<- matrix(NA, dim(cov_data)[1], length(years))
+  occ	<- matrix(NA, dim(cov_data)[1], length(years))
   occ.prob <- rep(plogis(psi.coefs[1]), dim(cov_data)[1])  # if no covs
 
   coord.ind.psi <- grep("Lat|Lon", covs$psi.cov)
@@ -445,12 +445,42 @@ sim.bbs.ms <-  function(alpha, covs, psi.coefs, th0.coefs, th1.coefs,
 
 
   # occupancy in following years
+  coord.ind.gam <- grep('Lat|Lon', covs$gam.cov)
+  coord.ind.eps <- grep('Lat|Lon', covs$eps.cov)
+  clim.ind.gam <- seq(1:length(covs$gam.cov))[!(seq(1:length(covs$gam.cov)) %in% coord.ind.gam)]
+  clim.ind.eps <- seq(1:length(covs$eps.cov))[!(seq(1:length(covs$eps.cov)) %in% coord.ind.eps)]
 
   for (yr in 2:length(years)) {
-    gam.prob <- rep(plogis(gam.coefs[1]), dim(cov_data)[1]) # if no covs
-    if(length(covs$gam.cov)>0) gam.prob	<- plogis(gam.coefs %*% t(cbind(1,cov_data[,paste0(covs$gam.cov,"_",as.character(years[yr]))])))
-    eps.prob <- rep(plogis(eps.coefs[1]), dim(cov_data)[1]) # if no covs
-    if(length(covs$eps.cov)>0) eps.prob	<- plogis(eps.coefs %*% t(cbind(1,cov_data[,paste0(covs$eps.cov,"_",as.character(years[yr]))])))
+    gam.covs <- rep(1, dim(cov_data)[1])
+    eps.covs <- rep(1, dim(cov_data)[1])
+
+    clim.covs2 <- NULL
+    if(length(clim.ind.gam) > 0){
+      clim.covs2 <- cov_data[,paste0(covs$gam.cov[clim.ind.gam], "_", as.character(years[yr]))]
+      gam.covs <- cbind(gam.covs, clim.covs2)
+    }
+
+    coord.cov2 <- NULL
+    if(length(coord.ind.gam) > 0){
+      coord.cov2 <- cov_data[, covs$gam.cov[coord.ind.gam]]
+      gam.covs <- cbind(gam.covs, coord.cov2)
+    }
+
+    clim.covs3 <- NULL
+    if(length(clim.ind.eps) > 0){
+      clim.covs3 <- cov_data[,paste0(covs$eps.cov[clim.ind.eps], "_", as.character(years[yr]))]
+      eps.covs <- cbind(eps.covs, clim.covs3)
+    }
+
+    coord.cov3 <- NULL
+    if(length(coord.ind.eps) > 0){
+      coord.cov3 <- cov_data[, covs$eps.cov[coord.ind.eps]]
+      eps.covs <- cbind(eps.covs, coord.cov3)
+    }
+
+
+    gam.prob	<- plogis(gam.coefs %*% t(gam.covs))
+    eps.prob	<- plogis(eps.coefs %*% t(eps.covs))
     occ[,yr]	<- rbinom(gam.prob, 1, occ[,yr-1]*(1 - eps.prob) + (1-occ[,yr-1])*gam.prob)
   }
 

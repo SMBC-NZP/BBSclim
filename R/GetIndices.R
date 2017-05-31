@@ -11,8 +11,8 @@
 #' @export
 
 GetIndices <- function(alpha){
-  psi_aic <- read.csv(paste0('inst/output/', alpha, '/gam_aic_check.csv'))
-  pass <- psi_aic$check[1] == 1
+  gam_aic <- read.csv(paste0('inst/output/', alpha, '/gam_aic_check.csv'))
+  pass <- gam_aic$check[1] == 1
 
   if(!is.na(pass)){
     betas <- BBSclim::GetBetas(alpha)

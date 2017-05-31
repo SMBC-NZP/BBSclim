@@ -193,6 +193,22 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nYears, years, nuisance 
         beta.num <- which(covs_use$psi.cov == levels(covs_use2)[i])
         beta_est[i + 11, 1] <- paste(coefs[1 + beta.num], " (", sd.err[1 + beta.num], ")", sep = "")
       }
+
+      if(levels(covs_use2)[i] %in% covs_use$gam.cov){
+        beta.num <- which(covs_use$gam.cov == levels(covs_use2)[i])
+        beta_est[i + 11, 2] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+                                             length(covs_use$th1.cov) + 4 + beta.num],
+                                     " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+                                                    length(covs_use$th1.cov) + 4 + beta.num], ")", sep = "")
+      }
+
+      if(levels(covs_use2)[i] %in% covs_use$eps.cov){
+        beta.num <- which(covs_use$eps.cov == levels(covs_use2)[i])
+        beta_est[i + 11, 3] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+                                             length(covs_use$th1.cov) + length(covs_use$gam.cov) + 5 + beta.num],
+                                     " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+                                                    length(covs_use$th1.cov) + length(covs_use$gam.cov) + 5 + beta.num], ")", sep = "")
+      }
     }
 
     ## Rename climate covariates
