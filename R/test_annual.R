@@ -31,7 +31,7 @@ test_annual <- function(){
 
             psi_aic <- read.csv(paste0("inst/output/", spp2[i], "/psi_aic.csv"))
             top_covs <- GetPsiMods()[[psi_aic$Model_num[1]]]
-            mod <- GetGamMods(psi_covs = top_covs$psi.cov)[[961]]
+            mod <- GetGamMods(psi_covs = top_covs$psi.cov)[[962]]
 
              spp_pao <- RPresence::read.pao(paste0("inst/output/", spp2[i], "/pres/pres_in.pao"))
 

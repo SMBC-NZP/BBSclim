@@ -92,13 +92,13 @@ gof <- function(alpha){
                                       eps.se <- std.er[grep('eps', betas)]
 
                                       ## Simulate new detection history from top model
-                                      sim.data	<- BBSclim::sim.bbs.ms(alpha = alpha, covs = covs_use, cov_data = clim_data,
-                                                             psi.coefs = psi.coefs, th0.coefs = th0.coefs,
-                                                             th1.coefs = th1.coefs, gam.coefs = gam.coefs,
-                                                             eps.coefs = eps.coefs, p1.coefs = p1.coefs,
-                                                             p2.coefs = p2.coefs, pi.coefs = pi.coefs, years = year_seq,
-                                                             is.het = mod_opts$het, is.annual = annual, det_hist = det_hist,
-                                                             opts = mod_opts, name = sim_name)
+                                      BBSclim::sim.bbs.ms(alpha = alpha, covs = covs_use, cov_data = clim_data,
+                                                          psi.coefs = psi.coefs, th0.coefs = th0.coefs,
+                                                          th1.coefs = th1.coefs, gam.coefs = gam.coefs,
+                                                          eps.coefs = eps.coefs, p1.coefs = p1.coefs,
+                                                          p2.coefs = p2.coefs, pi.coefs = pi.coefs, years = year_seq,
+                                                          is.het = mod_opts$het, is.annual = annual, det_hist = det_hist,
+                                                          opts = mod_opts, name = sim_name)
 
                                       ## Create .pao file for simulated data
                                       write_pao(alpha = alpha, sim = TRUE, name = sim_name)
@@ -110,7 +110,7 @@ gof <- function(alpha){
                                       if(length(p2.coefs) == 0)  initvals <- c(initvals, p2.coefs, pi.coefs)
 
                                       ## Create design matrices for model
-                                      sim_dm <- suppressMessages(BBSclim::GetDM(pao = sim_pao, cov_list = covs_use, is.het = mod_opts$het, is.annual = annual))
+                                      sim_dm <- suppressWarnings(BBSclim::GetDM(pao = sim_pao, cov_list = covs_use, is.het = mod_opts$het, is.annual = annual))
 
 
                                       fixedpars <- matrix(rep("eq", pao$nseasons), pao$nseasons, 1)
