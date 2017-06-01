@@ -34,7 +34,8 @@ Imports:
     doParallel,
     parallel,
     whisker,
-    httr
+    httr,
+    gridExtra
 Depends:
     foreach,
     ggplot2,
