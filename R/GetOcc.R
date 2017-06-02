@@ -146,7 +146,7 @@ GetBetas <- function(alpha) {
   gam.names <- gsub("[0-9]","",gam.names)[-1]
   gam.names <- gsub("_$", "", gam.names)
   gam.betas <- as.numeric(substr(gam.betas, 41, 50))
-  names(gam.betas) <- c("int", gam.names)
+  names(gam.betas) <- trimws(c("int", gam.names))
 
   eps.betas <- betas[grep('eps', betas)]
   loc.per <- regexpr("eps", eps.betas)
@@ -154,7 +154,7 @@ GetBetas <- function(alpha) {
   eps.names <- gsub("[0-9]","",eps.names)[-1]
   eps.names <- gsub("_$", "", eps.names)
   eps.betas <- as.numeric(substr(eps.betas, 41, 50))
-  names(eps.betas) <- c("int", eps.names)
+  names(eps.betas) <- trimws(c("int", eps.names))
 
   jj <- grep('Variance-Covariance Matrix of Untransformed', top.model.out)
   jj.end <- grep('Individual Site estimates of <psi>', top.model.out)
