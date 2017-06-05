@@ -4,16 +4,12 @@
 \alias{RunPsiMods}
 \title{RunPsiMods}
 \usage{
-RunPsiMods(alpha, pao)
+RunPsiMods(alpha)
 }
 \arguments{
 \item{alpha}{alpha code for species of interest}
-
-\item{pao}{.pao file for species of interest}
-
-\item{psi_mods}{list containing the parameters for each model to evaluate}
 }
 \description{
-Runs full model set for 31 psi models, evalute each, write and return AIC table, delete output file (optional)
+Runs full model set for 127 psi models, evalute each, write and return AIC table, delete output file (optional)
 }
 

@@ -4,13 +4,14 @@
 \alias{run_BBSclim}
 \title{run_BBSclim}
 \usage{
-run_BBSclim(...)
+run_BBSclim(annual, runmods, ...)
 }
 \arguments{
+\item{annual}{TRUE/FALSE Should annual models be fit for all species in spp_list_annual?}
+
+\item{runmods}{TRUE/FALSE Should psi & gamma/epsilon models be fit for all species in spp_list_runmods?}
+
 \item{...}{Arguments to be passed to model_opts()}
-}
-\value{
-If you're lucky, .html files and model results for each species in spp_list.csv
 }
 \description{
 Run full analysis

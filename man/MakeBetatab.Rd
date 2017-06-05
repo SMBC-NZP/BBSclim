@@ -2,7 +2,7 @@
 % Please edit documentation in R/GetSummary.R
 \name{MakeBetatab}
 \alias{MakeBetatab}
-\title{MakeAICtab}
+\title{MakeBetatab}
 \usage{
 MakeBetatab(coefs, sd.err, alpha, covs_use, nYears, years, nuisance = FALSE)
 }
@@ -10,6 +10,6 @@ MakeBetatab(coefs, sd.err, alpha, covs_use, nYears, years, nuisance = FALSE)
 \item{nuisance}{If true, returns AIC table of theta, theta', p, & omega; if false, returns AIC table for psi, gamma & epsilon}
 }
 \description{
-Make AIC table for including in report
+Make Beta table for including in report
 }
 

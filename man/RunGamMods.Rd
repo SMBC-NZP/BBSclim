@@ -4,7 +4,7 @@
 \alias{RunGamMods}
 \title{RunGamMods}
 \usage{
-RunGamMods(alpha, pao)
+RunGamMods(alpha)
 }
 \arguments{
 \item{alpha}{four letter species code}

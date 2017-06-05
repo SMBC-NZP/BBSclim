@@ -4,7 +4,7 @@
 \alias{gof}
 \title{gof}
 \usage{
-gof(alpha, pao)
+gof(alpha)
 }
 \arguments{
 \item{alpha}{Alpha code for species of interest}

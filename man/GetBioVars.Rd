@@ -5,14 +5,12 @@
 \title{GetBioVars}
 \usage{
 GetBioVars(alpha, index = c(1, 2, 8, 12, 18), ind_name = c("tmp", "dtr",
-  "Twet", "Prec", "Pwarm"), biovars = NA_biovars)
+  "Twet", "Prec", "Pwarm"))
 }
 \arguments{
 \item{index}{Integer vector containing the bioclim variables of interest}
 
 \item{ind_name}{Character vector containing abbreviated name of the bioclim variables of interest}
-
-\item{biovars}{A list (length = # years) containing the RasterStack objects containing the annual bioclim variable estimates}
 
 \item{count}{Data frame containing the (buffered) count data for the focal species}
 }

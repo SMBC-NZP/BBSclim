@@ -4,7 +4,8 @@
 \alias{GetDM}
 \title{GetDM}
 \usage{
-GetDM(pao, cov_list, is.het, is.annual, coord.p = TRUE, coord.th = TRUE)
+GetDM(pao, cov_list, is.het, is.annual, psi = FALSE, coord.p = TRUE,
+  coord.th = TRUE)
 }
 \arguments{
 \item{pao}{.pao file for the species of interest}

@@ -4,7 +4,7 @@
 \alias{GetGamMods}
 \title{GetGamMods}
 \usage{
-GetGamMods()
+GetGamMods(psi_covs)
 }
 \value{
 A list containing the model covariates for each of the 961 potential gamma/epsilon models

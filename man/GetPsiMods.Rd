@@ -4,7 +4,7 @@
 \alias{GetPsiMods}
 \title{GetPsiMods}
 \usage{
-GetPsiMods(covs)
+GetPsiMods()
 }
 \arguments{
 \item{covs}{Data.frame containing the climate covariates for gamma & epsilon from the top gamma/epsilon model}

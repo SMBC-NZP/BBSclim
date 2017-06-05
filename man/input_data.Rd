@@ -4,8 +4,7 @@
 \alias{input_data}
 \title{input_data}
 \usage{
-input_data(year_range = seq(from = 1972, to = 2014), bbs_data = bbs,
-  clim_data = NA_biovars)
+input_data(start_yr = 1972, end_yr = 2014)
 }
 \description{
 Formats BBS data, climate data, and presence input files for all species in spp_list

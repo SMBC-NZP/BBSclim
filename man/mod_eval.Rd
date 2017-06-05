@@ -4,8 +4,8 @@
 \alias{mod_eval}
 \title{mod_eval}
 \usage{
-mod_eval(pres_out, mod, pao2, dig = 2, large = 8, is.annual, is.het,
-  check.quad = FALSE, strict.psi = FALSE, strict.gam = FALSE,
+mod_eval(pres_out, mod, pao2, psi = FALSE, dig = 2, large = 8, is.annual,
+  is.het, check.quad = FALSE, strict.psi = FALSE, strict.gam = FALSE,
   nuisance = FALSE)
 }
 \arguments{

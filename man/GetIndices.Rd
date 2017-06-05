@@ -4,7 +4,7 @@
 \alias{GetIndices}
 \title{GetIndices}
 \usage{
-GetIndices(alpha, betas)
+GetIndices(alpha)
 }
 \arguments{
 \item{prob_df}{Data frame containing the annual occupancy probabilities (from GetOcc)}
