@@ -52,6 +52,10 @@ write_pao <- function(alpha, sim = FALSE, name = NULL){
     }
 
     sitecovs	<- dplyr::select(spp_clim3, -routeID)
+    nas <- which(!is.na(sitecovs[,3]))
+
+    sitecovs <- sitecovs[nas, ]
+    det_hist <- det_hist[nas, ]
 
     pname <- paste0("inst/output/", alpha, "/pres/pres_in.pao")
 
@@ -80,6 +84,10 @@ write_pao <- function(alpha, sim = FALSE, name = NULL){
     }
 
     sitecovs	<- dplyr::select(spp_clim3, -routeID)
+    nas <- which(!is.na(sitecovs[,3]))
+
+    sitecovs <- sitecovs[nas, ]
+    det_hist <- det_hist[nas, ]
 
     n_seasons <- dim(det_hist)[2] / tot_stops
 
@@ -146,13 +154,16 @@ write_psi_pao <- function(alpha){
 
     sitecovs	<- dplyr::select(spp_clim3, -routeID)
     sitecovs <- dplyr::select(sitecovs, grep(paste0(min(counts$Year), "|Stop|Lon|Lat"), names(sitecovs)))
+    nas <- which(!is.na(sitecovs[,3]))
 
+    sitecovs <- sitecovs[nas, ]
+    det_hist <- det_hist[nas, ]
     pname <- paste0("inst/output/", alpha, "/pres/pres_in_psi.pao")
 
 
     nss <- tot_stops
     spp_pao <- RPresence::create.pao(data = det_hist, nsurveyseason = nss,
-                                     unitcov = sitecovs, survcov = NULL,
+                                     unitcov = as.matrix(sitecovs), survcov = NULL,
                                      title = paste(common, "PRESENCE Analysis", sep = " "),
                                      paoname = pname)
 

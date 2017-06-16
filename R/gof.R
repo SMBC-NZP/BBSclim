@@ -428,7 +428,7 @@ sim.bbs.ms <-  function(alpha, covs, psi.coefs, th0.coefs, th1.coefs,
   }
 
 
-  if(length(psi.coefs) > 1)   occ.prob	<- plogis(psi.coefs %*% t(psi.covs))   # problem if psi.ind==logical(0)
+  if(length(psi.coefs) > 1)   occ.prob	<- plogis(psi.coefs %*% t(data.matrix(psi.covs)))   # problem if psi.ind==logical(0)
   occ[,1]		<- rbinom(occ.prob, 1, occ.prob)
 
 
