@@ -247,8 +247,8 @@ gof <- function(alpha){
                                                                       Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs,
                                                                       Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
                                                                       is.het = mod_opts$het, is.annual = annual)
-                                        gof.pass
-
+                                        gof.pass2 <- max(c(0, gof.pass), na.rm = TRUE)
+                                        gof.pass2
                                       }
         aic_tab2$check <- mod_check
 
@@ -273,16 +273,15 @@ gof <- function(alpha){
             cycle <- cycle + 1
           }else{
             aic_tab$check <- 0
-            stop("No model passed GOF")
-            # write.csv(aic_tab, paste0("inst/output/", alpha, "/gam_aic_check.csv"), row.names = FALSE)
-            #
-            # file.rename(from = paste0("inst/output/", alpha, "/pres/psi_model_33.out"),
-            #             to = paste0("inst/output/", alpha, "/top_mod.out"))
-            #
-            # files2zip <- dir(paste0("inst/output/", alpha, "/pres"), full.names = TRUE)
-            # zip(zipfile = paste0("inst/output/", alpha, '/presZip'), files = files2zip)
-            #
-            # unlink(paste0("inst/output/", alpha, "/pres"), recursive = TRUE)
+            write.csv(aic_tab, paste0("inst/output/", alpha, "/gam_aic_check.csv"), row.names = FALSE)
+
+            file.rename(from = paste0("inst/output/", alpha, "/pres/psi_model_33.out"),
+                        to = paste0("inst/output/", alpha, "/top_mod.out"))
+
+            files2zip <- dir(paste0("inst/output/", alpha, "/pres"), full.names = TRUE)
+            zip(zipfile = paste0("inst/output/", alpha, '/presZip'), files = files2zip)
+
+            unlink(paste0("inst/output/", alpha, "/pres"), recursive = TRUE)
           }
         }
 
