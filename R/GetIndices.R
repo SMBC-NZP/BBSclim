@@ -19,51 +19,57 @@ GetIndices <- function(alpha){
     prob_df <- read.csv(paste0('inst/output/', alpha, '/occ.csv'))
     spp_buff <- read.csv(paste0('inst/output/', alpha, '/count_buff.csv'))
 
+    prob_df <- dplyr::select(prob_df, lon, lat, Prob, Year)
+    prob_rast <- raster::rasterFromXYZ(prob_df)
+    xy <- dplyr::select(spp_buff, Longitude, Latitude)
+    out	<- raster::extract(prob_rast[["Prob"]], xy)
+    spp_buff$Prob <- out
+
     years <- seq(from = min(prob_df$Year), to = max(prob_df$Year))
 
-    prob_grp <- dplyr::group_by(prob_df, Year)
+    prob_grp <- dplyr::group_by(spp_buff, Year)
 
-    avg.psi <- dplyr::summarise(prob_grp, value = mean(Prob))
+    avg.psi <- dplyr::summarise(prob_grp, value = mean(Prob, na.rm = TRUE))
     avg.psi$sd.err <- delta(index = "avg.psi", betas = betas, est = avg.psi$value, alpha)
     avg.psi$ind <- "avg.psi"
 
-    s.lat <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.975, coord = lat, limit = "south"))
+    s.lat <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.975, coord = Latitude, limit = "south"))
     s.lat$sd.err <- delta(index = "s.lat", betas = betas, est = s.lat$value, alpha)
     s.lat$ind <- "s.lat"
 
-    s.core <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.75, coord = lat, limit = "south"))
+    s.core <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.75, coord = Latitude, limit = "south"))
     s.core$sd.err <- delta(index = "s.core", betas = betas, est = s.core$value, alpha)
     s.core$ind <- "s.core"
 
-    n.lat <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.975, coord = lat, limit = "north"))
+    n.lat <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.975, coord = Latitude, limit = "north"))
     n.lat$sd.err <- delta(index = "n.lat", betas = betas, est = n.lat$value, alpha)
     n.lat$ind <- "n.lat"
 
-    n.core <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.75, coord = lat, limit = "north"))
+    n.core <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.75, coord = Latitude, limit = "north"))
     n.core$sd.err <- delta(index = "n.core", betas = betas, est = n.core$value, alpha)
     n.core$ind <- "n.core"
 
-    w.lon <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.975, coord = lon, limit = "west"))
+    w.lon <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.975, coord = Longitude, limit = "west"))
     w.lon$sd.err <- delta(index = "w.lon", betas = betas, est = w.lon$value, alpha)
     w.lon$ind <- "w.lon"
 
-    w.core <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.75, coord = lon, limit = "west"))
+    w.core <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.75, coord = Longitude, limit = "west"))
     w.core$sd.err <- delta(index = "w.core", betas = betas, est = w.core$value, alpha)
     w.core$ind <- "w.core"
 
-    e.lon <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.975, coord = lon, limit = "east"))
+    e.lon <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.975, coord = Longitude, limit = "east"))
     e.lon$sd.err <- delta(index = "e.lon", betas = betas, est = e.lon$value, alpha)
     e.lon$ind <- "e.lon"
 
-    e.core <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.75, coord = lon, limit = "east"))
+    e.core <- dplyr::summarise(prob_grp, value = range.limit(cell.probs = Prob, prob = 0.75, coord = Longitude, limit = "east"))
     e.core$sd.err <- delta(index = "e.core", betas = betas, est = e.core$value, alpha)
     e.core$ind <- "e.core"
 
-    avg.lat <- dplyr::summarise(prob_grp, value = sum(lat * Prob)/sum(Prob))
+    avg.lat <- dplyr::summarise(prob_grp, value = sum(Latitude * Prob, na.rm = TRUE)/sum(Prob, na.rm = TRUE))
     avg.lat$sd.err <- delta(index = "avg.lat", betas = betas, est = avg.lat$value, alpha)
     avg.lat$ind <- "avg.lat"
 
-    avg.lon <- dplyr::summarise(prob_grp, value = sum(lon * Prob)/sum(Prob))
+    avg.lon <- dplyr::summarise(prob_grp, value = sum(Longitude * Prob, na.rm = TRUE)/sum(Prob, na.rm = TRUE))
     avg.lon$sd.err <- delta(index = "avg.lon", betas = betas, est = avg.lon$value, alpha)
     avg.lon$ind <- "avg.lon"
 
@@ -108,48 +114,48 @@ delta <- function(index, est, betas, alpha, epslon = 0.1e-10) {
         prob_grp2 <- dplyr::group_by(prob_df2, Year)
 
         if(index == "avg.psi"){
-          est2 <- dplyr::summarise(prob_grp2, avg.psi = mean(Prob))$avg.psi
+          est2 <- dplyr::summarise(prob_grp2, avg.psi = mean(Prob, na.rm = TRUE))$avg.psi
         }
 
         if(index == "s.lat"){
-          est2 <- dplyr::summarise(prob_grp2, s.lat = range.limit(cell.probs = Prob, prob = 0.975, coord = lat, limit = "south"))$s.lat
+          est2 <- dplyr::summarise(prob_grp2, s.lat = range.limit(cell.probs = Prob, prob = 0.975, coord = Latitude, limit = "south"))$s.lat
         }
 
         if(index == "w.lon"){
-          est2 <- dplyr::summarise(prob_grp2, w.lon = range.limit(cell.probs = Prob, prob = 0.975, coord = lon, limit = "west"))$w.lon
+          est2 <- dplyr::summarise(prob_grp2, w.lon = range.limit(cell.probs = Prob, prob = 0.975, coord = Longitude, limit = "west"))$w.lon
         }
 
 
         if(index == "s.core"){
-          est2 <- dplyr::summarise(prob_grp2, s.core = range.limit(cell.probs = Prob, prob = 0.75, coord = lat, limit = "south"))$s.core
+          est2 <- dplyr::summarise(prob_grp2, s.core = range.limit(cell.probs = Prob, prob = 0.75, coord = Latitude, limit = "south"))$s.core
         }
 
         if(index == "w.core"){
-          est2 <- dplyr::summarise(prob_grp2, w.core = range.limit(cell.probs = Prob, prob = 0.75, coord = lon, limit = "west"))$w.core
+          est2 <- dplyr::summarise(prob_grp2, w.core = range.limit(cell.probs = Prob, prob = 0.75, coord = Longitude, limit = "west"))$w.core
         }
 
         if(index == "n.lat"){
-          est2 <- dplyr::summarise(prob_grp2, n.lat = range.limit(cell.probs = Prob, prob = 0.975, coord = lat, limit = "north"))$n.lat
+          est2 <- dplyr::summarise(prob_grp2, n.lat = range.limit(cell.probs = Prob, prob = 0.975, coord = Latitude, limit = "north"))$n.lat
         }
 
         if(index == "e.lon"){
-          est2 <- dplyr::summarise(prob_grp2, e.lon = range.limit(cell.probs = Prob, prob = 0.975, coord = lon, limit = "east"))$e.lon
+          est2 <- dplyr::summarise(prob_grp2, e.lon = range.limit(cell.probs = Prob, prob = 0.975, coord = Longitude, limit = "east"))$e.lon
         }
 
         if(index == "n.core"){
-          est2 <- dplyr::summarise(prob_grp2, n.core = range.limit(cell.probs = Prob, prob = 0.75, coord = lat, limit = "north"))$n.core
+          est2 <- dplyr::summarise(prob_grp2, n.core = range.limit(cell.probs = Prob, prob = 0.75, coord = Latitude, limit = "north"))$n.core
         }
 
         if(index == "e.core"){
-          est2 <- dplyr::summarise(prob_grp2, e.core = range.limit(cell.probs = Prob, prob = 0.75, coord = lon, limit = "east"))$e.core
+          est2 <- dplyr::summarise(prob_grp2, e.core = range.limit(cell.probs = Prob, prob = 0.75, coord = Longitude, limit = "east"))$e.core
         }
 
         if(index == "avg.lat"){
-          est2 <- dplyr::summarise(prob_grp2, avg.lat = sum(lat * Prob)/sum(Prob))$avg.lat
+          est2 <- dplyr::summarise(prob_grp2, avg.lat = sum(Latitude * Prob, na.rm = TRUE)/sum(Prob, na.rm = TRUE))$avg.lat
         }
 
         if(index == "avg.lon"){
-          est2 <- dplyr::summarise(prob_grp2, avg.lon = sum(lon * Prob)/sum(Prob))$avg.lon
+          est2 <- dplyr::summarise(prob_grp2, avg.lon = sum(Longitude * Prob, na.rm = TRUE)/sum(Prob, na.rm = TRUE))$avg.lon
         }
 
         grad[, jj] <- (est2 - est) / epslon
@@ -168,8 +174,11 @@ delta <- function(index, est, betas, alpha, epslon = 0.1e-10) {
 
 range.limit <- function(cell.probs, prob, coord, limit){
   xy <- data.frame(x = cell.probs, y = coord)
-  x <- dplyr::arrange(xy, y)$x/sum(xy$x)
+  x <- dplyr::arrange(xy, y)$x/sum(xy$x, na.rm = TRUE)
   y <- dplyr::arrange(xy, y)$y
+  y <- y[!is.na(x)]
+  x <- x[!is.na(x)]
+
 
     if(limit == "south"){
       lim <- predict(smooth.spline(cumsum(x), y, spar=0.1), (1 - prob))$y
