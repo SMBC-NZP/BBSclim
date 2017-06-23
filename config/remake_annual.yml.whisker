@@ -27,13 +27,13 @@ targets:
   inst/output/{{spp_name}}:
     command: CreateSpp(I(alpha = "{{spp_name}}"))
     depends:
-      - inst/spp_list.csv
+      - inst/spp_list_annual.csv
 
 
   {{spp_name}}_AOU:
     command: GetAOU(I(alpha = "{{spp_name}}"))
     depends:
-      - inst/spp_list.csv
+      - inst/spp_list_annual.csv
 
 
   inst/output/{{spp_name}}/raw_counts.csv:

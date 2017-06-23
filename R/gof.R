@@ -2,9 +2,7 @@
 #'
 #' Identify top model, test GOF, save output, and delete output files of all other models
 #' @param alpha Alpha code for species of interest
-#' @param pao .pao file
 #' @export
-#'
 
 gof <- function(alpha){
   mod_opts <- read.csv("inst/model_opts.csv")

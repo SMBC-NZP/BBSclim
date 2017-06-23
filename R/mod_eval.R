@@ -127,28 +127,28 @@ mod_eval <- function(pres_out, mod, pao2, psi = FALSE, dig = 2, large = 8, is.an
               psi.check[quads.clim - 1] <- coefs[quads.clim]/std.er[quads.clim] < 1.96
             }
           }
-          # if(num.betas[4] > 1) {
-          #   quads <- grep("gam1.sq", betas)
-          #   quads.coord <- quads[(length(quads) - 1):length(quads)]
-          #   quads.clim <- quads[!(quads %in% quads.coord)]
-          #   gam.check[quads.coord - 4 - sum(num.betas[1:3])] <- coefs[quads.coord] < 0
-          #   if(strict.gam){
-          #     gam.check[quads.clim - 4 - sum(num.betas[1:3])]	<- coefs[quads.clim] < 0
-          #   }else{
-          #     gam.check[quads.clim - 4 - sum(num.betas[1:3])]	<- coefs[quads.clim]/std.er[quads.clim] < 1.96
-          #   }
-          # }
-          # if(num.betas[5] > 1) {
-          #   quads <- grep("eps1.sq", betas)
-          #   quads.coord <- quads[(length(quads) - 1):length(quads)]
-          #   quads.clim <- quads[!(quads %in% quads.coord)]
-          #   eps.check[quads.coord - 5 - sum(num.betas[1:4])] <- coefs[quads.coord] > 0
-          #   if(strict.gam){
-          #     eps.check[quads.clim - 5 - sum(num.betas[1:4])]	<- coefs[quads.clim] > 0
-          #   }else{
-          #     eps.check[quads.clim - 5 - sum(num.betas[1:4])]	<- coefs[quads.clim]/std.er[quads.clim] > 1.96
-          #   }
-          # }
+          if(num.betas[4] > 1) {
+            quads <- grep("gam1.sq", betas)
+            quads.coord <- quads[(length(quads) - 1):length(quads)]
+            quads.clim <- quads[!(quads %in% quads.coord)]
+            #gam.check[quads.coord - 4 - sum(num.betas[1:3])] <- coefs[quads.coord] < 0
+            if(strict.gam){
+              gam.check[quads.clim - 4 - sum(num.betas[1:3])]	<- coefs[quads.clim] < 0
+            }else{
+              gam.check[quads.clim - 4 - sum(num.betas[1:3])]	<- coefs[quads.clim]/std.er[quads.clim] < 1.96
+            }
+          }
+          if(num.betas[5] > 1) {
+            quads <- grep("eps1.sq", betas)
+            quads.coord <- quads[(length(quads) - 1):length(quads)]
+            quads.clim <- quads[!(quads %in% quads.coord)]
+            #eps.check[quads.coord - 5 - sum(num.betas[1:4])] <- coefs[quads.coord] > 0
+            if(strict.gam){
+              eps.check[quads.clim - 5 - sum(num.betas[1:4])]	<- coefs[quads.clim] > 0
+            }else{
+              eps.check[quads.clim - 5 - sum(num.betas[1:4])]	<- coefs[quads.clim]/std.er[quads.clim] > 1.96
+            }
+          }
         }
       }
     }

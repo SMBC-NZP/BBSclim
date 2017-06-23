@@ -6,12 +6,12 @@
 #' @param buffer Dataframe containing the buffered spp count data
 #' @export
 
-GetOccProb <- function(alpha, buff_method = "rec", Write = TRUE){
+GetOccProb <- function(alpha, betas = NULL, buff_method = "rec", Write = TRUE){
   gam_aic <- read.csv(paste0('inst/output/', alpha, '/gam_aic_check.csv'))
   pass <- gam_aic$check[1] == 1
 
   if(!is.na(pass)){
-    betas <- BBSclim::GetBetas(alpha)
+    if(is.null(betas)) betas <- BBSclim::GetBetas(alpha)
 
     buffer <- read.csv(paste0('inst/output/', alpha, '/count_buff.csv'))
     years <- seq(from = min(buffer$Year), to = max(buffer$Year))
