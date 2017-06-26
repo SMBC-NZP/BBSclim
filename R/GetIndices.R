@@ -91,8 +91,7 @@ GetIndices <- function(alpha){
 
 delta <- function(index, est, betas, alpha, epslon = 0.1e-10) {
     #betas <- lowa_betas# GetBetas(alpha)
-    spp_buff <- read.csv(paste0('inst/output/', alpha, '/count_buff.csv'))
-    xy <- dplyr::select(spp_buff, Longitude, Latitude)
+
 
     len.psi <- length(betas$psi.betas)
     len.gam <- length(betas$gam.betas)
@@ -108,12 +107,7 @@ delta <- function(index, est, betas, alpha, epslon = 0.1e-10) {
                        eps.betas = all.betas[(len.psi + len.gam + 1):length(all.betas)])
         prob_df2 <- GetOccProb(alpha, betas = beta2, Write = FALSE)
 
-        prob_df2 <- dplyr::select(prob_df2, lon, lat, Prob, Year)
-        prob_rast <- raster::rasterFromXYZ(prob_df2)
-        out	<- raster::extract(prob_rast[["Prob"]], xy)
-        spp_buff$Prob <- out
-
-        prob_grp2 <- dplyr::group_by(spp_buff, Year)
+        prob_grp2 <- dplyr::group_by(prob_df2, Year)
 
         if(index == "avg.psi"){
           est2 <- dplyr::summarise(prob_grp2, avg.psi = mean(Prob, na.rm = TRUE))$avg.psi
