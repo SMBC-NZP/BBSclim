@@ -11,12 +11,12 @@ gof <- function(alpha){
 
   annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
 
-  mods1 <- GetPsiMods()
+  mods1 <- BBSclim::GetPsiMods()
   aic_psi <- read.csv(paste0("inst/output/", alpha, "/psi_aic.csv"))
   top <- aic_psi$Model_num[1]
   covs <- mods1[[top]]
 
-  mods <- GetGamMods(psi_covs = covs$psi.cov)
+  mods <- BBSclim::GetGamMods(psi_covs = covs$psi.cov)
 
 
   if(is.na(annual_aic$LogLik[1])){
@@ -35,6 +35,7 @@ gof <- function(alpha){
 
   aic_tab <- read.csv(paste0("inst/output/", alpha, "/gam_aic.csv"))
   aic_tab <- aic_tab[!is.na(aic_tab$AIC),]
+  aic_tab$check <- NA
 
   #if(nrow(aic_tab) == 0) stop("No models passed overfitting test")
 
@@ -129,11 +130,10 @@ gof <- function(alpha){
                                                                     Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs,
                                                                     Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
                                                                     is.het = mod_opts$het, is.annual = annual)
-                                      gof.pass
+                                      aic_tab$check[i] <- gof.pass
 
                                     }
       doParallel::stopImplicitCluster()
-      aic_tab$check <- mod_check
 
       top_mod <- aic_tab$Model[min(which(aic_tab$check == 1))]
 
@@ -246,11 +246,11 @@ gof <- function(alpha){
                                                                       Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
                                                                       is.het = mod_opts$het, is.annual = annual)
                                         gof.pass2 <- max(c(0, gof.pass), na.rm = TRUE)
-                                        gof.pass2
+                                        aic_tab2$check[i] <- gof.pass2
                                       }
-        aic_tab2$check <- mod_check
 
-        top_mod <- aic_tab2$Model[min(which(aic_tab2$check == 1))]
+        doParallel::stopImplicitCluster()
+        top_mod <- aic_tab2$Model[min(which(aic_tab2$check == 1), na.rm = TRUE)]
 
         if(!is.na(top_mod) & cycle <= ceiling(nrow(aic_tab)/cores)){
           aic_tab2 <- aic_tab2[aic_tab2$check == 1,]
