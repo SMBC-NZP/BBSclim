@@ -135,7 +135,7 @@ gof <- function(alpha){
                                     }
       doParallel::stopImplicitCluster()
 
-      top_mod <- aic_tab$Model[min(which(aic_tab$check == 1))]
+      top_mod <- aic_tab$Model[min(which(aic_tab$check == 1), na.rm = TRUE)]
 
       if(!is.na(top_mod)){
         aic_tab <- aic_tab[aic_tab$check == 1,]
@@ -245,8 +245,7 @@ gof <- function(alpha){
                                                                       Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs,
                                                                       Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
                                                                       is.het = mod_opts$het, is.annual = annual)
-                                        gof.pass2 <- max(c(0, gof.pass), na.rm = TRUE)
-                                        aic_tab2$check[i] <- gof.pass2
+                                        aic_tab2$check[i] <- gof.pass
                                       }
 
         doParallel::stopImplicitCluster()
