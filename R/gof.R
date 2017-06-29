@@ -125,12 +125,16 @@ gof <- function(alpha){
                                       file.rename(from = paste0("pres_", sim_name, ".out"),
                                                   to = paste0("inst/output/", alpha, "/pres/", sim_name, ".out"))
 
-                                      ## Test whether coefs from simulated data are similar to coefs from top model
-                                      gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use, alpha = alpha,
-                                                                    Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs,
-                                                                    Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
-                                                                    is.het = mod_opts$het, is.annual = annual)
-                                      aic_tab$check[i] <- gof.pass
+                                      if(file.exists(paste0("inst/output/", alpha, "/pres/", sim_name, ".out"))){
+                                        ## Test whether coefs from simulated data are similar to coefs from top model
+                                        gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use, alpha = alpha,
+                                                                      Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs,
+                                                                      Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
+                                                                      is.het = mod_opts$het, is.annual = annual)
+                                        aic_tab$check[i] <- gof.pass
+                                      }else{
+                                        aic_tab$check[i] <- 0
+                                      }
 
                                     }
       doParallel::stopImplicitCluster()
@@ -240,12 +244,17 @@ gof <- function(alpha){
                                         suppressMessages(file.rename(from = paste0("pres_", sim_name, ".out"),
                                                     to = paste0("inst/output/", alpha, "/pres/", sim_name, ".out")))
 
-                                        ## Test whether coefs from simulated data are similar to coefs from top model
-                                        gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use, alpha = alpha,
-                                                                      Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs,
-                                                                      Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
-                                                                      is.het = mod_opts$het, is.annual = annual)
-                                        aic_tab2$check[i] <- gof.pass
+                                        if(file.exists(paste0("inst/output/", alpha, "/pres/", sim_name, ".out"))){
+                                          ## Test whether coefs from simulated data are similar to coefs from top model
+                                          gof.pass <- test.presence.gof(modname = sim_name, pao2 = sim_pao, mod = covs_use, alpha = alpha,
+                                                                        Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs,
+                                                                        Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
+                                                                        is.het = mod_opts$het, is.annual = annual)
+                                          aic_tab2$check[i] <- gof.pass
+                                        }else{
+                                          aic_tab2$check[i] <- 0
+                                        }
+
                                       }
 
         doParallel::stopImplicitCluster()
