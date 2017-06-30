@@ -131,14 +131,13 @@ gof <- function(alpha){
                                                                       Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs,
                                                                       Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
                                                                       is.het = mod_opts$het, is.annual = annual)
-                                        aic_tab$check[i] <- gof.pass
                                       }else{
-                                        aic_tab$check[i] <- 0
+                                        gof.pass <- 0
                                       }
+                                      gof.pass
 
                                     }
-      doParallel::stopImplicitCluster()
-
+      aic_tab$check <- mod_check
       top_mod <- aic_tab$Model[min(which(aic_tab$check == 1), na.rm = TRUE)]
 
       if(!is.na(top_mod)){
@@ -250,14 +249,12 @@ gof <- function(alpha){
                                                                         Psi.coefs = psi.coefs, Gam.coefs = gam.coefs, Eps.coefs = eps.coefs,
                                                                         Psi.se = psi.se, Gam.se = gam.se, Eps.se = eps.se,
                                                                         is.het = mod_opts$het, is.annual = annual)
-                                          aic_tab2$check[i] <- gof.pass
                                         }else{
-                                          aic_tab2$check[i] <- 0
+                                          gof.pass <- 0
                                         }
-
+                                        gof.pass
                                       }
-
-        doParallel::stopImplicitCluster()
+        aic_tab2$check <- mod_check
         top_mod <- aic_tab2$Model[min(which(aic_tab2$check == 1), na.rm = TRUE)]
 
         if(!is.na(top_mod) & cycle <= ceiling(nrow(aic_tab)/cores)){
