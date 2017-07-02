@@ -254,6 +254,7 @@ gof <- function(alpha){
                                         }
                                         gof.pass
                                       }
+        ifelse(length(mod_check) <- nrow(aic_tab2)) mod_check <- c(mod_check, rep(0, nrow(aic_tab2) - length(mod_check)))
         aic_tab2$check <- mod_check
         top_mod <- aic_tab2$Model[min(which(aic_tab2$check == 1), na.rm = TRUE)]
 
