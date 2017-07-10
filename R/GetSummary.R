@@ -19,7 +19,7 @@ GetSummary <- function(alpha){
   annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
 
   if(is.na(annual_aic$LogLik[1])){
-    annual <- "NO"
+    annual <- "No"
   }else{
     if(annual_aic$Model[1] == "annual"){
       annual <- "Yes"
@@ -139,12 +139,12 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nYears, years, nuisance 
   if(!nuisance){
     ## Covert covs included in psi, gam, & eps models to factor, set levels
     covs_use2 <- factor(unique(c(covs_use$psi.cov, covs_use$gam.cov, covs_use$eps.cov)),
-                        levels = c("Lat", "sq_Lat", "Lon", "sq_Lon", "tmp", "sq_tmp", "Twet", "sq_Twet", "Prec",
+                        levels = c("tmp", "sq_tmp", "Twet", "sq_Twet", "Prec",
                                    "sq_Prec", "Pwarm", "sq_Pwarm", "dtr", "sq_dtr"))
 
 
     ## Data frame containing beta coeffecients and se
-    beta_est <- matrix(NA, nrow = 15, ncol = 3)
+    beta_est <- matrix(NA, nrow = 11, ncol = 3)
     colnames(beta_est) <- c("$\\psi$", "$\\gamma$", "$\\epsilon$")
 
 
