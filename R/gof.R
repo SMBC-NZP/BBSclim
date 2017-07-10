@@ -46,7 +46,7 @@ gof <- function(alpha){
   if(mod_opts$Parallel){
     cores <- parallel::detectCores()
     if(!is.null(mod_opts$limit.cores)){
-      cores <- min(cores, mod_opts$limit.cores, nrow(aic_tab))
+      cores <- min(cores, mod_opts$limit.cores, nrow(aic_tab), 20)
     }
 
     doParallel::registerDoParallel(cores = cores)
