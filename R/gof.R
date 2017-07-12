@@ -46,7 +46,7 @@ gof <- function(alpha){
   if(mod_opts$Parallel){
     cores <- parallel::detectCores()
     if(!is.null(mod_opts$limit.cores)){
-      cores <- min(cores, mod_opts$limit.cores, nrow(aic_tab), 20)
+      cores <- min(cores, mod_opts$limit.cores, nrow(aic_tab), 25)
     }
 
     doParallel::registerDoParallel(cores = cores)
@@ -254,7 +254,7 @@ gof <- function(alpha){
                                         }
                                         gof.pass
                                       }
-        ifelse(length(mod_check) <- nrow(aic_tab2)) mod_check <- c(mod_check, rep(0, nrow(aic_tab2) - length(mod_check)))
+        if(length(mod_check) < nrow(aic_tab2)) mod_check <- c(mod_check, rep(0, nrow(aic_tab2) - length(mod_check)))
         aic_tab2$check <- mod_check
         top_mod <- aic_tab2$Model[min(which(aic_tab2$check == 1), na.rm = TRUE)]
 
