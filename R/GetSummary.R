@@ -8,12 +8,12 @@ GetSummary <- function(alpha){
 
   common <- BBSclim::code_lookup$common[BBSclim::code_lookup$alpha == toupper(alpha)]
 
-  mods1 <- GetPsiMods()
+  mods1 <- BBSclim::GetPsiMods()
   aic_psi <- read.csv(paste0("inst/output/", alpha, "/psi_aic.csv"))
   top <- aic_psi$Model_num[1]
   covs <- mods1[[top]]
 
-  mods <- GetGamMods(psi_covs = covs$psi.cov)
+  mods <- BBSclim::GetGamMods(psi_covs = covs$psi.cov)
 
   ## Did p vary annually?
   annual_aic <- read.csv(paste0("inst/output/", alpha, "/annual_aic.csv"))
@@ -43,7 +43,7 @@ GetSummary <- function(alpha){
 
   ### Psi models AIC table
   psi_aic <- read.csv(paste0('inst/output/', alpha, '/psi_aic.csv'))
-  psi_max <- max(!is.na(psi_aic$LogLik))
+  psi_max <- max(which(!is.na(psi_aic$LogLik)))
   psi_aic <- psi_aic[1:min(psi_max, 10),]
 
   ### Gamma/Epsilon AIC table
@@ -80,7 +80,7 @@ GetSummary <- function(alpha){
     gam_aic <- gam_aic[which(gam_aic$Model_num == modnum):nrow(gam_aic),]
     gam_aic <- dplyr::mutate(gam_aic, delta_AIC = AIC - min(AIC, na.rm = TRUE))
     gam_aic <- dplyr::select(gam_aic, -check)
-    gam_max <- max(!is.na(gam_aic$LogLik))
+    gam_max <- max(which(!is.na(gam_aic$LogLik)))
     gam_aic <- gam_aic[1:min(gam_max, 25),]
 
     colnames(gam_aic) <- c("Model", "Model #", "LogLik", "k", "AIC", "$\\Delta$ AIC")
@@ -160,19 +160,19 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nYears, years, nuisance 
                                             length(covs_use$th1.cov) + length(covs_use$gam.cov) + 5], ")", sep = "")
 
     ## Fill in coefficients for climate covariates
-    for(i in 5:14){
+    for(i in 1:10){
       # Psi
-      if(length(covs_use$psi.cov) > 4){
+      #if(length(covs_use$psi.cov) > 4){
         if(levels(covs_use2)[i] %in% covs_use$psi.cov){
           beta.num <- which(covs_use$psi.cov == levels(covs_use2)[i])
-          beta_est[i - 3, 1] <- paste(coefs[5 + beta.num], " (", sd.err[5 + beta.num], ")", sep = "")
+          beta_est[i + 1, 1] <- paste(coefs[beta.num + 1], " (", sd.err[beta.num + 1], ")", sep = "")
         }
-      }
+      #}
 
       # Gamma
       if(levels(covs_use2)[i] %in% covs_use$gam.cov){
         beta.num <- which(covs_use$gam.cov == levels(covs_use2)[i])
-        beta_est[i - 3, 2] <-  paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+        beta_est[i + 1, 2] <-  paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                               length(covs_use$th1.cov) + 4 + beta.num],
                                       " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                      length(covs_use$th1.cov) + 4 + beta.num], ")", sep = "")
@@ -181,35 +181,13 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nYears, years, nuisance 
       # Epsilon
       if(levels(covs_use2)[i] %in% covs_use$eps.cov){
         beta.num <- which(covs_use$eps.cov == levels(covs_use2)[i])
-        beta_est[i - 3, 3] <-   paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
+        beta_est[i + 1, 3] <-   paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                length(covs_use$th1.cov) + length(covs_use$gam.cov) + 5 + beta.num],
                                        " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
                                                       length(covs_use$th1.cov) + length(covs_use$gam.cov) + 5 + beta.num], ")", sep = "")
       }
     }
 
-    for(i in 1:4){
-      if(levels(covs_use2)[i] %in% covs_use$psi.cov){
-        beta.num <- which(covs_use$psi.cov == levels(covs_use2)[i])
-        beta_est[i + 11, 1] <- paste(coefs[1 + beta.num], " (", sd.err[1 + beta.num], ")", sep = "")
-      }
-
-      if(levels(covs_use2)[i] %in% covs_use$gam.cov){
-        beta.num <- which(covs_use$gam.cov == levels(covs_use2)[i])
-        beta_est[i + 11, 2] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
-                                             length(covs_use$th1.cov) + 4 + beta.num],
-                                     " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
-                                                    length(covs_use$th1.cov) + 4 + beta.num], ")", sep = "")
-      }
-
-      if(levels(covs_use2)[i] %in% covs_use$eps.cov){
-        beta.num <- which(covs_use$eps.cov == levels(covs_use2)[i])
-        beta_est[i + 11, 3] <- paste(coefs[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
-                                             length(covs_use$th1.cov) + length(covs_use$gam.cov) + 5 + beta.num],
-                                     " (", sd.err[length(covs_use$psi.cov) + length(covs_use$th0.cov) +
-                                                    length(covs_use$th1.cov) + length(covs_use$gam.cov) + 5 + beta.num], ")", sep = "")
-      }
-    }
 
     ## Rename climate covariates
     covs_use2 <- dplyr::recode(covs_use2, tmp = "Temp", sq_tmp = "Temp^2",
@@ -220,7 +198,7 @@ MakeBetatab <- function(coefs, sd.err, alpha, covs_use, nYears, years, nuisance 
 
     ## Covert to data frame, add intercept, covert to character, replace NA with "-"
     beta_df <- as.data.frame(beta_est)
-    covs <- data.frame(cov = c("Intercept", as.character(levels(covs_use2[order(covs_use2)]))[5:14], as.character(levels(covs_use2[order(covs_use2)]))[1:4]))
+    covs <- data.frame(cov = c("Intercept", as.character(levels(covs_use2[order(covs_use2)]))[1:10]))
     beta_df <- dplyr::bind_cols(covs, beta_df)
     beta_df[, 2:4] <- as.character(unlist(beta_df[, 2:4]))
     beta_df[is.na(beta_df)] <- "-"
