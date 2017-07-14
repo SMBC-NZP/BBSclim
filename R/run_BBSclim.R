@@ -7,18 +7,20 @@
 #' @export
 
 
-run_BBSclim <- function(annual, runmods, ...){
-  httr::set_config(httr::config(ssl_verifypeer = 0L))
+run_BBSclim <- function(annual, runmods, install.pkgs = FALSE, ...){
+  if(install.pkgs){
+    httr::set_config(httr::config(ssl_verifypeer = 0L))
 
+    ### Install packages from
+    suppressMessages(devtools::install_github('crushing05/BBS.tenstop'))
+    suppressMessages(devtools::install_github('crushing05/BBS.fiftystop'))
+    suppressMessages(devtools::install_github('richfitz/datastorr'))
+    suppressMessages(devtools::install_github('crushing05/rBBS'))
+    suppressMessages(devtools::install_github('richfitz/remake'))
+    suppressMessages(remake::install_missing_packages("remake.yml"))
+    suppressMessages(devtools::install_github('krlmlr/here'))
+  }
 
-  ### Install packages from
-  suppressMessages(devtools::install_github('crushing05/BBS.tenstop'))
-  suppressMessages(devtools::install_github('crushing05/BBS.fiftystop'))
-  suppressMessages(devtools::install_github('richfitz/datastorr'))
-  suppressMessages(devtools::install_github('crushing05/rBBS'))
-  suppressMessages(devtools::install_github('richfitz/remake'))
-  suppressMessages(remake::install_missing_packages("remake.yml"))
-  suppressMessages(devtools::install_github('krlmlr/here'))
 
 
   BBSclim::model_opts(...)
