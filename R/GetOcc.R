@@ -52,16 +52,16 @@ GetOccProb <- function(alpha, betas = NULL, buff_method = "rec", Write = TRUE){
       if(is.null(buff_method)){
         write.csv(psi.df2, file = paste0("inst/output/", alpha, "/occ.csv"), row.names = FALSE)
       }else{
-        psi.df3 <- dplyr::filter(psi.df2, lat < max(buffer$Latitude) + 2 & lat > min(buffer$Latitude) - 2 &
-                                   lon > min(buffer$Longitude) - 2 & lon < max(buffer$Longitude) + 2)
+        psi.df3 <- dplyr::filter(psi.df2, lat < max(buffer$Latitude) & lat > min(buffer$Latitude) &
+                                   lon > min(buffer$Longitude) & lon < max(buffer$Longitude))
         write.csv(psi.df3, file = paste0("inst/output/", alpha, "/occ.csv"), row.names = FALSE)
       }
     }else{
       if(is.null(buff_method)){
         psi.df2
       }else{
-        psi.df3 <- dplyr::filter(psi.df2, lat < max(buffer$Latitude) + 2 & lat > min(buffer$Latitude) - 2 &
-                                   lon > min(buffer$Longitude) - 2 & lon < max(buffer$Longitude) + 2)
+        psi.df3 <- dplyr::filter(psi.df2, lat < max(buffer$Latitude) & lat > min(buffer$Latitude) &
+                                   lon > min(buffer$Longitude) & lon < max(buffer$Longitude))
         psi.df3
       }
     }
